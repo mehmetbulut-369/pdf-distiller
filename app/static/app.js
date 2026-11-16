@@ -646,7 +646,8 @@ async function doExport() {
     const r = await post(`/api/doc/${state.doc.id}/export`, job({ ops: state.ops }));
     const blob = await r.blob();
     const cd = r.headers.get("Content-Disposition") || "";
-    const name = (cd.match(/filename="(.+?)"/) || [])[1] || "baski.pdf";
+    const utf8 = cd.match(/filename\*=UTF-8''([^;]+)/);
+    const name = (utf8 && decodeURIComponent(utf8[1])) || (cd.match(/filename="(.+?)"/) || [])[1] || "baski.pdf";
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = name; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);

@@ -15,10 +15,14 @@ import uuid
 from collections import OrderedDict
 from pathlib import Path
 
+import unicodedata
+from urllib.parse import quote
+
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -32,6 +36,8 @@ MAX_DOCS = 4
 
 app = FastAPI(title="PDF Distiller", docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+# DNS rebinding koruması: başka bir alan adı 127.0.0.1'e çözülse bile istekler reddedilir.
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])
 
 _docs: "OrderedDict[str, DistillDocument]" = OrderedDict()
 _png_cache: "OrderedDict[str, bytes]" = OrderedDict()
@@ -51,6 +57,11 @@ def _doc(doc_id: str) -> DistillDocument:
     if d is None:
         raise HTTPException(404, "Belge bulunamadı. Lütfen PDF'i yeniden açın.")
     return d
+
+
+def _check_page(d: DistillDocument, page: int):
+    if not 0 <= page < d.n_pages:
+        raise HTTPException(404, "Sayfa bulunamadı.")
 
 
 def _parse(job: Job):
@@ -90,8 +101,8 @@ def tiers():
 
 
 @app.post("/api/open")
-async def open_pdf(file: UploadFile = File(...)):
-    data = await file.read()
+def open_pdf(file: UploadFile = File(...)):  # sync: analiz iş parçacığında koşar, olay döngüsünü kilitlemez
+    data = file.file.read()
     if not data.startswith(b"%PDF") and b"%PDF" not in data[:1024]:
         raise HTTPException(400, "Bu dosya PDF değil.")
     try:
@@ -117,8 +128,7 @@ async def open_pdf(file: UploadFile = File(...)):
 @app.get("/api/doc/{doc_id}/original/{page}.png")
 def original(doc_id: str, page: int, w: int = 900):
     d = _doc(doc_id)
-    if not 0 <= page < d.n_pages:
-        raise HTTPException(404)
+    _check_page(d, page)
     key = f"{doc_id}:o:{page}:{w}"
     png = _cache_get(key)
     if png is None:
@@ -130,10 +140,9 @@ def original(doc_id: str, page: int, w: int = 900):
 @app.post("/api/doc/{doc_id}/processed.png")
 def processed(doc_id: str, job: Job):
     d = _doc(doc_id)
-    if not 0 <= job.page < d.n_pages:
-        raise HTTPException(404)
+    _check_page(d, job.page)
     s, ov = _parse(job)
-    h = hashlib.md5(json.dumps([s.to_dict(), ov.to_dict()], sort_keys=True).encode()).hexdigest()
+    h =hashlib.md5(json.dumps([s.to_dict(), ov.to_dict()], sort_keys=True).encode()).hexdigest()
     key = f"{doc_id}:p:{job.page}:{job.width}:{h}"
     png = _cache_get(key)
     if png is None:
@@ -145,6 +154,7 @@ def processed(doc_id: str, job: Job):
 @app.post("/api/doc/{doc_id}/elements")
 def elements(doc_id: str, job: Job):
     d = _doc(doc_id)
+    _check_page(d, job.page)
     s, ov = _parse(job)
     return {"page": job.page, "elements": d.page_elements(job.page, s, ov)}
 
@@ -173,13 +183,18 @@ def words(doc_id: str, job: WordJob):
 def export(doc_id: str, job: Job):
     d = _doc(doc_id)
     s, ov = _parse(job)
-    ops = [PageOp(int(o["src"]), int(o.get("rotate", 0))) for o in job.ops] if job.ops is not None else None
-    if ops is not None and not ops:
-        raise HTTPException(400, "Çıktıda hiç sayfa kalmadı.")
+    ops = None
+    if job.ops is not None:
+        ops = [PageOp(int(o["src"]), int(o.get("rotate", 0))) for o in job.ops]
+        ops = [o for o in ops if 0 <= o.src < d.n_pages]
+        if not ops:
+            raise HTTPException(400, "Çıktıda hiç sayfa kalmadı.")
     data = d.export(s, ov, ops)
-    stem = re.sub(r"[^\w\-. ]", "_", Path(d.name).stem)[:80] or "belge"
-    return Response(data, media_type="application/pdf",
-                    headers={"Content-Disposition": f'attachment; filename="{stem}_baski.pdf"'})
+    name = (re.sub(r"[^\w\-. ]", "_", Path(d.name).stem)[:80] or "belge") + "_baski.pdf"
+    # HTTP başlıkları ASCII olmalı: ASCII yedek ad + UTF-8 asıl ad (RFC 6266 / 5987)
+    fallback = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode() or "belge_baski.pdf"
+    return Response(data, media_type="application/pdf", headers={
+        "Content-Disposition": f"attachment; filename=\"{fallback}\"; filename*=UTF-8''{quote(name)}"})
 
 
 # ----------------------------------------------------------------------------- profiller
