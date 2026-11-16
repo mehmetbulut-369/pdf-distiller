@@ -4,17 +4,58 @@
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 
-const TIER_TEXT = {
-  0: ["Orijinal", "Hiçbir şey kaldırılmaz"],
-  1: ["Hafif", "Zeminler ve tekrar eden tema öğeleri"],
-  2: ["Orta", "Hafif + büyük görseller ve şekiller"],
-  3: ["Maksimum", "Sadece metin kalır"],
-};
+// ------------------------------------------------------------------ dil (i18n)
+// Metinler static/i18n/<dil>.json içinde. Eksik anahtar İngilizceye, o da yoksa anahtarın kendisine düşer.
+// Çoğul: vars.n sayıysa önce "<anahtar>_<one|other…>" aranır (Intl.PluralRules).
+const LANGS = ["en", "de", "tr"];
+const i18n = { lang: "en", dict: {}, en: {} };
+function pickLang() {
+  try { const s = localStorage.getItem("lang"); if (LANGS.includes(s)) return s; } catch (_) {}
+  for (const l of navigator.languages || [navigator.language || ""]) {
+    const b = String(l).slice(0, 2).toLowerCase();
+    if (LANGS.includes(b)) return b;
+  }
+  return "en";
+}
+async function loadLang(lang) {
+  const get = async (l) => (await fetch(`/static/i18n/${l}.json`)).json();
+  if (!Object.keys(i18n.en).length) i18n.en = await get("en");
+  i18n.dict = lang === "en" ? i18n.en : await get(lang);
+  i18n.lang = lang;
+  document.documentElement.lang = lang;
+}
+const has = (k) => k in i18n.dict || k in i18n.en;
+function t(key, vars = {}) {
+  let s;
+  if (typeof vars.n === "number") {
+    const k = `${key}_${new Intl.PluralRules(i18n.lang).select(vars.n)}`;
+    s = i18n.dict[k] ?? i18n.en[k];
+  }
+  s = s ?? i18n.dict[key] ?? i18n.en[key] ?? key;
+  return s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? num(vars[k]) : m));
+}
+const num = (v) => (typeof v === "number" ? v.toLocaleString(i18n.lang) : v);
+function applyDom() {
+  $$("[data-i18n]").forEach((el) => (el.textContent = t(el.dataset.i18n)));
+  for (const a of ["title", "aria-label", "placeholder", "alt"]) {
+    $$(`[data-i18n-${a}]`).forEach((el) => el.setAttribute(a, t(el.getAttribute(`data-i18n-${a}`))));
+  }
+  $("#lang").value = i18n.lang;
+}
+async function setLang(lang) {
+  await loadLang(lang);
+  try { localStorage.setItem("lang", lang); } catch (_) {}
+  applyDom();
+  // dinamik metin üreten her şeyi yeniden çiz
+  buildTiers(); syncControls(); setTool(state.tool); renderThumbs(); renderWords(); renderSummary(); renderDocName();
+  if (state.doc) refreshPage();
+  loadProfiles().catch(() => {});
+}
+
 const TIER_KEYS = ["remove_backgrounds", "remove_repeated", "remove_large_images",
   "remove_large_shapes", "remove_all_graphics", "text_mode"];
-const CLS_TEXT = { background: "Zemin", repeated: "Tekrarlayan", large: "Büyük", other: "Diğer", white: "Beyaz dolgu",
-  text: "Metin", text_repeated: "Her sayfada aynı metin", text_image: "Yazılı görsel" };
-const KIND_TEXT = { image: "Görsel", fill: "Şekil", stroke: "Çizgi", shading: "Gradyan", text: "Metin" };
+const kindText = (k) => t(`kind.${k}`);
+const clsText = (c) => t(`cls.${c}`);
 const emptyOverrides = () => ({ elements: {}, signatures: {}, regions: [], crops: [] });
 
 const state = {
@@ -36,8 +77,8 @@ const state = {
 async function api(path, opts = {}) {
   const r = await fetch(path, opts);
   if (!r.ok) {
-    let msg = `İstek başarısız (${r.status}).`;
-    try { msg = (await r.json()).detail || msg; } catch (_) {}
+    let msg = t("error.request_failed", { status: r.status });
+    try { const d = (await r.json()).detail; if (typeof d === "string") msg = has(d) ? t(d) : d; } catch (_) {}
     throw new Error(msg);
   }
   return r;
@@ -52,7 +93,7 @@ function toast(msg, err = false) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), err ? 6000 : 2600);
 }
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
-const pct = (v) => `%${Math.round(v * 100)}`;
+const pct = (v) => new Intl.NumberFormat(i18n.lang, { style: "percent", maximumFractionDigits: 0 }).format(v);
 const curSrc = () => (state.ops[state.pos] ? state.ops[state.pos].src : null);
 
 // ------------------------------------------------------------------ geçmiş (geri al)
@@ -79,13 +120,14 @@ function currentTier() {
   return null;
 }
 function buildTiers() {
+  const tr = t; // döngü değişkeni `t` çeviri fonksiyonunu gölgeliyor
   const box = $("#tiers");
   box.innerHTML = "";
   for (const t of [0, 1, 2, 3]) {
     const b = document.createElement("button");
     b.className = "tier"; b.dataset.t = t; b.setAttribute("role", "radio");
     const bars = [3, 2, 1].map((i) => `<i class="${t >= i ? "f" : ""}"></i>`).join("");
-    b.innerHTML = `<span class="lvl" aria-hidden="true">${bars}</span><b>${TIER_TEXT[t][0]}</b><small>${TIER_TEXT[t][1]}</small>`;
+    b.innerHTML = `<span class="lvl" aria-hidden="true">${bars}</span><b>${esc(tr(`tier.${t}.name`))}</b><small>${esc(tr(`tier.${t}.desc`))}</small>`;
     b.onclick = () => setTier(t);
     box.appendChild(b);
   }
@@ -100,12 +142,12 @@ function setTier(t) {
 }
 function syncControls() {
   const s = state.settings;
-  const t = currentTier();
+  const tier = currentTier();
   $$(".tier").forEach((b) => {
-    const on = Number(b.dataset.t) === t;
+    const on = Number(b.dataset.t) === tier;
     b.classList.toggle("on", on); b.setAttribute("aria-checked", on);
   });
-  $("#customNote").textContent = t === null ? "Özel ayar – kademe ayarları elle değiştirildi." : "";
+  $("#customNote").textContent = tier === null ? t("tiers.custom") : "";
   $$("[data-s]").forEach((el) => {
     const k = el.dataset.s;
     if (el.type === "checkbox") el.checked = !!s[k];
@@ -135,10 +177,10 @@ function bindControls() {
 // ------------------------------------------------------------------ belge açma
 async function openFile(file) {
   if (!file) return;
-  if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") return toast("Lütfen bir PDF dosyası seçin.", true);
+  if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") return toast(t("error.choose_pdf"), true);
   const fd = new FormData();
   fd.append("file", file);
-  $("#docname").textContent = `${file.name} – analiz ediliyor…`;
+  $("#docname").textContent = t("doc.analyzing", { name: file.name });
   try {
     const r = await api("/api/open", { method: "POST", body: fd });
     const d = await r.json();
@@ -148,7 +190,7 @@ async function openFile(file) {
     state.overrides = emptyOverrides();
     state.words = null;
     state.history = []; $("#undo").disabled = true;
-    $("#docname").textContent = `${d.name} · ${d.n_pages} sayfa · analiz ${d.analysis_seconds < 0.1 ? "<0,1" : String(d.analysis_seconds).replace(".", ",")} sn`;
+    renderDocName();
     $("#empty").classList.add("hidden");
     $("#export").disabled = false;
     renderThumbs(); refreshAll();
@@ -156,6 +198,14 @@ async function openFile(file) {
     $("#docname").textContent = "";
     toast(e.message, true);
   }
+}
+
+function renderDocName() {
+  const d = state.doc;
+  if (!d) return;
+  const f = (v) => v.toLocaleString(i18n.lang, { maximumFractionDigits: 1 });
+  const secs = d.analysis_seconds < 0.1 ? `<${f(0.1)}` : f(d.analysis_seconds);
+  $("#docname").textContent = t("doc.info", { name: d.name, n: d.n_pages, secs });
 }
 
 // ------------------------------------------------------------------ önizleme
@@ -166,7 +216,7 @@ function imgWidth(el) {
 async function refreshPage() {
   if (!state.doc) return;
   const src = curSrc();
-  if (src === null) { $("#pageLabel").textContent = "Sayfa yok"; return; }
+  if (src === null) { $("#pageLabel").textContent = t("page.none"); return; }
   $("#pageLabel").textContent = `${state.pos + 1} / ${state.ops.length}`;
   const seq = ++state.reqSeq;
   const before = $("#imgBefore");
@@ -223,7 +273,7 @@ function drawOverlay() {
     state.overrides.regions.forEach((r, k) => {
       const d = document.createElement("div");
       d.className = "region"; d.dataset.region = k; place(d, r.box);
-      d.title = "Alan kuralı: bu alandaki metin her sayfada kaldırılır";
+      d.title = t("region.title");
       ov.appendChild(d);
     });
   }
@@ -264,10 +314,11 @@ function drawOverlay() {
 }
 
 function describe(e) {
-  if (e.kind === "text") return `“${e.text}” · ${e.drop ? "kaldırılacak" : "korunacak"}`;
-  let t = `${KIND_TEXT[e.kind] || e.kind} · ${CLS_TEXT[e.cls] || e.cls} · ${e.drop ? "kaldırılacak" : "korunacak"}`;
-  if (e.kind === "image" && e.clips) t += " · kırpılmış";
-  return t;
+  const state_ = t(e.drop ? "el.drop" : "el.keep");
+  if (e.kind === "text") return `“${e.text}” · ${state_}`;
+  let s = `${kindText(e.kind)} · ${clsText(e.cls)} · ${state_}`;
+  if (e.kind === "image" && e.clips) s += ` · ${t("el.cropped")}`;
+  return s;
 }
 
 function activate(e, others, x, y) {
@@ -313,23 +364,24 @@ const short = (t, n = 48) => (t.length > n ? t.slice(0, n - 1) + "…" : t);
 function openMenu(e, x, y, others = []) {
   markSelected(e);
   const n = e.pages_with_sig;
-  const m = menuStart(x, y, `${KIND_TEXT[e.kind] || e.kind} · ${CLS_TEXT[e.cls] || e.cls} · alan ${pct(e.area)}${n > 1 ? ` · ${n} sayfada var` : ""}`);
+  const head = `${kindText(e.kind)} · ${clsText(e.cls)} · ${t("menu.area", { area: pct(e.area) })}${n > 1 ? ` · ${t("menu.on_pages", { n })}` : ""}`;
+  const m = menuStart(x, y, esc(head));
   const O = state.overrides;
-  if (e.cls === "text_image" && !e.drop) m.note("Yazı içerdiği için otomatik korunuyor.");
-  m.add(e.drop ? "Bu sayfada koru" : "Bu sayfada kaldır", () => { O.elements[e.id] = e.drop ? "keep" : "remove"; });
+  if (e.cls === "text_image" && !e.drop) m.note(t("menu.auto_kept"));
+  m.add(t(e.drop ? "menu.keep_page" : "menu.remove_page"), () => { O.elements[e.id] = e.drop ? "keep" : "remove"; });
   if (n > 1) {
-    m.add(`Tüm sayfalarda kaldır (${n})`, () => { O.signatures[e.sig] = "remove"; delete O.elements[e.id]; });
-    m.add(`Tüm sayfalarda koru (${n})`, () => { O.signatures[e.sig] = "keep"; delete O.elements[e.id]; });
+    m.add(t("menu.remove_all", { n }), () => { O.signatures[e.sig] = "remove"; delete O.elements[e.id]; });
+    m.add(t("menu.keep_all", { n }), () => { O.signatures[e.sig] = "keep"; delete O.elements[e.id]; });
   }
-  if (e.kind === "image") m.link("Kırp…", () => { setTool("crop"); setCropTarget(e); }, "Görselin bir kısmını bırak veya sil");
+  if (e.kind === "image") m.link(t("menu.crop"), () => { setTool("crop"); setCropTarget(e); }, t("menu.crop_hint"));
   if (O.elements[e.id] || O.signatures[e.sig]) {
     m.sep();
-    m.add("Otomatik karara bırak", () => { delete O.elements[e.id]; delete O.signatures[e.sig]; });
+    m.add(t("menu.reset_auto"), () => { delete O.elements[e.id]; delete O.signatures[e.sig]; });
   }
   if (others.length) {
     m.sep();
-    m.note("Bu noktadaki diğer öğeler");
-    others.slice(0, 4).forEach((o) => m.link(`${KIND_TEXT[o.kind] || o.kind} · ${CLS_TEXT[o.cls] || o.cls} · alan ${pct(o.area)}`,
+    m.note(t("menu.others"));
+    others.slice(0, 4).forEach((o) => m.link(`${kindText(o.kind)} · ${clsText(o.cls)} · ${t("menu.area", { area: pct(o.area) })}`,
       () => openMenu(o, x, y, [e, ...others.filter((z) => z !== o)])));
   }
   m.show();
@@ -339,22 +391,23 @@ function openTextMenu(e, x, y) {
   markSelected(e);
   const O = state.overrides;
   const n = e.pages_with_sig, r = e.pages_with_region;
-  const m = menuStart(x, y, `Metin${n > 1 ? ` · ${n} sayfada birebir aynı` : ""}<span class="quote">“${esc(short(e.text || "…", 60))}”</span>`);
+  const head = `${kindText("text")}${n > 1 ? ` · ${t("text.same_n", { n })}` : ""}`;
+  const m = menuStart(x, y, `${esc(head)}<span class="quote">“${esc(short(e.text || "…", 60))}”</span>`);
   if (e.drop) {
-    m.add("Bu sayfada koru", () => { O.elements[e.id] = "keep"; });
+    m.add(t("menu.keep_page"), () => { O.elements[e.id] = "keep"; });
   } else {
-    m.add("Bu sayfada kaldır", () => { O.elements[e.id] = "remove"; });
-    if (n > 1) m.add(`Tüm sayfalarda kaldır (${n})`, () => { O.signatures[e.sig] = "remove"; delete O.elements[e.id]; },
-      "Sadece aynı yerdeki birebir aynı metin");
-    if (r > n) m.add(`Bu konumdaki metni her sayfada kaldır (${r})`, () => { O.regions.push({ box: e.region, action: "remove" }); delete O.elements[e.id]; },
-      "İçerik farklı olsa da: sayfa numarası, bölüm adı");
+    m.add(t("menu.remove_page"), () => { O.elements[e.id] = "remove"; });
+    if (n > 1) m.add(t("menu.remove_all", { n }), () => { O.signatures[e.sig] = "remove"; delete O.elements[e.id]; },
+      t("text.remove_all_hint"));
+    if (r > n) m.add(t("text.remove_region", { n: r }), () => { O.regions.push({ box: e.region, action: "remove" }); delete O.elements[e.id]; },
+      t("text.remove_region_hint"));
   }
   if (isManual(e)) {
     m.sep();
-    m.add("Bu metindeki kararları geri al", () => {
+    m.add(t("text.undo"), () => {
       delete O.elements[e.id]; delete O.signatures[e.sig];
       O.regions = O.regions.filter((rg) => !inRegion(e.view, rg.box));
-    }, "Seçim ve alan kurallarını kaldırır");
+    }, t("text.undo_hint"));
   }
   m.show();
 }
@@ -363,19 +416,19 @@ function openSelectionMenu(sel, box, x, y) {
   const O = state.overrides;
   const allDrop = sel.every((e) => e.drop);
   const sameEverywhere = sel.filter((e) => e.pages_with_sig > 1);
-  const m = menuStart(x, y, `${sel.length} metin seçildi<span class="quote">${esc(short(sel.map((e) => e.text).join(" · "), 70))}</span>`);
-  if (!allDrop) m.add("Seçilenleri bu sayfada kaldır", () => sel.forEach((e) => (O.elements[e.id] = "remove")));
-  if (sameEverywhere.length) m.add(`Seçilenleri tüm sayfalarda kaldır`, () => sameEverywhere.forEach((e) => { O.signatures[e.sig] = "remove"; delete O.elements[e.id]; }),
-    `Aynı yerdeki birebir aynı metin (${sameEverywhere.length} kutu)`);
-  m.add("Bu alandaki metni her sayfada kaldır", () => O.regions.push({ box, action: "remove" }), "İçerik farklı olsa da");
-  if (sel.some((e) => e.drop)) { m.sep(); m.add("Seçilenleri bu sayfada koru", () => sel.forEach((e) => (O.elements[e.id] = "keep"))); }
+  const m = menuStart(x, y, `${esc(t("sel.head", { n: sel.length }))}<span class="quote">${esc(short(sel.map((e) => e.text).join(" · "), 70))}</span>`);
+  if (!allDrop) m.add(t("sel.remove_page"), () => sel.forEach((e) => (O.elements[e.id] = "remove")));
+  if (sameEverywhere.length) m.add(t("sel.remove_all"), () => sameEverywhere.forEach((e) => { O.signatures[e.sig] = "remove"; delete O.elements[e.id]; }),
+    t("sel.remove_all_hint", { n: sameEverywhere.length }));
+  m.add(t("sel.remove_region"), () => O.regions.push({ box, action: "remove" }), t("sel.remove_region_hint"));
+  if (sel.some((e) => e.drop)) { m.sep(); m.add(t("sel.keep_page"), () => sel.forEach((e) => (O.elements[e.id] = "keep"))); }
   m.show();
 }
 
 function openRegionMenu(k, x, y) {
   const r = state.overrides.regions[k];
-  const m = menuStart(x, y, `Alan kuralı · ${r.action === "remove" ? "metin kaldırılıyor" : "metin korunuyor"}`);
-  m.add("Alan kuralını sil", () => state.overrides.regions.splice(k, 1));
+  const m = menuStart(x, y, esc(t(r.action === "remove" ? "region.head_remove" : "region.head_keep")));
+  m.add(t("region.delete"), () => state.overrides.regions.splice(k, 1));
   m.show();
 }
 function closeMenu() { $("#menu").hidden = true; $$(".el.sel, .el.picked").forEach((n) => n.classList.remove("sel", "picked")); }
@@ -392,14 +445,14 @@ function syncCropBar() {
   const c = state.crop, e = c.target;
   $("#cropbar").hidden = state.tool !== "crop";
   $("#cropStatus").textContent = e
-    ? `Seçili görsel · alan ${pct(e.area)}${e.cls === "text_image" ? " · yazı içeriyor" : ""} — üzerinde sürükleyin`
-    : "Kırpmak için bir görsele tıklayın";
+    ? `${t("crop.selected", { area: pct(e.area) })}${e.cls === "text_image" ? ` · ${t("crop.has_text")}` : ""} — ${t("crop.drag")}`
+    : t("crop.pick");
   $$("#cropShape button").forEach((b) => b.classList.toggle("on", b.dataset.v === c.shape));
   $$("#cropMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === c.mode));
   const n = e ? e.pages_with_sig : 0;
   $("#cropAll").disabled = !e || n < 2;
   $("#cropAll").checked = !!(e && c.all);
-  $("#cropAllLabel").textContent = n > 1 ? `Aynı görsele tüm sayfalarda uygula (${n})` : "Aynı görsele tüm sayfalarda uygula";
+  $("#cropAllLabel").textContent = n > 1 ? t("crop.all_n", { n }) : t("crop.all");
   $("#cropAuto").disabled = !e;
   $("#cropClear").disabled = !e || !cropsOf(e).length;
 }
@@ -478,7 +531,7 @@ function bindOverlay() {
     if (state.tool === "text") {
       const box = [pts[0][0], pts[0][1], pts[2][0], pts[2][1]];
       const sel = state.elements.filter((e) => e.kind === "text" && inRegion(e.view, box));
-      if (!sel.length) return toast("Bu alanda metin yok.");
+      if (!sel.length) return toast(t("toast.no_text_here"));
       sel.forEach((e) => ov.querySelector(`[data-id="${e.id}"]`)?.classList.add("picked"));
       setTimeout(() => openSelectionMenu(sel, box, ev.clientX, ev.clientY), 0);
     } else if (state.tool === "crop" && pts.length >= 3) {
@@ -487,17 +540,13 @@ function bindOverlay() {
   });
 }
 
-function setTool(t) {
-  state.tool = t;
-  $$("#tool button").forEach((b) => { const on = b.dataset.t === t; b.classList.toggle("on", on); b.setAttribute("aria-checked", on); });
-  $("#legendGraphics").hidden = t !== "graphics";
-  $("#legendText").hidden = t !== "text";
-  $("#capBefore").textContent = {
-    text: "Orijinal · metne tıklayın veya sürükleyerek alan seçin",
-    crop: "Orijinal · görsele tıklayın, sonra kırpmak için üzerinde sürükleyin",
-    graphics: "Orijinal · öğeye tıklayıp karar verin",
-  }[t];
-  if (t !== "crop") state.crop.target = null;
+function setTool(tool) {
+  state.tool = tool;
+  $$("#tool button").forEach((b) => { const on = b.dataset.t === tool; b.classList.toggle("on", on); b.setAttribute("aria-checked", on); });
+  $("#legendGraphics").hidden = tool !== "graphics";
+  $("#legendText").hidden = tool !== "text";
+  $("#capBefore").textContent = t(`cap.${tool}`);
+  if (tool !== "crop") state.crop.target = null;
   syncCropBar(); closeMenu(); drawOverlay();
 }
 
@@ -505,15 +554,20 @@ function setTool(t) {
 const refreshSummary = debounce(async () => {
   if (!state.doc) return;
   try {
-    const d = await (await post(`/api/doc/${state.doc.id}/summary`, job())).json();
-    const o = d.ink.original, p = d.ink.processed;
-    const scale = Math.max(o, 0.05);
-    $("#inkBefore").style.height = `${Math.min(100, (o / scale) * 92)}%`;
-    $("#inkAfter").style.height = `${Math.min(100, (p / scale) * 92)}%`;
-    $("#savingPct").textContent = pct(Math.max(0, d.ink.saving));
-    $("#savingNote").textContent = `daha az mürekkep · ${d.removed} öğe kaldırılıyor · ${d.ink.pages} örnek sayfaya göre`;
+    state.summary = await (await post(`/api/doc/${state.doc.id}/summary`, job())).json();
+    renderSummary();
   } catch (e) { toast(e.message, true); }
 }, 350);
+function renderSummary() {
+  const d = state.summary;
+  if (!d) return;
+  const o = d.ink.original, p = d.ink.processed;
+  const scale = Math.max(o, 0.05);
+  $("#inkBefore").style.height = `${Math.min(100, (o / scale) * 92)}%`;
+  $("#inkAfter").style.height = `${Math.min(100, (p / scale) * 92)}%`;
+  $("#savingPct").textContent = pct(Math.max(0, d.ink.saving));
+  $("#savingNote").textContent = [t("gauge.less_ink"), t("gauge.removed", { n: d.removed }), t("gauge.sample", { n: d.ink.pages })].join(" · ");
+}
 
 function refreshAll() { refreshPage(); refreshSummary(); refreshWords(); }
 
@@ -522,17 +576,18 @@ function renderThumbs() {
   const ol = $("#thumbs");
   ol.innerHTML = "";
   if (!state.doc) return;
-  $("#railCount").textContent = `${state.ops.length} / ${state.doc.n_pages} sayfa`;
+  $("#railCount").textContent = t("rail.count", { shown: state.ops.length, total: state.doc.n_pages });
   state.ops.forEach((op, i) => {
     const p = state.doc.pages[op.src];
     const li = document.createElement("li");
     li.className = "thumb" + (i === state.pos ? " cur" : "");
     const rot = op.rotate % 180 !== 0;
     li.style.setProperty("--ar", rot ? `${p.h}/${p.w}` : `${p.w}/${p.h}`);
-    li.innerHTML = `<button class="pick" aria-label="Sayfa ${i + 1}"><div class="tw"><img loading="lazy" alt="" src="/api/doc/${state.doc.id}/original/${op.src}.png?w=280" style="transform:rotate(${op.rotate}deg);${rot ? `width:${(p.h / p.w) * 100}%` : ""}"></div></button>
-      <div class="meta"><span>${i + 1}${op.src !== i ? ` <small>(orj. ${op.src + 1})</small>` : ""}</span><span class="acts">
-      <button data-a="up" title="Yukarı taşı" aria-label="Yukarı taşı">↑</button><button data-a="down" title="Aşağı taşı" aria-label="Aşağı taşı">↓</button>
-      <button data-a="rot" title="Döndür" aria-label="Döndür">↻</button><button data-a="del" title="Sayfayı çıktıdan çıkar" aria-label="Sayfayı sil">✕</button></span></div>`;
+    const up = esc(t("thumb.up")), down = esc(t("thumb.down")), rotT = esc(t("thumb.rotate"));
+    li.innerHTML = `<button class="pick" aria-label="${esc(t("thumb.page", { n: i + 1 }))}"><div class="tw"><img loading="lazy" alt="" src="/api/doc/${state.doc.id}/original/${op.src}.png?w=280" style="transform:rotate(${op.rotate}deg);${rot ? `width:${(p.h / p.w) * 100}%` : ""}"></div></button>
+      <div class="meta"><span>${i + 1}${op.src !== i ? ` <small>${esc(t("thumb.orig", { n: op.src + 1 }))}</small>` : ""}</span><span class="acts">
+      <button data-a="up" title="${up}" aria-label="${up}">↑</button><button data-a="down" title="${down}" aria-label="${down}">↓</button>
+      <button data-a="rot" title="${rotT}" aria-label="${rotT}">↻</button><button data-a="del" title="${esc(t("thumb.delete_title"))}" aria-label="${esc(t("thumb.delete"))}">✕</button></span></div>`;
     li.querySelector(".pick").onclick = () => goTo(i);
     li.querySelectorAll(".acts button").forEach((b) => (b.onclick = () => pageAction(i, b.dataset.a)));
     ol.appendChild(li);
@@ -561,7 +616,7 @@ const STOP = new Set(("der die das und in zu den von mit ist im dem nicht ein ei
   "da was wo um am aber bis bzw ggf usw sowie z b d h " +
   "the a an and or of to in on for is are be with as by at from this that it not can will was were has have its into if then than " +
   "ve ile bir bu da de için çok gibi daha olan ama ya veya mi mı mu mü ne o şu").split(" "));
-const SORTS = [["desc", "En çok → en az"], ["asc", "En az → en çok"], ["alpha", "A → Z"]];
+const SORTS = ["desc", "asc", "alpha"];
 const words = { data: null, sort: 0, seq: 0, cursor: {} };
 
 const refreshWords = debounce(async () => {
@@ -577,18 +632,21 @@ const refreshWords = debounce(async () => {
 
 function visibleWords() {
   if (!words.data) return [];
-  const q = $("#wordSearch").value.trim().toLocaleLowerCase("tr");
+  // Türkçe İ/ı kuralı sadece Türkçe arayüzde (Almanca/İngilizce "I" araması "ı" olmasın)
+  const lower = (s) => s.toLocaleLowerCase(i18n.lang === "tr" ? "tr" : "de");
+  const q = lower($("#wordSearch").value.trim());
   const hideStop = $("#wStop").checked, hideNum = $("#wNum").checked;
   let list = words.data.words.filter((w) => {
     const k = w.w.toLocaleLowerCase("de");
     if (hideNum && w.num) return false;
     if (hideStop && (STOP.has(k) || w.w.length < 2)) return false;
-    return !q || w.w.toLocaleLowerCase("tr").includes(q);
+    return !q || lower(w.w).includes(q);
   });
-  const mode = SORTS[words.sort][0];
-  if (mode === "asc") list = [...list].sort((a, b) => a.n - b.n || a.w.localeCompare(b.w, "de"));
-  else if (mode === "alpha") list = [...list].sort((a, b) => a.w.localeCompare(b.w, "de"));
-  else list = [...list].sort((a, b) => b.n - a.n || a.w.localeCompare(b.w, "de"));
+  const mode = SORTS[words.sort];
+  const cmp = (a, b) => a.w.localeCompare(b.w, i18n.lang);
+  if (mode === "asc") list = [...list].sort((a, b) => a.n - b.n || cmp(a, b));
+  else if (mode === "alpha") list = [...list].sort(cmp);
+  else list = [...list].sort((a, b) => b.n - a.n || cmp(a, b));
   return list;
 }
 
@@ -596,14 +654,16 @@ function renderWords() {
   const ol = $("#words");
   const list = visibleWords();
   const d = words.data;
-  $("#wordSort").textContent = SORTS[words.sort][1];
-  $("#wordSum").textContent = d ? `${d.total.toLocaleString("tr")} kelime · ${d.unique.toLocaleString("tr")} farklı · ${list.length.toLocaleString("tr")} gösteriliyor` : "";
+  $("#wordSort").textContent = t(`sort.${SORTS[words.sort]}`);
+  $("#wordSum").textContent = d ? t("words.summary", { total: d.total, unique: d.unique, shown: list.length }) : "";
   const max = list.reduce((m, w) => Math.max(m, w.n), 1);
   const LIMIT = 1500;
+  const pagesTitle = (w) => t("words.pages_title", { n: w.pages.length,
+    list: w.pages.slice(0, 30).map((p) => p + 1).join(", ") + (w.pages.length > 30 ? "…" : "") });
   ol.innerHTML = list.slice(0, LIMIT).map((w, i) =>
-    `<li tabindex="0" data-i="${i}" title="${w.pages.length} sayfada · s. ${esc(w.pages.slice(0, 30).map((p) => p + 1).join(", "))}${w.pages.length > 30 ? "…" : ""}">
-       <span class="w">${esc(w.w)}</span><span class="n">${w.n}</span><span class="bar" style="width:calc(${(w.n / max) * 100}% - 12px)"></span></li>`).join("") +
-    (list.length > LIMIT ? `<li class="more">İlk ${LIMIT} kelime gösteriliyor; daraltmak için arayın.</li>` : "");
+    `<li tabindex="0" data-i="${i}" title="${esc(pagesTitle(w))}">
+       <span class="w">${esc(w.w)}</span><span class="n">${num(w.n)}</span><span class="bar" style="width:calc(${(w.n / max) * 100}% - 12px)"></span></li>`).join("") +
+    (list.length > LIMIT ? `<li class="more">${esc(t("words.limit", { n: LIMIT }))}</li>` : "");
   ol.querySelectorAll("li[data-i]").forEach((li) => {
     const w = list[Number(li.dataset.i)];
     const go = () => jumpToWord(w);
@@ -618,16 +678,17 @@ function jumpToWord(w) {
   if (!positions.length) return;
   const next = positions.find((i) => i > state.pos) ?? positions[0];
   goTo(next);
-  toast(`“${w.w}”: ${positions.indexOf(next) + 1}/${positions.length}. sayfa`);
+  toast(t("words.jump", { word: w.w, i: positions.indexOf(next) + 1, n: positions.length }));
 }
 
+const docStem = () => (state.doc?.name || "document").replace(/\.pdf$/i, "");
 function exportCsv() {
   const list = visibleWords();
-  const rows = [["kelime", "adet", "sayfa_sayisi", "sayfalar"], ...list.map((w) => [w.w, w.n, w.pages.length, w.pages.map((p) => p + 1).join(" ")])];
+  const rows = [[t("csv.word"), t("csv.count"), t("csv.page_count"), t("csv.pages")], ...list.map((w) => [w.w, w.n, w.pages.length, w.pages.map((p) => p + 1).join(" ")])];
   const csv = "﻿" + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  a.download = `${(state.doc?.name || "belge").replace(/\.pdf$/i, "")}_kelimeler.csv`; a.click();
+  a.download = `${docStem()}_${t("file.words_suffix")}.csv`; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
 
@@ -641,19 +702,17 @@ function showTab(which) {
 // ------------------------------------------------------------------ dışa aktarma
 async function doExport() {
   const b = $("#export");
-  b.disabled = true; const label = b.textContent; b.textContent = "Hazırlanıyor…";
+  b.disabled = true; b.textContent = t("export.busy");
   try {
     const r = await post(`/api/doc/${state.doc.id}/export`, job({ ops: state.ops }));
     const blob = await r.blob();
-    const cd = r.headers.get("Content-Disposition") || "";
-    const utf8 = cd.match(/filename\*=UTF-8''([^;]+)/);
-    const name = (utf8 && decodeURIComponent(utf8[1])) || (cd.match(/filename="(.+?)"/) || [])[1] || "baski.pdf";
+    const name = `${docStem()}_${t("file.print_suffix")}.pdf`; // istemci adlandırır: dile göre ek
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = name; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    toast(`İndirildi: ${name}`);
+    toast(t("export.done", { name }));
   } catch (e) { toast(e.message, true); }
-  finally { b.disabled = false; b.textContent = label; }
+  finally { b.disabled = false; b.textContent = t("export"); }
 }
 
 // ------------------------------------------------------------------ profiller
@@ -661,38 +720,46 @@ let profiles = [];
 async function loadProfiles(select) {
   profiles = await (await api("/api/profiles")).json();
   const sel = $("#profiles");
-  sel.innerHTML = profiles.map((p, i) => `<option value="${i}">${p.name.replace(/</g, "&lt;")}${p.builtin ? " (hazır)" : ""}</option>`).join("");
+  const prev = sel.value;
+  sel.innerHTML = profiles.map((p, i) => `<option value="${i}">${esc(profileLabel(p))}</option>`).join("");
   if (select) { const i = profiles.findIndex((p) => p.name === select && !p.builtin); if (i >= 0) sel.value = i; }
+  else if (prev && profiles[Number(prev)]) sel.value = prev;
 }
+// Hazır profiller dosya adıyla (id) gelir; görünen ad çeviriden. Kullanıcı profillerinin adı olduğu gibi.
+const profileLabel = (p) => (p.builtin
+  ? `${has(`profile.${p.name}`) ? t(`profile.${p.name}`) : p.name} ${t("profile.builtin_suffix")}` : p.name);
 function bindProfiles() {
   $("#profApply").onclick = () => {
     const p = profiles[Number($("#profiles").value)];
     if (!p) return;
     snapshot(); state.settings = { ...p.settings }; syncControls(); refreshAll();
-    toast(`"${p.name}" profili uygulandı.`);
+    toast(t("profile.applied", { name: profileLabel(p) }));
   };
   $("#profSave").onclick = async () => {
-    const name = prompt("Profil adı (ör. Ders slaydı – istatistik):");
+    const name = prompt(t("profile.prompt"));
     if (!name) return;
     try { const r = await (await api(`/api/profiles/${encodeURIComponent(name)}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state.settings) })).json();
-      await loadProfiles(r.name); toast(`"${r.name}" profili kaydedildi.`); } catch (e) { toast(e.message, true); }
+      await loadProfiles(r.name); toast(t("profile.saved", { name: r.name })); } catch (e) { toast(e.message, true); }
   };
   $("#profDelete").onclick = async () => {
     const p = profiles[Number($("#profiles").value)];
     if (!p) return;
-    if (p.builtin) return toast("Hazır profiller silinemez.", true);
-    if (!confirm(`"${p.name}" profili silinsin mi?`)) return;
-    try { await api(`/api/profiles/${encodeURIComponent(p.name)}`, { method: "DELETE" }); await loadProfiles(); toast("Profil silindi."); }
+    if (p.builtin) return toast(t("profile.cannot_delete_builtin"), true);
+    if (!confirm(t("profile.confirm_delete", { name: p.name }))) return;
+    try { await api(`/api/profiles/${encodeURIComponent(p.name)}`, { method: "DELETE" }); await loadProfiles(); toast(t("profile.deleted")); }
     catch (e) { toast(e.message, true); }
   };
 }
 
 // ------------------------------------------------------------------ başlangıç
 async function init() {
+  await loadLang(pickLang());
+  applyDom();
   state.tiers = await (await api("/api/tiers")).json();
   state.settings = { ...state.tiers[1].settings };
-  buildTiers(); bindControls(); bindProfiles(); syncControls();
+  buildTiers(); bindControls(); bindProfiles(); syncControls(); setTool("graphics");
   loadProfiles().catch(() => {});
+  $("#lang").onchange = (e) => setLang(e.target.value).catch((err) => toast(err.message, true));
 
   $("#file").onchange = (e) => { openFile(e.target.files[0]); e.target.value = ""; };
   $("#export").onclick = doExport;
@@ -717,7 +784,7 @@ async function init() {
   document.addEventListener("keydown", (e) => {
     if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement?.tagName) || e.metaKey || e.ctrlKey) return;
     if (e.key === "t") setTool(state.tool === "text" ? "graphics" : "text");
-    if (e.key === "k") setTool(state.tool === "crop" ? "graphics" : "crop");
+    if (e.key === "k" || e.key === "c") setTool(state.tool === "crop" ? "graphics" : "crop"); // k: Kırp, c: Crop
   });
   $("#showOverlay").onchange = (e) => $("#overlay").classList.toggle("hidden", !e.target.checked);
   $$("#viewmode button").forEach((b) => (b.onclick = () => {

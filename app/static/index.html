@@ -1,160 +1,165 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PDF Distiller</title>
-<link rel="stylesheet" href="/static/style.css?v=0.3">
+<link rel="stylesheet" href="/static/style.css?v=0.4">
 </head>
 <body>
 <header class="bar">
   <strong class="brand">PDF Distiller</strong>
-  <label class="btn" for="file">PDF aç</label>
+  <label class="btn" for="file" data-i18n="app.open">Open PDF</label>
   <input type="file" id="file" accept="application/pdf,.pdf" hidden>
   <span id="docname" class="docname"></span>
   <span class="spacer"></span>
-  <div class="seg" id="viewmode" role="radiogroup" aria-label="Görünüm">
-    <button data-v="before" role="radio">Orijinal</button>
-    <button data-v="split" role="radio" class="on">Yan yana</button>
-    <button data-v="after" role="radio">Sonuç</button>
+  <div class="seg" id="viewmode" role="radiogroup" data-i18n-aria-label="view.label">
+    <button data-v="before" role="radio" data-i18n="view.before">Original</button>
+    <button data-v="split" role="radio" class="on" data-i18n="view.split">Side by side</button>
+    <button data-v="after" role="radio" data-i18n="view.after">Result</button>
   </div>
-  <button id="undo" class="btn ghost" title="Geri al (Ctrl/Cmd+Z)" disabled>Geri al</button>
-  <button id="export" class="btn primary" disabled>Baskı PDF'ini indir</button>
+  <button id="undo" class="btn ghost" data-i18n="undo" data-i18n-title="undo.title" disabled>Undo</button>
+  <button id="export" class="btn primary" data-i18n="export" disabled>Download print PDF</button>
+  <select id="lang" class="langsel" data-i18n-aria-label="lang.label">
+    <option value="en">English</option>
+    <option value="de">Deutsch</option>
+    <option value="tr">Türkçe</option>
+  </select>
 </header>
 
 <main id="app" class="app">
-  <aside class="panel" aria-label="Ayarlar">
+  <aside class="panel" data-i18n-aria-label="panel.label">
     <section class="gauge" aria-live="polite">
       <div class="cartridges">
-        <div class="cart"><div class="tank"><div class="ink" id="inkBefore"></div></div><span>Orijinal</span></div>
-        <div class="cart"><div class="tank"><div class="ink after" id="inkAfter"></div></div><span>Sonuç</span></div>
+        <div class="cart"><div class="tank"><div class="ink" id="inkBefore"></div></div><span data-i18n="view.before">Original</span></div>
+        <div class="cart"><div class="tank"><div class="ink after" id="inkAfter"></div></div><span data-i18n="view.after">Result</span></div>
       </div>
       <div class="saving">
         <div class="big" id="savingPct">–</div>
-        <div class="small" id="savingNote">daha az mürekkep</div>
+        <div class="small" id="savingNote" data-i18n="gauge.less_ink">less ink</div>
       </div>
     </section>
 
     <section>
-      <h2>Tasarruf kademesi</h2>
-      <div class="tiers" id="tiers" role="radiogroup" aria-label="Kademe"></div>
+      <h2 data-i18n="tiers.title">Saving level</h2>
+      <div class="tiers" id="tiers" role="radiogroup" data-i18n-aria-label="tiers.label"></div>
     </section>
 
     <details class="block" open>
-      <summary>Neler kaldırılsın</summary>
-      <label class="chk"><input type="checkbox" data-s="remove_backgrounds"> Zeminler <i class="sw bg"></i></label>
-      <label class="chk"><input type="checkbox" data-s="remove_repeated"> Tekrarlayan tema öğeleri <i class="sw rep"></i></label>
-      <label class="chk"><input type="checkbox" data-s="remove_large_images"> Büyük görseller <i class="sw lg"></i></label>
-      <label class="chk"><input type="checkbox" data-s="remove_large_shapes"> Büyük şekiller ve gradyanlar <i class="sw lg"></i></label>
-      <label class="chk"><input type="checkbox" data-s="remove_all_graphics"> Metin dışındaki her şey</label>
-      <label class="chk"><input type="checkbox" data-s="remove_repeated_text"> Tekrarlayan metinler (üst/alt bilgi) <i class="sw tx"></i></label>
-      <label class="chk"><input type="checkbox" data-s="keep_text_images"> Yazı içeren görselleri koru <i class="sw ti"></i></label>
-      <p class="hint indent">Tablo, formül, ekran görüntüsü gibi görseller kademelerde silinmez.</p>
-      <label class="chk"><input type="checkbox" data-s="auto_crop_photos"> Görsellerdeki fotoğrafları otomatik kırp</label>
+      <summary data-i18n="remove.title">What to remove</summary>
+      <label class="chk"><input type="checkbox" data-s="remove_backgrounds"> <span data-i18n="s.remove_backgrounds"></span> <i class="sw bg"></i></label>
+      <label class="chk"><input type="checkbox" data-s="remove_repeated"> <span data-i18n="s.remove_repeated"></span> <i class="sw rep"></i></label>
+      <label class="chk"><input type="checkbox" data-s="remove_large_images"> <span data-i18n="s.remove_large_images"></span> <i class="sw lg"></i></label>
+      <label class="chk"><input type="checkbox" data-s="remove_large_shapes"> <span data-i18n="s.remove_large_shapes"></span> <i class="sw lg"></i></label>
+      <label class="chk"><input type="checkbox" data-s="remove_all_graphics"> <span data-i18n="s.remove_all_graphics"></span></label>
+      <label class="chk"><input type="checkbox" data-s="remove_repeated_text"> <span data-i18n="s.remove_repeated_text"></span> <i class="sw tx"></i></label>
+      <label class="chk"><input type="checkbox" data-s="keep_text_images"> <span data-i18n="s.keep_text_images"></span> <i class="sw ti"></i></label>
+      <p class="hint indent" data-i18n="s.keep_text_images_hint"></p>
+      <label class="chk"><input type="checkbox" data-s="auto_crop_photos"> <span data-i18n="s.auto_crop_photos"></span></label>
 
-      <label class="rng">Büyük sayılma eşiği <output data-o="large_threshold"></output>
+      <label class="rng"><span data-i18n="s.large_threshold"></span> <output data-o="large_threshold"></output>
         <input type="range" min="1" max="60" step="1" data-s="large_threshold" data-scale="100"></label>
-      <label class="rng">Tekrar sayılma eşiği <output data-o="repeat_ratio"></output>
+      <label class="rng"><span data-i18n="s.repeat_ratio"></span> <output data-o="repeat_ratio"></output>
         <input type="range" min="5" max="90" step="5" data-s="repeat_ratio" data-scale="100"></label>
-      <label class="rng">Zemin sayılma eşiği <output data-o="background_coverage"></output>
+      <label class="rng"><span data-i18n="s.background_coverage"></span> <output data-o="background_coverage"></output>
         <input type="range" min="30" max="100" step="5" data-s="background_coverage" data-scale="100"></label>
     </details>
 
     <details class="block" open>
-      <summary>Metin ve renk</summary>
-      <label class="sel">Metin rengi
+      <summary data-i18n="textcolor.title">Text and color</summary>
+      <label class="sel"><span data-i18n="s.text_mode"></span>
         <select data-s="text_mode">
-          <option value="keep">Olduğu gibi bırak</option>
-          <option value="auto">Açık renkli metni siyaha çevir</option>
-          <option value="black">Tüm metni siyah yap</option>
+          <option value="keep" data-i18n="text_mode.keep"></option>
+          <option value="auto" data-i18n="text_mode.auto"></option>
+          <option value="black" data-i18n="text_mode.black"></option>
         </select>
       </label>
-      <label class="chk"><input type="checkbox" data-s="grayscale"> Gri tonlama</label>
-      <label class="rng">Kalan görselleri soldur <output data-o="image_fade"></output>
+      <label class="chk"><input type="checkbox" data-s="grayscale"> <span data-i18n="s.grayscale"></span></label>
+      <label class="rng"><span data-i18n="s.image_fade"></span> <output data-o="image_fade"></output>
         <input type="range" min="0" max="80" step="10" data-s="image_fade" data-scale="100"></label>
     </details>
 
     <details class="block" open>
-      <summary>Kâğıt</summary>
-      <div class="seg wide" id="nup" role="radiogroup" aria-label="Kâğıt başına sayfa">
+      <summary data-i18n="paper.title">Paper</summary>
+      <div class="seg wide" id="nup" role="radiogroup" data-i18n-aria-label="paper.label">
         <button data-n="1">1</button><button data-n="2">2</button><button data-n="4">4</button><button data-n="6">6</button>
       </div>
-      <p class="hint">Bir A4 kâğıda kaç slayt basılacağı.</p>
+      <p class="hint" data-i18n="paper.hint"></p>
     </details>
 
     <details class="block">
-      <summary>Profiller</summary>
-      <select id="profiles" aria-label="Profil"></select>
+      <summary data-i18n="profiles.title">Profiles</summary>
+      <select id="profiles" data-i18n-aria-label="profiles.label"></select>
       <div class="row">
-        <button class="btn" id="profApply">Uygula</button>
-        <button class="btn" id="profSave">Ayarları kaydet</button>
-        <button class="btn ghost" id="profDelete">Sil</button>
+        <button class="btn" id="profApply" data-i18n="profiles.apply">Apply</button>
+        <button class="btn" id="profSave" data-i18n="profiles.save">Save settings</button>
+        <button class="btn ghost" id="profDelete" data-i18n="profiles.delete">Delete</button>
       </div>
     </details>
   </aside>
 
-  <section class="stage" aria-label="Önizleme">
+  <section class="stage" data-i18n-aria-label="stage.label">
     <div class="stagebar">
-      <button class="btn ghost icon" id="prev" aria-label="Önceki sayfa">‹</button>
+      <button class="btn ghost icon" id="prev" data-i18n-aria-label="nav.prev">‹</button>
       <span id="pageLabel">–</span>
-      <button class="btn ghost icon" id="next" aria-label="Sonraki sayfa">›</button>
-      <div class="seg tool" id="tool" role="radiogroup" aria-label="Seçim aracı">
-        <button data-t="graphics" role="radio" class="on" title="Görsel ve şekilleri seç">Görseller</button>
-        <button data-t="text" role="radio" title="Metin kutularını seç: tıkla veya sürükleyerek alan seç (T)">Metin seç</button>
-        <button data-t="crop" role="radio" title="Görselin bir kısmını bırak veya sil (K)">Kırp</button>
+      <button class="btn ghost icon" id="next" data-i18n-aria-label="nav.next">›</button>
+      <div class="seg tool" id="tool" role="radiogroup" data-i18n-aria-label="tool.label">
+        <button data-t="graphics" role="radio" class="on" data-i18n="tool.graphics" data-i18n-title="tool.graphics_title">Graphics</button>
+        <button data-t="text" role="radio" data-i18n="tool.text" data-i18n-title="tool.text_title">Select text</button>
+        <button data-t="crop" role="radio" data-i18n="tool.crop" data-i18n-title="tool.crop_title">Crop</button>
       </div>
       <span class="spacer"></span>
-      <label class="chk inline"><input type="checkbox" id="showOverlay" checked> Kutuları göster</label>
+      <label class="chk inline"><input type="checkbox" id="showOverlay" checked> <span data-i18n="overlay.show"></span></label>
     </div>
     <div class="cropbar" id="cropbar" hidden>
-      <span id="cropStatus" class="cropstatus">Kırpmak için bir görsele tıklayın</span>
-      <div class="seg" id="cropShape" role="radiogroup" aria-label="Kırpma şekli">
-        <button data-v="rect" class="on" title="Dörtgen çiz">Dörtgen</button><button data-v="free" title="Serbest çizim (kement)">Serbest</button>
+      <span id="cropStatus" class="cropstatus"></span>
+      <div class="seg" id="cropShape" role="radiogroup" data-i18n-aria-label="crop.shape_label">
+        <button data-v="rect" class="on" data-i18n="crop.rect" data-i18n-title="crop.rect_title"></button><button data-v="free" data-i18n="crop.free" data-i18n-title="crop.free_title"></button>
       </div>
-      <div class="seg" id="cropMode" role="radiogroup" aria-label="Çizilen alan">
-        <button data-v="keep" class="on" title="Sadece çizdiğin alan basılır">İçini bırak</button><button data-v="erase" title="Çizdiğin alan silinir">İçini sil</button>
+      <div class="seg" id="cropMode" role="radiogroup" data-i18n-aria-label="crop.mode_label">
+        <button data-v="keep" class="on" data-i18n="crop.keep" data-i18n-title="crop.keep_title"></button><button data-v="erase" data-i18n="crop.erase" data-i18n-title="crop.erase_title"></button>
       </div>
-      <label class="chk inline"><input type="checkbox" id="cropAll"> <span id="cropAllLabel">Aynı görsele tüm sayfalarda uygula</span></label>
+      <label class="chk inline"><input type="checkbox" id="cropAll"> <span id="cropAllLabel"></span></label>
       <span class="spacer"></span>
-      <button class="btn small" id="cropAuto" title="Görseldeki fotoğraf bölgelerini bulup siler, yazıyı bırakır">Otomatik: fotoğrafları sil</button>
-      <button class="btn ghost small" id="cropClear">Kırpmayı temizle</button>
-      <button class="btn small" id="cropDone">Bitti</button>
+      <button class="btn small" id="cropAuto" data-i18n="crop.auto" data-i18n-title="crop.auto_title"></button>
+      <button class="btn ghost small" id="cropClear" data-i18n="crop.clear"></button>
+      <button class="btn small" id="cropDone" data-i18n="crop.done"></button>
     </div>
     <div class="views" id="views" data-mode="split">
-      <figure class="sheet before"><div class="frame"><img id="imgBefore" alt="Orijinal sayfa"><div class="overlay" id="overlay"></div></div>
-        <figcaption><span id="capBefore">Orijinal · öğeye tıklayıp karar verin</span>
+      <figure class="sheet before"><div class="frame"><img id="imgBefore" data-i18n-alt="preview.original_alt" alt=""><div class="overlay" id="overlay"></div></div>
+        <figcaption><span id="capBefore"></span>
           <span class="legend" id="legendGraphics">
-            <span><i class="sw bg"></i>Zemin</span><span><i class="sw rep"></i>Tekrarlayan</span>
-            <span><i class="sw lg"></i>Büyük</span><span><i class="sw ti"></i>Yazılı görsel</span><span><i class="sw ot"></i>Diğer</span>
+            <span><i class="sw bg"></i><span data-i18n="cls.background"></span></span><span><i class="sw rep"></i><span data-i18n="cls.repeated"></span></span>
+            <span><i class="sw lg"></i><span data-i18n="cls.large"></span></span><span><i class="sw ti"></i><span data-i18n="cls.text_image"></span></span><span><i class="sw ot"></i><span data-i18n="cls.other"></span></span>
           </span>
           <span class="legend" id="legendText" hidden>
-            <span><i class="sw tx"></i>Metin</span><span><i class="sw txr"></i>Her sayfada aynı</span><span><i class="sw rg"></i>Alan kuralı</span>
+            <span><i class="sw tx"></i><span data-i18n="cls.text"></span></span><span><i class="sw txr"></i><span data-i18n="legend.same_every_page"></span></span><span><i class="sw rg"></i><span data-i18n="legend.region"></span></span>
           </span>
         </figcaption></figure>
-      <figure class="sheet after"><div class="frame"><img id="imgAfter" alt="İşlenmiş sayfa"><div class="busy" id="busy"></div></div>
-        <figcaption>Baskıda böyle çıkacak</figcaption></figure>
+      <figure class="sheet after"><div class="frame"><img id="imgAfter" data-i18n-alt="preview.processed_alt" alt=""><div class="busy" id="busy"></div></div>
+        <figcaption data-i18n="preview.after_caption"></figcaption></figure>
     </div>
   </section>
 
-  <aside class="rail" aria-label="Sayfalar ve kelimeler">
+  <aside class="rail" data-i18n-aria-label="rail.label">
     <div class="tabs" role="tablist">
-      <button role="tab" id="tabPages" aria-selected="true" aria-controls="panePages">Sayfalar</button>
-      <button role="tab" id="tabWords" aria-selected="false" aria-controls="paneWords">Kelimeler</button>
+      <button role="tab" id="tabPages" aria-selected="true" aria-controls="panePages" data-i18n="tab.pages">Pages</button>
+      <button role="tab" id="tabWords" aria-selected="false" aria-controls="paneWords" data-i18n="tab.words">Words</button>
     </div>
     <div id="panePages" role="tabpanel">
-      <div class="railhead"><span id="railCount"></span><button class="btn ghost small" id="resetPages">Sıfırla</button></div>
+      <div class="railhead"><span id="railCount"></span><button class="btn ghost small" id="resetPages" data-i18n="pages.reset">Reset</button></div>
       <ol id="thumbs" class="thumbs"></ol>
     </div>
     <div id="paneWords" role="tabpanel" hidden>
       <div class="wordtools">
-        <input type="search" id="wordSearch" placeholder="Kelime ara" aria-label="Kelime ara">
+        <input type="search" id="wordSearch" data-i18n-placeholder="words.search" data-i18n-aria-label="words.search">
         <div class="row">
-          <button class="btn small" id="wordSort" title="Sıralamayı değiştir">En çok → en az</button>
-          <button class="btn ghost small" id="wordCsv" title="Listeyi CSV olarak indir">CSV</button>
+          <button class="btn small" id="wordSort" data-i18n-title="words.sort_title"></button>
+          <button class="btn ghost small" id="wordCsv" data-i18n-title="words.csv_title">CSV</button>
         </div>
-        <label class="chk small"><input type="checkbox" id="wStop" checked> Yaygın kelimeleri gizle</label>
-        <label class="chk small"><input type="checkbox" id="wNum" checked> Sayıları gizle</label>
-        <label class="chk small"><input type="checkbox" id="wRemoved" checked> Kaldırılan metni sayma</label>
+        <label class="chk small"><input type="checkbox" id="wStop" checked> <span data-i18n="words.hide_common"></span></label>
+        <label class="chk small"><input type="checkbox" id="wNum" checked> <span data-i18n="words.hide_numbers"></span></label>
+        <label class="chk small"><input type="checkbox" id="wRemoved" checked> <span data-i18n="words.skip_removed"></span></label>
         <div class="wordsum" id="wordSum"></div>
       </div>
       <ol class="words" id="words"></ol>
@@ -164,14 +169,14 @@
 
 <div id="empty" class="empty">
   <div class="dropzone">
-    <h1>Ders slaytını yazdırmadan önce sadeleştir</h1>
-    <p>PDF'i buraya bırakın veya seçin. Zeminler, tekrar eden logolar ve büyük görseller ayıklanır; metin okunur kalır. Dosya bilgisayarınızdan çıkmaz.</p>
-    <label class="btn primary" for="file">PDF seç</label>
+    <h1 data-i18n="empty.title">Simplify lecture slides before you print them</h1>
+    <p data-i18n="empty.body"></p>
+    <label class="btn primary" for="file" data-i18n="empty.choose">Choose PDF</label>
   </div>
 </div>
 
 <div id="menu" class="menu" role="menu" hidden></div>
 <div id="toast" class="toast" role="status" hidden></div>
-<script src="/static/app.js?v=0.3"></script>
+<script src="/static/app.js?v=0.4"></script>
 </body>
 </html>

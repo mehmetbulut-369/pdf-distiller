@@ -73,10 +73,10 @@ def tier_settings(tier: int, base: Settings | None = None) -> Settings:
 
 
 TIERS = {
-    0: "Orijinal",
-    1: "Hafif – tekrarlayan tema ve zeminler",
-    2: "Orta – + büyük görsel ve şekiller",
-    3: "Maksimum – sadece metin",
+    0: "Original",
+    1: "Light",
+    2: "Medium",
+    3: "Maximum",
 }
 
 

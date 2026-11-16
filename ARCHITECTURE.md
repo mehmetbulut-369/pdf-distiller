@@ -79,6 +79,11 @@ eklerken lisansı kontrol edin.
 ## Küçük modellerle çalışırken
 
 - Arayüz değişikliği → sadece `app/static/*`. Motor dosyalarına dokunmayın.
+- Arayüz metni → `app/static/i18n/{en,de,tr}.json` (üçüne birden) + HTML'de `data-i18n="<anahtar>"`
+  (öznitelikler için `data-i18n-title`, `-aria-label`, `-placeholder`, `-alt`) veya JS'de `t("<anahtar>", {n})`.
+  Çoğul için `<anahtar>_one`. Sunucu hata metni döndürmez, `"error.<ad>"` anahtarı döndürür.
+  Hazır profillerin dosya adı kimliktir; görünen ad `profile.<kimlik>` anahtarından gelir.
+  `tests/test_i18n.py` eksik/fazla anahtarı ve uyuşmayan yer tutucuları yakalar.
 - Yeni ayar → `Settings` alanı + `classify.py` kuralı + `index.html` kontrolü (`data-s="<alan>"`
   ile otomatik bağlanır) + test.
 - `interpreter.py` değişiklikleri en güçlü modelle yapılmalı ve yeni test eklenmeli.

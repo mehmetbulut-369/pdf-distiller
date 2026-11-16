@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import re
 import sys
 import threading
@@ -33,6 +34,7 @@ STATIC = Path(__file__).resolve().parent / "static"
 BUILTIN_PROFILES = ROOT / "profiles"
 USER_PROFILES = Path.home() / ".pdf-distiller" / "profiles"
 MAX_DOCS = 4
+log = logging.getLogger("pdf_distiller")
 
 app = FastAPI(title="PDF Distiller", docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
@@ -55,13 +57,13 @@ class Job(BaseModel):
 def _doc(doc_id: str) -> DistillDocument:
     d = _docs.get(doc_id)
     if d is None:
-        raise HTTPException(404, "Belge bulunamadı. Lütfen PDF'i yeniden açın.")
+        raise HTTPException(404, "error.doc_not_found")
     return d
 
 
 def _check_page(d: DistillDocument, page: int):
     if not 0 <= page < d.n_pages:
-        raise HTTPException(404, "Sayfa bulunamadı.")
+        raise HTTPException(404, "error.page_not_found")
 
 
 def _parse(job: Job):
@@ -104,11 +106,12 @@ def tiers():
 def open_pdf(file: UploadFile = File(...)):  # sync: analiz iş parçacığında koşar, olay döngüsünü kilitlemez
     data = file.file.read()
     if not data.startswith(b"%PDF") and b"%PDF" not in data[:1024]:
-        raise HTTPException(400, "Bu dosya PDF değil.")
+        raise HTTPException(400, "error.not_pdf")
     try:
-        doc = DistillDocument(data, file.filename or "belge.pdf")
+        doc = DistillDocument(data, file.filename or "document.pdf")
     except Exception as e:  # şifreli veya bozuk PDF
-        raise HTTPException(400, f"PDF açılamadı: {e}")
+        log.warning("PDF could not be opened: %s", e)
+        raise HTTPException(400, "error.pdf_open_failed") from e
     doc.analyze()
     doc_id = uuid.uuid4().hex[:12]
     with _lock:
@@ -188,11 +191,11 @@ def export(doc_id: str, job: Job):
         ops = [PageOp(int(o["src"]), int(o.get("rotate", 0))) for o in job.ops]
         ops = [o for o in ops if 0 <= o.src < d.n_pages]
         if not ops:
-            raise HTTPException(400, "Çıktıda hiç sayfa kalmadı.")
+            raise HTTPException(400, "error.no_pages")
     data = d.export(s, ov, ops)
-    name = (re.sub(r"[^\w\-. ]", "_", Path(d.name).stem)[:80] or "belge") + "_baski.pdf"
+    name = (re.sub(r"[^\w\-. ]", "_", Path(d.name).stem)[:80] or "document") + "_print.pdf"
     # HTTP başlıkları ASCII olmalı: ASCII yedek ad + UTF-8 asıl ad (RFC 6266 / 5987)
-    fallback = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode() or "belge_baski.pdf"
+    fallback = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode() or "document_print.pdf"
     return Response(data, media_type="application/pdf", headers={
         "Content-Disposition": f"attachment; filename=\"{fallback}\"; filename*=UTF-8''{quote(name)}"})
 
@@ -201,7 +204,7 @@ def export(doc_id: str, job: Job):
 def _safe(name: str) -> str:
     n = re.sub(r"[^\w\- ]", "", name, flags=re.UNICODE).strip()[:60]
     if not n:
-        raise HTTPException(400, "Geçersiz profil adı.")
+        raise HTTPException(400, "error.invalid_profile_name")
     return n
 
 
@@ -232,6 +235,6 @@ def save_profile(name: str, settings: dict):
 def delete_profile(name: str):
     f = USER_PROFILES / f"{_safe(name)}.json"
     if not f.exists():
-        raise HTTPException(404, "Sadece kendi kaydettiğiniz profiller silinebilir.")
+        raise HTTPException(404, "error.only_own_profiles")
     f.unlink()
     return {"ok": True}

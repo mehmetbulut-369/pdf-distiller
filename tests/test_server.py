@@ -44,7 +44,7 @@ def test_export_non_ascii_filename(client, name):
     cd = r.headers["content-disposition"]
     cd.encode("ascii")  # başlık ASCII kalmalı
     utf8 = cd.split("filename*=UTF-8''", 1)[1]
-    assert unquote(utf8) == Path(name).stem + "_baski.pdf"
+    assert unquote(utf8) == Path(name).stem + "_print.pdf"
 
 
 def test_page_out_of_range_is_404(client):
