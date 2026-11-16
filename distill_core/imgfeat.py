@@ -1,15 +1,15 @@
-"""Raster görsel içerik analizi: görsel yazı mı (tablo, formül, ekran görüntüsü), fotoğraf mı?
+"""Raster image content analysis: is an image text (table, formula, screenshot) or a photo?
 
-Görsel küçültülüp ~16 px'lik döşemelere bölünür. Her döşeme:
-  blank  – neredeyse düz renk (açık zemin)
-  text   – açık zemin üstünde koyu, keskin, az renkli izler (veya tersi)
-  photo  – orta tonlar, renk, doku ya da düz renkli dolu alanlar
-Sonuç:
-  text:   yazı döşemelerinin dolu döşemelere oranı (0..1)
-  photos: fotoğraf bölgelerinin kutuları, görselin kendi koordinatlarında (0..1, sol-üst orijin)
+The image is downscaled and split into ~16 px tiles. Each tile is:
+  blank  – nearly flat colour (light background)
+  text   – dark, sharp, low-colour strokes on a light background (or the reverse)
+  photo  – midtones, colour, texture or solid coloured areas
+Result:
+  text:   share of text tiles among non-blank tiles (0..1)
+  photos: boxes of photo regions in the image's own coordinates (0..1, top-left origin)
 
-OCR yapılmaz; hızlı ve bağımlılıksızdır (numpy + Pillow). Sezgiseldir: emin olunmayan
-durumlarda kullanıcı elle kırpar veya korur.
+No OCR; fast and dependency-free (numpy + Pillow). It is a heuristic: when unsure, the
+user crops or keeps the image by hand.
 """
 from __future__ import annotations
 
@@ -21,8 +21,8 @@ from PIL import Image
 
 MAX_SIDE = 640
 TILE = 16
-TEXT_IMAGE = 0.6       # bundan yüksek metin skoru: "yazılı görsel"
-MIN_PHOTO = 0.015      # görsel alanının bu oranından küçük fotoğraf parçaları yok sayılır
+TEXT_IMAGE = 0.6       # a text score above this means "image containing text"
+MIN_PHOTO = 0.015      # photo fragments smaller than this share of the image are ignored
 
 
 def load_small(pdf: pikepdf.Pdf, objgen) -> Image.Image | None:
@@ -33,12 +33,12 @@ def load_small(pdf: pikepdf.Pdf, objgen) -> Image.Image | None:
         filt = obj.get("/Filter")
         if isinstance(filt, pikepdf.Name) and str(filt) == "/DCTDecode":
             im = Image.open(io.BytesIO(obj.read_raw_bytes()))
-            im.draft("RGB", (MAX_SIDE, MAX_SIDE))  # JPEG'i doğrudan küçük çöz (çok hızlı)
+            im.draft("RGB", (MAX_SIDE, MAX_SIDE))  # decode JPEG directly at a small size (very fast)
         else:
             im = pikepdf.PdfImage(obj).as_pil_image()
         im = im.convert("RGB")
         im.thumbnail((MAX_SIDE, MAX_SIDE))
-        if "/SMask" in obj:  # saydam alanlar beyaz kağıt gibi görünür
+        if "/SMask" in obj:  # transparent areas look like white paper
             try:
                 a = pikepdf.PdfImage(obj.SMask).as_pil_image().convert("L").resize(im.size)
                 white = Image.new("RGB", im.size, (255, 255, 255))
@@ -71,9 +71,9 @@ def tile_classes(im: Image.Image) -> np.ndarray:
 
     cls = np.full((rows, cols), 2, dtype=np.uint8)
     flat = std < 0.035
-    cls[flat & (colored < 0.5)] = 0                             # düz açık/gri/koyu zemin
+    cls[flat & (colored < 0.5)] = 0                             # flat light/gray/dark background
     texty = (((light >= 0.5) | (dark >= 0.6)) & (mid <= 0.4) & (colored < 0.35)) | \
-            ((light >= 0.7) & (colored < 0.2))                  # ince, keskin izler
+            ((light >= 0.7) & (colored < 0.2))                  # thin, sharp strokes
     cls[~flat & texty] = 1
     return cls
 
@@ -138,7 +138,7 @@ def analyze_image(im: Image.Image) -> dict:
     score = text_n / max(1, text_n + photo_n)
 
     photo = cls == 2
-    # Yazı kenarlarındaki tek tük "fotoğraf" döşemelerini ele: komşusu az olanları at.
+    # Drop stray "photo" tiles along text edges: discard those with few neighbours.
     nb = np.zeros_like(cls, dtype=np.int32)
     p = np.pad(photo, 1)
     for dy in (-1, 0, 1):

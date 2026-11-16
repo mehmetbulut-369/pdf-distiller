@@ -1,16 +1,16 @@
-"""Kalan raster görselleri griye çevirme ve soldurma (mürekkep tasarrufu)."""
+"""Converting remaining raster images to gray and fading them (ink saving)."""
 from __future__ import annotations
 
 import io
 
 import numpy as np
 import pikepdf
-from PIL import Image
 from pikepdf import Name
+from PIL import Image
 
 
 def process_images(pdf: pikepdf.Pdf, objgens, grayscale: bool, fade: float) -> int:
-    """Verilen görsel nesnelerini yerinde dönüştürür. Dönüştürülen görsel sayısını döner."""
+    """Converts the given image objects in place. Returns the number of converted images."""
     if not grayscale and fade <= 0:
         return 0
     done = 0
@@ -51,7 +51,7 @@ def process_images(pdf: pikepdf.Pdf, objgens, grayscale: bool, fade: float) -> i
         for k in ("/Decode", "/DecodeParms"):
             if k in obj:
                 del obj[k]
-        # Renk anahtarı maskesi eski renk uzayına göre tanımlıdır; geçersiz olur.
+        # A colour-key mask is defined in the old colour space; it becomes invalid.
         if "/Mask" in obj and isinstance(obj.Mask, pikepdf.Array):
             del obj["/Mask"]
         done += 1

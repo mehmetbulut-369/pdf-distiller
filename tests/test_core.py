@@ -1,6 +1,6 @@
-"""Çekirdek motor testleri.  Çalıştırma:  python -m pytest -q
+"""Core engine tests.  Run:  python -m pytest -q
 
-Küçük modellerle değişiklik yaptıktan sonra bu testler geçmelidir.
+These tests must pass after any change, including changes made with smaller models.
 """
 from __future__ import annotations
 
@@ -17,8 +17,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 
-from distill_core import DistillDocument, Overrides, PageOp, Settings, tier_settings  # noqa: E402
 import make_samples  # noqa: E402
+
+from distill_core import DistillDocument, Overrides, PageOp, Settings, tier_settings  # noqa: E402
 
 
 def _bytes(pdf: pikepdf.Pdf) -> bytes:
@@ -63,15 +64,15 @@ def reanalyze(data: bytes) -> DistillDocument:
     return d
 
 
-# ----------------------------------------------------------------------------- sınıflandırma
+# ----------------------------------------------------------------------------- classification
 def test_classes_dark(dark):
     _, labels = dark.decide(Settings(), Overrides())
     cls = {}
     for e in dark.pages[0].elements:
         cls.setdefault(labels[e.id], []).append(e.kind)
-    assert "fill" in cls["background"]                     # koyu tam sayfa zemin
+    assert "fill" in cls["background"]                     # dark full-page background
     assert "image" in cls["repeated"]                      # logo
-    assert "stroke" in cls["repeated"]                     # alt çizgi
+    assert "stroke" in cls["repeated"]                     # bottom rule
 
 
 def test_white_fill_never_removed(light):
@@ -89,7 +90,7 @@ def test_tier3_leaves_only_text(dark):
 
 
 def test_ids_are_stable_between_passes(dark):
-    """Analizde silinmesi istenen öğe tam olarak o öğe olmalı: logoyu sil, sonra yeniden analiz et."""
+    """The element removed must be exactly the one chosen in analysis: remove the logo, then re-analyse."""
     logo = next(e for e in dark.pages[0].elements if e.kind == "image")
     ov = Overrides(elements={logo.id: "remove"})
     data = dark.processed_page_pdf(0, Settings(), ov)
@@ -99,34 +100,34 @@ def test_ids_are_stable_between_passes(dark):
     assert len(kinds) == sum(1 for e in dark.pages[0].elements if e.kind != "text") - 1
 
 
-# ----------------------------------------------------------------------------- metin rengi
+# ----------------------------------------------------------------------------- text colour
 def test_light_text_becomes_black_when_background_removed(dark):
     data = dark.processed_page_pdf(0, tier_settings(1), Overrides())
     img = render(data, 0)
-    title = img[15:40, 20:280]  # başlık bölgesi
-    assert title.min() < 60, "beyaz başlık metni siyaha dönmeliydi"
-    assert img.mean() > 240, "zemin beyaz olmalı"
+    title = img[15:40, 20:280]  # title area
+    assert title.min() < 60, "white title text should have turned black"
+    assert img.mean() > 240, "background should be white"
 
 
 def test_text_on_kept_dark_box_stays_light(dark):
-    data = dark.processed_page_pdf(2, tier_settings(1), Overrides())  # sayfa 3: koyu kırmızı kutu
+    data = dark.processed_page_pdf(2, tier_settings(1), Overrides())  # page 3: dark red box
     img = render(data, 0)
     box = img[405 - 140:405 - 70, 120:400]
     red = (box[..., 0] > 100) & (box[..., 1] < 60)
-    assert red.mean() > 0.5, "kutu korunmalı"
-    assert (box.sum(axis=2) > 600).any(), "kutudaki beyaz metin beyaz kalmalı"
+    assert red.mean() > 0.5, "box should be kept"
+    assert (box.sum(axis=2) > 600).any(), "white text in the box should stay white"
 
 
 def test_keep_mode_does_not_touch_text(dark):
     data = dark.processed_page_pdf(0, Settings(text_mode="keep"), Overrides())
-    assert reanalyze(data).pages[0].elements  # içerik değişmedi
+    assert reanalyze(data).pages[0].elements  # content unchanged
     orig = render(dark.processed_page_pdf(0, Settings(), Overrides()), 0)
     assert np.abs(orig - render(data, 0)).max() < 3
 
 
-# ----------------------------------------------------------------------------- gri / soldurma
+# ----------------------------------------------------------------------------- gray / fade
 def test_grayscale(dark):
-    data = dark.processed_page_pdf(1, Settings(grayscale=True), Overrides())  # fotoğraflı sayfa
+    data = dark.processed_page_pdf(1, Settings(grayscale=True), Overrides())  # page with a photo
     img = render(data, 0)
     sat = img.max(axis=2) - img.min(axis=2)
     assert sat.max() < 12
@@ -139,7 +140,7 @@ def test_image_fade_reduces_ink(dark):
     assert b[region].mean() > a[region].mean() + 30
 
 
-# ----------------------------------------------------------------------------- manuel düzeltmeler
+# ----------------------------------------------------------------------------- manual overrides
 def test_override_keep_background(dark):
     bg = next(e for e in dark.pages[0].elements if e.area > 0.9)
     drops, _ = dark.decide(tier_settings(1), Overrides(elements={bg.id: "keep"}))
@@ -153,7 +154,7 @@ def test_signature_override_removes_everywhere(dark):
     assert len(drops) == 12
 
 
-# ----------------------------------------------------------------------------- formlar ve döndürme
+# ----------------------------------------------------------------------------- forms and rotation
 def test_beamer_theme_form_is_deduplicated(beamer):
     out = beamer.export(tier_settings(1), Overrides())
     pdf = pikepdf.open(io.BytesIO(out))
@@ -169,19 +170,19 @@ def test_beamer_theme_form_is_deduplicated(beamer):
 def test_rotated_page_view_coordinates(beamer):
     p = beamer.pages[7]
     assert p.rotate == 90 and p.width < p.height
-    box = next(e for e in p.elements if e.kind == "fill" and 0.05 < e.area < 0.1)  # 200x80 koyu kutu
+    box = next(e for e in p.elements if e.kind == "fill" and 0.05 < e.area < 0.1)  # 200x80 dark box
     x0, y0, x1, y1 = box.view
-    assert x1 - x0 < y1 - y0  # döndürülünce dikey görünmeli
+    assert x1 - x0 < y1 - y0  # should look vertical once rotated
 
 
-# ----------------------------------------------------------------------------- sayfa işlemleri
+# ----------------------------------------------------------------------------- page operations
 def test_page_ops_and_nup(light):
     ops = [PageOp(3, 90), PageOp(0), PageOp(1)]
     out = light.export(Settings(), Overrides(), ops)
     pdf = pikepdf.open(io.BytesIO(out))
     assert len(pdf.pages) == 3 and int(pdf.pages[0].obj.get("/Rotate", 0)) == 90
     out4 = light.export(Settings(nup=4), Overrides())
-    assert len(pikepdf.open(io.BytesIO(out4)).pages) == 3  # 10 sayfa / 4
+    assert len(pikepdf.open(io.BytesIO(out4)).pages) == 3  # 10 pages / 4
 
 
 def test_ink_estimate_monotonic(dark):
@@ -190,7 +191,7 @@ def test_ink_estimate_monotonic(dark):
     assert vals[0] > vals[1] > vals[2] >= vals[3]
 
 
-# ----------------------------------------------------------------------------- metin seçimi
+# ----------------------------------------------------------------------------- text selection
 @pytest.fixture(scope="module")
 def hhn():
     d = DistillDocument(_bytes(make_samples.hhn_deck(6)))
@@ -215,20 +216,20 @@ def test_text_pieces_grouped_into_one_box(hhn):
 
 
 def test_same_text_same_place_removed_everywhere_only_there(hhn):
-    head = _text(hhn, 0, "Informatik 1")  # sol üst köşe
+    head = _text(hhn, 0, "Informatik 1")  # top-left corner
     assert head["pages_with_sig"] == 6
     ov = Overrides(signatures={head["sig"]: "remove"})
     for page in (0, 3):
         img = render(hhn.processed_page_pdf(page, Settings(), ov), 0)
-        assert _dark_pixels(img, head["view"]) == 0, "sol üst başlık silinmeli"
+        assert _dark_pixels(img, head["view"]) == 0, "top-left title should be removed"
         body = next(it for it in hhn.page_elements(page, Settings(), ov)
                     if it["kind"] == "text" and "Informatik 1" in it["text"] and it["view"][1] > 0.25)
         assert not body["drop"]
-        assert _dark_pixels(img, body["view"]) > 50, "gövdedeki 'Informatik 1' kalmalı"
+        assert _dark_pixels(img, body["view"]) > 50, "'Informatik 1' in the body should stay"
 
 
 def test_removed_text_keeps_neighbours_in_place(hhn):
-    """Silme görünmez yapma ile olur: aynı satırdaki sonraki parçalar kaymamalı."""
+    """Removal works by making text invisible: later pieces on the same line must not shift."""
     date = _text(hhn, 1, "22/09/2026")
     prof = _text(hhn, 1, "Prof. Dr. Dieter Maier Winter 26-27")
     a = render(hhn.processed_page_pdf(1, Settings(), Overrides()), 0)
@@ -256,17 +257,17 @@ def test_tiers_never_remove_text(hhn):
     assert not any("-t" in i for v in drops.values() for i in v)
 
 
-# ----------------------------------------------------------------------------- kelime sayacı
+# ----------------------------------------------------------------------------- word counter
 def test_word_counts(hhn):
     words = {w["w"]: w for w in hhn.word_counts(Settings(), Overrides())}
     assert words["Informatik"]["n"] == 18 and len(words["Informatik"]["pages"]) == 6
     assert words["22/09/2026"]["num"]
     head = _text(hhn, 0, "Informatik 1")
     after = {w["w"]: w["n"] for w in hhn.word_counts(Settings(), Overrides(signatures={head["sig"]: "remove"}))}
-    assert after["Informatik"] == 12  # sol üstteki 6 tane sayılmaz
+    assert after["Informatik"] == 12  # the 6 in the top left are not counted
 
 
-# ----------------------------------------------------------------------------- yazılı görseller ve kırpma
+# ----------------------------------------------------------------------------- images with text and cropping
 @pytest.fixture(scope="module")
 def mixed():
     d = DistillDocument(_bytes(make_samples.mixed_deck(4)))
@@ -278,7 +279,7 @@ def _image(d, page, min_area=0.2):
     return next(e for e in d.pages[page].elements if e.kind == "image" and e.area > min_area)
 
 
-def _px(img, x0, y0, x1, y1):  # PDF koordinatı (sol-alt) -> 720x405 render bölgesi
+def _px(img, x0, y0, x1, y1):  # PDF coordinates (bottom-left) -> 720x405 render region
     return img[405 - y1:405 - y0, x0:x1]
 
 
@@ -287,7 +288,7 @@ def test_image_content_analysis(mixed):
     fs, ft = mixed.features(shot), mixed.features(table)
     assert ft["text"] > 0.9 and not ft["photos"]
     assert fs["text"] > 0.6 and len(fs["photos"]) >= 2
-    assert any(b[0] > 0.6 for b in fs["photos"])  # sağdaki fotoğraflar bulundu
+    assert any(b[0] > 0.6 for b in fs["photos"])  # photos on the right were found
 
 
 def test_text_images_kept_in_tier3(mixed):
@@ -304,11 +305,11 @@ def test_auto_crop_removes_photos_keeps_text(mixed):
     s = Settings(auto_crop_photos=True)
     img = render(mixed.processed_page_pdf(0, s, Overrides()), 0)
     ref = render(mixed.processed_page_pdf(0, Settings(), Overrides()), 0)
-    right_photo = _px(img, 450, 260, 610, 380)        # görselin sağ üst köşesi (fotoğraf)
-    assert _px(ref, 450, 260, 610, 380).mean() < 200   # orijinalde koyu/renkli
-    assert right_photo.mean() > 250                    # kırpılınca beyaz
+    right_photo = _px(img, 450, 260, 610, 380)        # top-right corner of the image (photo)
+    assert _px(ref, 450, 260, 610, 380).mean() < 200   # dark/coloured in the original
+    assert right_photo.mean() > 250                    # white once cropped
     left_text = _px(img, 30, 250, 300, 380)
-    assert (left_text.sum(axis=2) < 300).sum() > 200   # sol taraftaki yazı duruyor
+    assert (left_text.sum(axis=2) < 300).sum() > 200   # text on the left is still there
 
 
 def test_rect_keep_crop_and_all_pages(mixed):
@@ -318,20 +319,20 @@ def test_rect_keep_crop_and_all_pages(mixed):
     ov = Overrides(crops=[{"id": shot.id, "all": True, "mode": "keep", "points": keep_left}])
     for page in (0, 2):
         img = render(mixed.processed_page_pdf(page, Settings(), ov), 0)
-        assert _px(img, 330, 20, 610, 385).mean() > 252, "sağ yarı basılmamalı"
-        assert (_px(img, 30, 250, 300, 380).sum(axis=2) < 300).sum() > 200, "sol yarı kalmalı"
+        assert _px(img, 330, 20, 610, 385).mean() > 252, "right half should not be printed"
+        assert (_px(img, 30, 250, 300, 380).sum(axis=2) < 300).sum() > 200, "left half should stay"
 
 
 def test_freehand_erase_crop(mixed):
     table = _image(mixed, 1)
     x0, y0, x1, y1 = table.view
-    tri = [[x0, y0], [x1, y0], [x0, y1]]  # sol üst üçgen silinir
+    tri = [[x0, y0], [x1, y0], [x0, y1]]  # top-left triangle is erased
     ov = Overrides(crops=[{"id": table.id, "all": False, "mode": "erase", "points": tri}])
     img = render(mixed.processed_page_pdf(1, Settings(), ov), 0)
     ref = render(mixed.processed_page_pdf(1, Settings(), Overrides()), 0)
-    tl = _px(img, 40, 280, 140, 330)       # sol üst: silindi
+    tl = _px(img, 40, 280, 140, 330)       # top left: erased
     assert _px(ref, 40, 280, 140, 330).min() < 100 and tl.min() > 240
-    br = _px(img, 173, 131, 253, 160)      # köşegenin altı ("Beispiele" rakamları): duruyor
+    br = _px(img, 173, 131, 253, 160)      # below the diagonal ("Beispiele" digits): still there
     assert br.min() < 100
 
 

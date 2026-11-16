@@ -1,4 +1,4 @@
-"""Sayfa düzeni: silme, sıralama, döndürme ve N-up (kâğıt başına birden çok sayfa)."""
+"""Page layout: delete, reorder, rotate and N-up (several pages per sheet)."""
 from __future__ import annotations
 
 import pikepdf
@@ -13,7 +13,7 @@ GUTTER = 12.0
 
 
 def apply_page_ops(pdf: pikepdf.Pdf, ops: list[PageOp]) -> pikepdf.Pdf:
-    """Sayfaları istenen sırada/döndürmede içeren PDF döner. Kimlik ise aynı nesne döner."""
+    """Returns a PDF with the pages in the requested order/rotation. Returns the same object for the identity."""
     n = len(pdf.pages)
     identity = len(ops) == n and all(o.src == i and o.rotate % 360 == 0 for i, o in enumerate(ops))
     if identity:
@@ -35,7 +35,7 @@ def _display_size(page) -> tuple[float, float]:
 
 
 def best_grid(n: int, pw: float, ph: float):
-    """Slayt oranına göre A4 üzerinde en büyük ölçeği veren ızgarayı seç."""
+    """Pick the grid that gives the largest scale on A4 for the slide aspect ratio."""
     best = None
     for cols in range(1, n + 1):
         if n % cols:

@@ -1,12 +1,12 @@
-/* PDF Distiller arayüzü – derleme adımı yok, düz JavaScript. */
+/* PDF Distiller UI – plain JavaScript, no build step. */
 "use strict";
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 
-// ------------------------------------------------------------------ dil (i18n)
-// Metinler static/i18n/<dil>.json içinde. Eksik anahtar İngilizceye, o da yoksa anahtarın kendisine düşer.
-// Çoğul: vars.n sayıysa önce "<anahtar>_<one|other…>" aranır (Intl.PluralRules).
+// ------------------------------------------------------------------ language (i18n)
+// Strings live in static/i18n/<lang>.json. A missing key falls back to English, then to the key itself.
+// Plurals: if vars.n is a number, "<key>_<one|other…>" is tried first (Intl.PluralRules).
 const LANGS = ["en", "de", "tr"];
 const i18n = { lang: "en", dict: {}, en: {} };
 function pickLang() {
@@ -46,7 +46,7 @@ async function setLang(lang) {
   await loadLang(lang);
   try { localStorage.setItem("lang", lang); } catch (_) {}
   applyDom();
-  // dinamik metin üreten her şeyi yeniden çiz
+  // redraw everything that renders dynamic text
   buildTiers(); syncControls(); setTool(state.tool); renderThumbs(); renderWords(); renderSummary(); renderDocName();
   if (state.doc) refreshPage();
   loadProfiles().catch(() => {});
@@ -65,7 +65,7 @@ const state = {
   overrides: emptyOverrides(),
   tool: "graphics", // graphics | text
   ops: [],          // [{src, rotate}]
-  pos: 0,           // ops içindeki konum
+  pos: 0,           // position within ops
   view: "split",
   history: [],
   elements: [],
@@ -73,7 +73,7 @@ const state = {
   afterUrl: null,
 };
 
-// ------------------------------------------------------------------ yardımcılar
+// ------------------------------------------------------------------ helpers
 async function api(path, opts = {}) {
   const r = await fetch(path, opts);
   if (!r.ok) {
@@ -96,7 +96,7 @@ function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTi
 const pct = (v) => new Intl.NumberFormat(i18n.lang, { style: "percent", maximumFractionDigits: 0 }).format(v);
 const curSrc = () => (state.ops[state.pos] ? state.ops[state.pos].src : null);
 
-// ------------------------------------------------------------------ geçmiş (geri al)
+// ------------------------------------------------------------------ history (undo)
 function snapshot() {
   state.history.push(JSON.stringify({ s: state.settings, o: state.overrides, p: state.ops }));
   if (state.history.length > 100) state.history.shift();
@@ -112,7 +112,7 @@ function undo() {
   syncControls(); renderThumbs(); refreshAll();
 }
 
-// ------------------------------------------------------------------ kademeler ve ayarlar
+// ------------------------------------------------------------------ tiers and settings
 function currentTier() {
   for (const [t, v] of Object.entries(state.tiers)) {
     if (TIER_KEYS.every((k) => v.settings[k] === state.settings[k])) return Number(t);
@@ -120,7 +120,7 @@ function currentTier() {
   return null;
 }
 function buildTiers() {
-  const tr = t; // döngü değişkeni `t` çeviri fonksiyonunu gölgeliyor
+  const tr = t; // the loop variable `t` shadows the translate function
   const box = $("#tiers");
   box.innerHTML = "";
   for (const t of [0, 1, 2, 3]) {
@@ -166,7 +166,7 @@ function bindControls() {
       state.settings[k] = v;
       syncControls(); refreshAll();
     };
-    // kaydırıcıda her adımda geçmişe yazmamak için: sürükleme başında bir kez
+    // avoid a history entry per slider step: write once when the drag starts
     el.addEventListener(el.type === "range" ? "pointerdown" : "change", () => snapshot());
     el.addEventListener(el.type === "range" ? "input" : "change", el.type === "range" ? debounce(apply, 120) : apply);
     if (el.type === "range") el.addEventListener("keydown", () => snapshot(), { once: false });
@@ -174,7 +174,7 @@ function bindControls() {
   $$("#nup button").forEach((b) => (b.onclick = () => { snapshot(); state.settings.nup = Number(b.dataset.n); syncControls(); refreshSummary(); }));
 }
 
-// ------------------------------------------------------------------ belge açma
+// ------------------------------------------------------------------ opening a document
 async function openFile(file) {
   if (!file) return;
   if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") return toast(t("error.choose_pdf"), true);
@@ -208,7 +208,7 @@ function renderDocName() {
   $("#docname").textContent = t("doc.info", { name: d.name, n: d.n_pages, secs });
 }
 
-// ------------------------------------------------------------------ önizleme
+// ------------------------------------------------------------------ preview
 function imgWidth(el) {
   const w = (el.closest(".frame")?.clientWidth || 700) * (window.devicePixelRatio || 1);
   return Math.min(1800, Math.max(300, Math.ceil(w / 100) * 100));
@@ -231,7 +231,7 @@ async function refreshPage() {
     ]);
     const els = (await elr.json()).elements;
     const blob = await imr.blob();
-    if (seq !== state.reqSeq) return; // daha yeni bir istek var
+    if (seq !== state.reqSeq) return; // a newer request exists
     state.elements = els;
     if (state.crop.target) state.crop.target = els.find((e) => e.id === state.crop.target.id) || null;
     syncCropBar();
@@ -254,13 +254,13 @@ const contains = (v, [x, y]) => v[0] <= x && x <= v[2] && v[1] <= y && y <= v[3]
 const SVGNS = "http://www.w3.org/2000/svg";
 const ptsAttr = (pts) => pts.map(([x, y]) => `${x},${y}`).join(" ");
 
-// Araca göre seçilebilir öğeler. Beyaz dolgular hiçbir zaman mürekkep harcamadığı için gösterilmez.
+// Selectable elements per tool. White fills never use ink, so they are not shown.
 function selectable(e) {
   if (state.tool === "text") return e.kind === "text";
   if (state.tool === "crop") return e.kind === "image";
   return e.kind !== "text" && e.cls !== "white";
 }
-// Tıklanan noktadaki öğeler, en küçüğü önce (üstteki büyük zemin değil, tıklanan şey seçilsin)
+// Elements at the clicked point, smallest first (select the clicked thing, not the large background on top)
 function hitsAt(pt) {
   return state.elements.filter((e) => selectable(e) && contains(e.view, pt)).sort((a, b) => a.area - b.area);
 }
@@ -292,7 +292,7 @@ function drawOverlay() {
     };
     ov.appendChild(d);
   }
-  // kırpma şekilleri (sunucunun hesapladığı, görüntü koordinatlarında)
+  // crop shapes (computed by the server, in view coordinates)
   const svg = document.createElementNS(SVGNS, "svg");
   svg.setAttribute("class", "cropsvg"); svg.setAttribute("viewBox", "0 0 1 1"); svg.setAttribute("preserveAspectRatio", "none");
   if (state.tool === "crop") {
@@ -331,7 +331,7 @@ function markSelected(e) {
   $(`#overlay [data-id="${e.id}"]`)?.classList.add("sel");
 }
 
-// ------------------------------------------------------------------ menüler
+// ------------------------------------------------------------------ menus
 function menuStart(x, y, headHtml) {
   const m = $("#menu");
   m.innerHTML = `<div class="head">${headHtml}</div>`;
@@ -344,9 +344,9 @@ function menuStart(x, y, headHtml) {
     m.appendChild(b);
   };
   return {
-    // ayarı değiştiren eylem: geri alınabilir, önizleme yenilenir
+    // an action that changes settings: undoable, refreshes the preview
     add(label, fn, hint) { button(label, hint, () => { closeMenu(); snapshot(); fn(); refreshAll(); }); },
-    // sadece gezinme (seçimi değiştir, araca geç)
+    // navigation only (change selection, switch tool)
     link(label, fn, hint) { button(label, hint, () => { closeMenu(); fn(); }); },
     note(text) { const d = document.createElement("div"); d.className = "note"; d.textContent = text; m.appendChild(d); },
     sep() { m.appendChild(document.createElement("hr")); },
@@ -433,7 +433,7 @@ function openRegionMenu(k, x, y) {
 }
 function closeMenu() { $("#menu").hidden = true; $$(".el.sel, .el.picked").forEach((n) => n.classList.remove("sel", "picked")); }
 
-// ------------------------------------------------------------------ kırpma aracı
+// ------------------------------------------------------------------ crop tool
 state.crop = { target: null, shape: "rect", mode: "keep", all: false };
 
 function setCropTarget(e) {
@@ -471,8 +471,8 @@ function clearCrops() {
   refreshAll();
 }
 
-// ------------------------------------------------------------------ önizleme üzerindeki fare hareketleri
-// Tıklama: noktadaki en küçük öğe. Sürükleme: Metin seç aracında alan seçimi, Kırp aracında çizim.
+// ------------------------------------------------------------------ mouse on the preview
+// Click: the smallest element at the point. Drag: region selection in the text tool, drawing in the crop tool.
 const drag = { start: null, pts: [], active: false, justDragged: false };
 function bindOverlay() {
   const ov = $("#overlay");
@@ -550,7 +550,7 @@ function setTool(tool) {
   syncCropBar(); closeMenu(); drawOverlay();
 }
 
-// ------------------------------------------------------------------ özet ve mürekkep
+// ------------------------------------------------------------------ summary and ink
 const refreshSummary = debounce(async () => {
   if (!state.doc) return;
   try {
@@ -571,7 +571,7 @@ function renderSummary() {
 
 function refreshAll() { refreshPage(); refreshSummary(); refreshWords(); }
 
-// ------------------------------------------------------------------ sayfa şeridi
+// ------------------------------------------------------------------ page strip
 function renderThumbs() {
   const ol = $("#thumbs");
   ol.innerHTML = "";
@@ -610,7 +610,7 @@ function goTo(i) {
   closeMenu(); refreshPage();
 }
 
-// ------------------------------------------------------------------ kelime sayacı
+// ------------------------------------------------------------------ word counter
 const STOP = new Set(("der die das und in zu den von mit ist im dem nicht ein eine einer eines einem einen für auf auch es sich des sie wir " +
   "ich er als an bei aus oder wie so zum zur nach vom über unter durch wird werden wurde sind war hat haben kann können man nur noch wenn dass " +
   "da was wo um am aber bis bzw ggf usw sowie z b d h " +
@@ -632,7 +632,7 @@ const refreshWords = debounce(async () => {
 
 function visibleWords() {
   if (!words.data) return [];
-  // Türkçe İ/ı kuralı sadece Türkçe arayüzde (Almanca/İngilizce "I" araması "ı" olmasın)
+  // Turkish İ/ı casing only in the Turkish UI (so a German/English "I" search does not become "ı")
   const lower = (s) => s.toLocaleLowerCase(i18n.lang === "tr" ? "tr" : "de");
   const q = lower($("#wordSearch").value.trim());
   const hideStop = $("#wStop").checked, hideNum = $("#wNum").checked;
@@ -673,7 +673,7 @@ function renderWords() {
 }
 
 function jumpToWord(w) {
-  // her tıklamada kelimenin geçtiği bir sonraki sayfaya git
+  // each click jumps to the next page containing the word
   const positions = state.ops.map((o, i) => (w.pages.includes(o.src) ? i : -1)).filter((i) => i >= 0);
   if (!positions.length) return;
   const next = positions.find((i) => i > state.pos) ?? positions[0];
@@ -699,14 +699,14 @@ function showTab(which) {
   if (words_) refreshWords();
 }
 
-// ------------------------------------------------------------------ dışa aktarma
+// ------------------------------------------------------------------ export
 async function doExport() {
   const b = $("#export");
   b.disabled = true; b.textContent = t("export.busy");
   try {
     const r = await post(`/api/doc/${state.doc.id}/export`, job({ ops: state.ops }));
     const blob = await r.blob();
-    const name = `${docStem()}_${t("file.print_suffix")}.pdf`; // istemci adlandırır: dile göre ek
+    const name = `${docStem()}_${t("file.print_suffix")}.pdf`; // the client names the file: suffix depends on the language
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = name; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
@@ -715,7 +715,7 @@ async function doExport() {
   finally { b.disabled = false; b.textContent = t("export"); }
 }
 
-// ------------------------------------------------------------------ profiller
+// ------------------------------------------------------------------ profiles
 let profiles = [];
 async function loadProfiles(select) {
   profiles = await (await api("/api/profiles")).json();
@@ -725,7 +725,7 @@ async function loadProfiles(select) {
   if (select) { const i = profiles.findIndex((p) => p.name === select && !p.builtin); if (i >= 0) sel.value = i; }
   else if (prev && profiles[Number(prev)]) sel.value = prev;
 }
-// Hazır profiller dosya adıyla (id) gelir; görünen ad çeviriden. Kullanıcı profillerinin adı olduğu gibi.
+// Built-in profiles come with their file name (id); the display name is translated. User profiles keep their name.
 const profileLabel = (p) => (p.builtin
   ? `${has(`profile.${p.name}`) ? t(`profile.${p.name}`) : p.name} ${t("profile.builtin_suffix")}` : p.name);
 function bindProfiles() {
@@ -751,7 +751,7 @@ function bindProfiles() {
   };
 }
 
-// ------------------------------------------------------------------ başlangıç
+// ------------------------------------------------------------------ startup
 async function init() {
   await loadLang(pickLang());
   applyDom();
@@ -784,7 +784,7 @@ async function init() {
   document.addEventListener("keydown", (e) => {
     if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement?.tagName) || e.metaKey || e.ctrlKey) return;
     if (e.key === "t") setTool(state.tool === "text" ? "graphics" : "text");
-    if (e.key === "k" || e.key === "c") setTool(state.tool === "crop" ? "graphics" : "crop"); // k: Kırp, c: Crop
+    if (e.key === "k" || e.key === "c") setTool(state.tool === "crop" ? "graphics" : "crop"); // k: "Kırp" (TR), c: crop
   });
   $("#showOverlay").onchange = (e) => $("#overlay").classList.toggle("hidden", !e.target.checked);
   $$("#viewmode button").forEach((b) => (b.onclick = () => {

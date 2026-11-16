@@ -1,7 +1,7 @@
-"""Öğe sınıflandırması ve silme kararları.
+"""Element classification and removal decisions.
 
-Analiz bir kez yapılır; kaydırıcılar/kademeler değiştikçe sadece bu modül
-yeniden çalışır (hızlıdır, sayfaları tekrar okumaz).
+Analysis runs once; when sliders/tiers change only this module runs again
+(fast, it does not re-read the pages).
 """
 from __future__ import annotations
 
@@ -11,12 +11,12 @@ from collections import defaultdict
 from .imgfeat import TEXT_IMAGE
 from .model import FILL, IMAGE, SHADING, TEXT, Overrides, PageInfo, Settings
 
-WHITE_LUM = 0.95          # bundan açık dolgular mürekkep harcamaz; asla silinmez (altını açığa çıkarmamak için)
-REPEAT_MIN_AREA = 0.0005  # madde imi gibi minik tekrarlar tema sayılmaz
+WHITE_LUM = 0.95          # fills lighter than this use no ink; never removed (so nothing underneath is uncovered)
+REPEAT_MIN_AREA = 0.0005  # tiny repeats like bullet points are not theme elements
 
 
 def in_region(view, box) -> bool:
-    """Metin kutusu alanın içinde mi: dikey merkezi alanın içinde ve yatayda kesişiyor."""
+    """Is the text box inside the region: vertical centre inside, horizontal overlap."""
     cy = (view[1] + view[3]) / 2
     return box[1] <= cy <= box[3] and view[0] < box[2] and view[2] > box[0]
 
@@ -31,11 +31,12 @@ def signature_pages(pages: list[PageInfo]) -> dict[str, set]:
 
 def classify(pages: list[PageInfo], s: Settings, ov: Overrides, sig_pages: dict | None = None,
              img_feats: dict | None = None, forced_keep: set | None = None):
-    """Döner: (drops: {sayfa: {id,...}}, labels: {id: sınıf})
+    """Returns (drops: {page: {id,...}}, labels: {id: class}).
 
-    sınıflar: white | background | repeated | large | other | text | text_repeated | text_image
-    img_feats:   görsel imzası -> {"text": skor, ...}; yazılı görseller otomatik silinmez (ayarla)
-    forced_keep: kırpılan görseller – kullanıcı açıkça "kaldır" demedikçe korunur
+    classes:     white | background | repeated | large | other | text | text_repeated | text_image
+    img_feats:   image signature -> {"text": score, ...}; images containing text are not removed
+                 automatically (setting)
+    forced_keep: cropped images – kept unless the user explicitly says "remove"
     """
     img_feats = img_feats or {}
     forced_keep = forced_keep or set()
@@ -51,13 +52,13 @@ def classify(pages: list[PageInfo], s: Settings, ov: Overrides, sig_pages: dict 
         d = set()
         for e in p.elements:
             if e.kind == TEXT:
-                # Metin otomatik kademelerle silinmez; sadece seçimle veya "tekrarlayan metin" ayarıyla.
+                # Tiers never remove text; only a selection or the "repeated text" setting does.
                 rep = len(sig_pages.get(e.sig, ())) >= min_pages
                 labels[e.id] = "text_repeated" if rep else "text"
                 drop = s.remove_repeated_text and rep
                 o = el_ov.get(e.id) or sig_ov.get(e.sig)
                 if not o:
-                    for r in reversed(regions):  # son eklenen kural öncelikli
+                    for r in reversed(regions):  # the most recently added rule wins
                         if in_region(e.view, r["box"]):
                             o = r["action"]
                             break
@@ -66,7 +67,7 @@ def classify(pages: list[PageInfo], s: Settings, ov: Overrides, sig_pages: dict 
                 if drop:
                     d.add(e.id)
                 continue
-            white = e.lum > WHITE_LUM  # raster görsellerde lum=0.5 olduğundan sadece dolgu/çizgi/maske etkilenir
+            white = e.lum > WHITE_LUM  # raster images have lum=0.5, so this only affects fills/strokes/masks
             visual = e.kind in (FILL, IMAGE, SHADING)
             is_bg = visual and not white and e.area >= s.background_coverage
             is_rep = (not white and e.area >= REPEAT_MIN_AREA

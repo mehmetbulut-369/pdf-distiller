@@ -1,7 +1,7 @@
-"""PDF Distiller'ı başlatır.
+"""Starts PDF Distiller.
 
-    python run.py            -> tarayıcıda açar
-    python run.py --window   -> ayrı masaüstü penceresinde açar (pip install pywebview gerekir)
+    python run.py            -> opens in the browser
+    python run.py --window   -> opens in a desktop window (needs: pip install pywebview)
 """
 from __future__ import annotations
 
@@ -25,17 +25,18 @@ def free_port(preferred: int) -> int:
                 return s.getsockname()[1]
             except OSError:
                 continue
-    raise RuntimeError("Boş port bulunamadı")
+    raise RuntimeError("No free port found")
 
 
 def main():
     ap = argparse.ArgumentParser(description="PDF Distiller")
     ap.add_argument("--port", type=int, default=8765)
-    ap.add_argument("--window", action="store_true", help="tarayıcı yerine masaüstü penceresi")
+    ap.add_argument("--window", action="store_true", help="desktop window instead of the browser")
     ap.add_argument("--no-browser", action="store_true")
     a = ap.parse_args()
 
     import uvicorn
+
     from app.server import app
 
     port = free_port(a.port)
@@ -46,7 +47,7 @@ def main():
         try:
             import webview
         except ImportError:
-            print("Masaüstü penceresi için:  pip install pywebview   (şimdilik tarayıcıda açılıyor)")
+            print("For a desktop window:  pip install pywebview   (opening in the browser for now)")
             a.window = False
 
     if a.window:
@@ -59,7 +60,7 @@ def main():
 
     if not a.no_browser:
         threading.Thread(target=lambda: (time.sleep(1.0), webbrowser.open(url)), daemon=True).start()
-    print(f"PDF Distiller çalışıyor: {url}   (kapatmak için Ctrl+C)")
+    print(f"PDF Distiller is running at {url}   (Ctrl+C to quit)")
     server.run()
 
 

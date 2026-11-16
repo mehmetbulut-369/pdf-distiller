@@ -1,44 +1,45 @@
-"""PDF içerik akışı yorumlayıcısı.
+"""PDF content stream interpreter.
 
-Bu modül projenin kalbidir. Bir sayfanın içerik akışını (content stream) operatör
-operatör dolaşır, grafik durumunu (CTM, kırpma, renk) izler ve:
+This module is the heart of the project. It walks a page's content stream
+operator by operator, tracks the graphics state (CTM, clipping, colour) and:
 
-  * analiz modunda: silinebilir her görsel öğeyi (görsel, dolgu, çizgi, gradyan)
-    sayfa koordinatları, alan oranı, parlaklık ve tekrar imzasıyla kaydeder;
-  * yeniden yazma modunda: aynı dolaşımı yapar, `drops` kümesindeki öğeleri
-    çıkarır, metin rengini düzeltir, isterse renkleri griye çevirir.
+  * in analysis mode: records every removable visual element (image, fill,
+    stroke, shading) with page coordinates, area share, luminance and a
+    repetition signature;
+  * in rewrite mode: performs the same walk, removes the elements in `drops`,
+    fixes text colour and optionally converts colours to gray.
 
-İki mod aynı kod yolunu kullandığı için öğe kimlikleri ("<sayfa>-<sıra>") her
-iki geçişte birebir aynıdır. Bu tutarlılık bozulursa yanlış öğe silinir; bu
-dosyada değişiklik yaparken testleri mutlaka çalıştırın.
+Because both modes share one code path, element ids ("<page>-<seq>") are
+identical in both passes. If that consistency breaks, the wrong element gets
+removed; always run the tests when changing this file.
 
-Silme yöntemi:
-  * Yol (path) çizimleri: yol inşa operatörleri korunur, boyama operatörü
-    `n` (boyamadan bitir) ile değiştirilir. Böylece aynı yol bir kırpma (W) ise
-    kırpma etkisi korunur, sadece mürekkep gitmiş olur.
-  * Görseller ve gradyanlar: `Do` / `sh` / satır içi görsel atlanır.
-  * Form XObject'ler: içine girilir; değişen bir form, değişmiş içerikle
-    yeni bir kopya olarak eklenir (aynı içerik tekrar oluşursa kopya paylaşılır).
+How removal works:
+  * Path drawing: path construction operators are kept and the painting
+    operator is replaced with `n` (end path without painting). If the same path
+    is also a clip (W), the clip still applies; only the ink is gone.
+  * Images and shadings: `Do` / `sh` / inline images are skipped.
+  * Form XObjects: the walker descends into them; a changed form is added as a
+    new copy with the changed content (identical results share one copy).
 """
 from __future__ import annotations
 
 import hashlib
 import math
-from typing import Callable
+from collections.abc import Callable
 
 import pikepdf
-from pikepdf import ContentStreamInstruction as Instr
 from pikepdf import ContentStreamInlineImage, Name, Operator
+from pikepdf import ContentStreamInstruction as Instr
 
 from .model import FILL, IMAGE, SHADING, STROKE, TEXT, Element
 
 IDENT = (1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 MAX_DEPTH = 16
-BACKDROP_MIN_AREA = 0.003  # metin rengi kararı için dikkate alınan en küçük zemin
+BACKDROP_MIN_AREA = 0.003  # smallest backdrop considered for the text colour decision
 
 
 def mul(m, n):
-    """m'yi önce, n'yi sonra uygula (PDF satır vektörü kuralı: p' = p × m × n)."""
+    """Apply m first, then n (PDF row-vector convention: p' = p × m × n)."""
     a, b, c, d, e, f = m
     A, B, C, D, E, F = n
     return (a * A + b * C, a * B + b * D, c * A + d * C, c * B + d * D,
@@ -78,7 +79,7 @@ def nums(operands):
     return out
 
 
-# ---------------------------------------------------------------- renk yardımcıları
+# ---------------------------------------------------------------- colour helpers
 
 def lum_of(kind: str, c: list[float]) -> float:
     try:
@@ -132,13 +133,14 @@ _DEVICE_CS = {"gray": "/DeviceGray", "rgb": "/DeviceRGB", "cmyk": "/DeviceCMYK"}
 
 
 class Color:
-    """Bir tarafın (dolgu veya kontur) renk durumu.
+    """Colour state of one side (fill or stroke).
 
     kind:    gray | rgb | cmyk | pattern | other
-    lum:     orijinal rengin parlaklığı
-    cs:      orijinal renk uzayını yeniden kurmak için gereken `cs`/`CS` komutu
-    restore: orijinal rengi (dönüştürülmüş haliyle) yeniden kuran komut listesi
-    dirty:   çıktıdaki gerçek renk uzayı orijinalden farklı mı (gri dönüşüm / metin zorlaması)
+    lum:     luminance of the original colour
+    cs:      the `cs`/`CS` command needed to re-establish the original colour space
+    restore: command list that re-establishes the original colour (as converted)
+    dirty:   whether the actual colour space in the output differs from the original
+             (gray conversion / forced text colour)
     """
 
     __slots__ = ("kind", "lum", "cs", "restore", "dirty")
@@ -164,12 +166,12 @@ class GState:
         self.clip = clip
         self.fill = Color()
         self.stroke = Color()
-        self.tr = 0      # metin render modu
-        self.tl = 0.0    # satır aralığı (leading)
-        self.fs = 0.0    # yazı tipi boyutu
-        self.tc = 0.0    # karakter aralığı
-        self.tw = 0.0    # kelime aralığı
-        self.th = 1.0    # yatay ölçek (Tz / 100)
+        self.tr = 0      # text rendering mode
+        self.tl = 0.0    # leading
+        self.fs = 0.0    # font size
+        self.tc = 0.0    # character spacing
+        self.tw = 0.0    # word spacing
+        self.th = 1.0    # horizontal scaling (Tz / 100)
         self.font = None  # FontInfo
 
     def copy(self):
@@ -180,10 +182,10 @@ class GState:
         return g
 
 
-# ---------------------------------------------------------------- yazı tipi genişlikleri
+# ---------------------------------------------------------------- font widths
 
 class FontInfo:
-    """Metin kutularını hesaplamak için yeterli yazı tipi bilgisi (glif genişlikleri)."""
+    """Just enough font information (glyph widths) to compute text boxes."""
 
     __slots__ = ("name", "two_byte", "widths", "default", "scale")
 
@@ -195,7 +197,7 @@ class FontInfo:
         self.scale = 0.001
 
     def advance(self, data: bytes, fs: float, tc: float, tw: float, th: float) -> float:
-        """Bir dizgenin metin uzayındaki ilerleme miktarı (PDF 9.4.4)."""
+        """Advance of a string in text space (PDF 9.4.4)."""
         total = 0.0
         w, d, sc = self.widths, self.default, self.scale * fs
         if self.two_byte:
@@ -213,7 +215,7 @@ def load_font(fobj) -> FontInfo:
         fi.name = str(fobj.get("/BaseFont", ""))
         subtype = str(fobj.get("/Subtype", ""))
         if subtype == "/Type0":
-            fi.two_byte = True  # Identity-H gibi 2 baytlık kodlamalar (pratikte en yaygın)
+            fi.two_byte = True  # 2-byte encodings like Identity-H (the most common in practice)
             desc = fobj.DescendantFonts[0]
             fi.default = float(desc.get("/DW", 1000))
             W = desc.get("/W")
@@ -239,7 +241,7 @@ def load_font(fobj) -> FontInfo:
                     fi.widths[fc + k] = float(v)
             fd = fobj.get("/FontDescriptor")
             mw = fd.get("/MissingWidth") if fd is not None else None
-            # Standart 14 yazı tipinde genişlik tablosu olmayabilir: ortalama glif genişliği kullan.
+            # Standard 14 fonts may lack a widths table: use an average glyph width.
             fi.default = float(mw) if mw is not None else (0.0 if ws is not None else 520.0)
             if subtype == "/Type3":
                 fm = nums(fobj.get("/FontMatrix", []))
@@ -262,17 +264,17 @@ def _q(v: float) -> float:
 
 
 class Caches:
-    """Bir Pdf nesnesi ömrü boyunca paylaşılan önbellekler."""
+    """Caches shared for the lifetime of one Pdf object."""
 
     def __init__(self):
-        self.streams: dict = {}     # form objgen -> parse edilmiş komutlar
-        self.img_hash: dict = {}    # görsel objgen -> içerik özeti
-        self.forms: dict = {}       # (form objgen, yeni içerik özeti) -> yeni form nesnesi
-        self.fonts: dict = {}       # yazı tipi objgen -> FontInfo
+        self.streams: dict = {}     # form objgen -> parsed commands
+        self.img_hash: dict = {}    # image objgen -> content hash
+        self.forms: dict = {}       # (form objgen, new content hash) -> new form object
+        self.fonts: dict = {}       # font objgen -> FontInfo
 
 
 class PageWalker:
-    """Tek bir sayfayı analiz eder veya yeniden yazar."""
+    """Analyses or rewrites a single page."""
 
     def __init__(self, pdf: pikepdf.Pdf, page_index: int, page_obj, *, rewrite: bool,
                  drops: set | None = None, text_mode: str = "keep", grayscale: bool = False,
@@ -282,7 +284,7 @@ class PageWalker:
         self.page_obj = page_obj
         self.rewrite = rewrite
         self.drops = drops or set()
-        self.clips = clips or {}          # görsel öğe kimliği -> {"keep": [çokgen], "erase": [çokgen]} (birim kare)
+        self.clips = clips or {}          # image element id -> {"keep": [polygon], "erase": [polygon]} (unit square)
         self.last_id = None
         self.text_mode = text_mode
         self.grayscale = grayscale
@@ -293,18 +295,18 @@ class PageWalker:
         self.page_area = max(area(self.page_box), 1.0)
         self.counter = 0
         self.elements: list[Element] = []
-        self.kept_images: set = set()     # yeniden yazmada görünür kalan görsel objgen'leri
-        self.backdrops: list = []         # (bbox, lum) – metnin altında kalabilecek korunmuş öğeler
-        self.override = False             # metin rengi şu an zorlanmış mı
+        self.kept_images: set = set()     # image objgens that stay visible after rewriting
+        self.backdrops: list = []         # (bbox, lum) – kept elements that may sit under text
+        self.override = False             # whether the text colour is currently forced
         self.changed = False
         self._active_forms: set = set()
-        self.tcounter = 0                 # metin kutusu sayacı (grafik sayacından ayrı)
-        self.tgroup = None                # şu an uzayan metin kutusu
-        self.tgroups: list = []           # analizde bulunan metin kutuları
+        self.tcounter = 0                 # text box counter (separate from the graphics counter)
+        self.tgroup = None                # the text box currently being extended
+        self.tgroups: list = []           # text boxes found during analysis
 
-    # ------------------------------------------------------------ ana giriş noktası
+    # ------------------------------------------------------------ main entry point
     def run(self) -> bool:
-        """Sayfayı dolaş. Yeniden yazma modunda sayfa içeriğini değiştirir. Değişiklik oldu mu döner."""
+        """Walk the page. In rewrite mode, replaces the page content. Returns whether anything changed."""
         try:
             instrs = pikepdf.parse_content_stream(self.page_obj)
         except Exception:
@@ -320,12 +322,13 @@ class PageWalker:
         self.changed = changed
         return changed
 
-    # ------------------------------------------------------------ metin kutuları
+    # ------------------------------------------------------------ text boxes
     def _text_piece(self, tm, adv: float, raw: bytes) -> bool:
-        """Bir gösterim komutunu (Tj/TJ/'/") bir metin kutusuna ekler.
+        """Adds a show operator (Tj/TJ/'/") to a text box.
 
-        Aynı taban çizgisinde ve yan yana duran ardışık parçalar tek kutu olur. Kutu kimliği
-        "<sayfa>-t<sıra>" iki geçişte de aynıdır. Yeniden yazmada kutu silinecekse True döner.
+        Consecutive pieces on the same baseline, side by side, form one box. The box id
+        "<page>-t<seq>" is the same in both passes. In rewrite mode, returns True if the box is
+        to be removed.
         """
         gs = self.gs
         fs = gs.fs or 1.0
@@ -366,7 +369,7 @@ class PageWalker:
                                          min(a, 1.0), g["lum"], sig))
 
     def _show_data(self, ins, op):
-        """(ham baytlar, metin uzayı ilerlemesi)"""
+        """(raw bytes, advance in text space)"""
         gs = self.gs
         f = gs.font
         fs, tc, tw, th = gs.fs, gs.tc, gs.tw, gs.th
@@ -407,13 +410,13 @@ class PageWalker:
                 self.caches.fonts[key] = fi
         return fi
 
-    # ------------------------------------------------------------ öğe kaydı
+    # ------------------------------------------------------------ element registry
     def _element(self, kind: str, bbox, lum: float, sig: str, m=None, obj=None) -> bool:
-        """Öğeyi kaydet; silinecekse True döner. Son kimlik `self.last_id`'de."""
+        """Register the element; returns True if it is to be removed. The last id is in `self.last_id`."""
         self.counter += 1
         eid = f"{self.page_index}-{self.counter}"
         self.last_id = eid
-        if kind == STROKE:  # çizgilerin alanı sıfır olabilir; ince bir pay ver
+        if kind == STROKE:  # strokes can have zero area; give them a thin margin
             bbox = (bbox[0] - 0.5, bbox[1] - 0.5, bbox[2] + 0.5, bbox[3] + 0.5)
         clipped = intersect(intersect(bbox, self.gs.clip), self.page_box)
         a = area(clipped) / self.page_area
@@ -426,7 +429,7 @@ class PageWalker:
             self.backdrops.append((clipped, 0.35 if kind == IMAGE else lum))
         return drop
 
-    # ------------------------------------------------------------ dolaşım
+    # ------------------------------------------------------------ walk
     def _walk(self, instrs, res, depth):
         rewrite = self.rewrite
         out = [] if rewrite else None
@@ -439,7 +442,6 @@ class PageWalker:
         has_path = False
         pending_clip = False
         tm = tlm = IDENT
-        in_text = False
 
         for ins in instrs:
             if isinstance(ins, ContentStreamInlineImage):
@@ -457,7 +459,7 @@ class PageWalker:
 
             op = str(ins.operator)
 
-            # --- yol inşası
+            # --- path construction
             if op in PATH_CONSTRUCT:
                 if op != "h":
                     v = nums(ins.operands)
@@ -506,7 +508,7 @@ class PageWalker:
                 px1 = py1 = float("-inf")
                 continue
 
-            # --- grafik durumu
+            # --- graphics state
             if op == "q":
                 self.stack.append(gs.copy())
                 emit(ins)
@@ -523,20 +525,18 @@ class PageWalker:
                 emit(ins)
                 continue
 
-            # --- renk
+            # --- colour
             if op in FILL_COLOR or op in STROKE_COLOR:
                 if self._color(ins, op, res, emit):
                     changed = True
                 continue
 
-            # --- metin
+            # --- text
             if op == "BT":
-                in_text = True
                 tm = tlm = IDENT
                 emit(ins)
                 continue
             if op == "ET":
-                in_text = False
                 emit(ins)
                 if self.override:
                     for r in gs.fill.restore:
@@ -553,10 +553,10 @@ class PageWalker:
                     tlm = mul((1, 0, 0, 1, 0, -gs.tl), tlm)
                     tm = tlm
                 raw, adv = self._show_data(ins, op)
-                if gs.tr == 3:  # görünmez metin (ör. OCR katmanı): öğe değil
+                if gs.tr == 3:  # invisible text (e.g. an OCR layer): not an element
                     emit(ins)
                 elif self._text_piece(tm, adv, raw):
-                    # Silinen metin görünmez yapılır: ilerleme korunur, satırdaki diğer metin kaymaz.
+                    # Removed text is made invisible: the advance is kept, so the rest of the line does not shift.
                     emit(Instr([7 if gs.tr >= 4 else 3], Operator("Tr")))
                     emit(ins)
                     emit(Instr([gs.tr], Operator("Tr")))
@@ -627,7 +627,7 @@ class PageWalker:
                     changed = True
                 continue
 
-            # --- gradyan
+            # --- shading
             if op == "sh":
                 name = str(ins.operands[0]) if ins.operands else ""
                 sig = "sh:%s:%d,%d,%d,%d" % ((name,) + tuple(round(c / 4) for c in gs.clip))
@@ -641,9 +641,9 @@ class PageWalker:
 
         return out, changed
 
-    # ------------------------------------------------------------ renk komutları
+    # ------------------------------------------------------------ colour operators
     def _color(self, ins, op, res, emit) -> bool:
-        """Renk komutunu izle; gri modda dönüştür. Çıktı değiştiyse True."""
+        """Track a colour operator; convert it in gray mode. True if the output changed."""
         stroke = op in STROKE_COLOR
         gs = self.gs
         col = gs.stroke if stroke else gs.fill
@@ -651,7 +651,7 @@ class PageWalker:
         gray_op = "G" if stroke else "g"
         cs_op = "CS" if stroke else "cs"
         if not stroke:
-            self.override = False  # yeni orijinal dolgu rengi zorlamayı geçersiz kılar
+            self.override = False  # a new original fill colour cancels the forced colour
 
         if lo in ("g", "rg", "k"):
             kind = {"g": "gray", "rg": "rgb", "k": "cmyk"}[lo]
@@ -699,7 +699,7 @@ class PageWalker:
         col.dirty = False
         return bool(prefix)
 
-    # ------------------------------------------------------------ metin rengi
+    # ------------------------------------------------------------ text colour
     def _text_color(self, tm, emit) -> bool:
         gs = self.gs
         fill = gs.fill
@@ -727,9 +727,9 @@ class PageWalker:
             return True
         return False
 
-    # ------------------------------------------------------------ kırpma
+    # ------------------------------------------------------------ cropping
     def _clipped_emit(self, ins, emit) -> bool:
-        """Son görsel öğe için kırpma tanımlıysa `q <kırpma yolu> Do Q` olarak yazar."""
+        """If a crop is defined for the last image element, writes it as `q <clip path> Do Q`."""
         spec = self.clips.get(self.last_id) if self.rewrite else None
         if not spec:
             emit(ins)
@@ -781,7 +781,7 @@ class PageWalker:
                 sub_out, sub_changed = self._walk(sub, fres, depth + 1)
             finally:
                 self._active_forms.discard(xo.objgen)
-            # formun kalan durumu dışarı sızmaz (Do örtük q/Q içerir)
+            # the form's leftover state does not leak out (Do implies q/Q)
             del self.stack[stack_len:]
             self.gs = saved
             self.override = False
@@ -838,7 +838,7 @@ class PageWalker:
         return name
 
 
-# ---------------------------------------------------------------- kırpma yolları
+# ---------------------------------------------------------------- clip paths
 
 def _poly_area(p):
     return sum(p[i][0] * p[(i + 1) % len(p)][1] - p[(i + 1) % len(p)][0] * p[i][1] for i in range(len(p))) / 2
@@ -852,11 +852,11 @@ def _path(poly):
 
 
 def clip_instructions(spec) -> list:
-    """Görselin birim karesindeki çokgenlerden kırpma komutları.
+    """Clip operators from polygons in the image's unit square.
 
-    keep:  tüm çokgenlerin birleşimi (aynı yöne çevrilip nonzero kuralı) -> sadece içi basılır
-    erase: her çokgen için (birim kare + çokgen, even-odd) ayrı kırpma -> kesişimleri birleşimin
-           tümleyenidir, yani üst üste binen silme alanları da doğru çalışır.
+    keep:  union of all polygons (same winding, nonzero rule) -> only the inside is printed
+    erase: one clip per polygon (unit square + polygon, even-odd) -> their intersection is the
+           complement of the union, so overlapping erase areas also work correctly.
     """
     out = []
     keep = [p for p in spec.get("keep", []) if len(p) >= 3]
@@ -881,7 +881,7 @@ def invert(m):
     return (d / det, -b / det, -c / det, a / det, (c * f - d * e) / det, (b * e - a * f) / det)
 
 
-# ---------------------------------------------------------------- sayfa yardımcıları
+# ---------------------------------------------------------------- page helpers
 
 def _inherited(page_obj, key):
     node = page_obj
@@ -926,7 +926,7 @@ def page_rotation(page_obj) -> int:
 
 
 def view_to_user(box, rotate):
-    """view_mapper'ın tersi: görüntüdeki (0..1) noktayı PDF kullanıcı uzayına çevirir."""
+    """Inverse of view_mapper: converts a (0..1) view point to PDF user space."""
     x0, y0, x1, y1 = box
     w, h = x1 - x0, y1 - y0
 
@@ -962,7 +962,7 @@ def user_to_view(box, rotate):
 
 
 def view_mapper(box, rotate):
-    """PDF kullanıcı uzayı kutusunu görüntüdeki normalize (0..1, sol-üst) kutuya çevirir."""
+    """Converts a PDF user-space box to a normalised (0..1, top-left) view box."""
     x0, y0, x1, y1 = box
     w, h = max(x1 - x0, 1e-6), max(y1 - y0, 1e-6)
 

@@ -1,4 +1,4 @@
-"""Üst seviye API. Arayüzler (web, masaüstü, toplu işlem) sadece bu sınıfı kullanır.
+"""High-level API. Front ends (web, desktop, batch) only use this class.
 
     doc = DistillDocument(pdf_bytes)
     doc.analyze()
@@ -12,9 +12,9 @@ import io
 import json
 import os
 import re
-from collections import Counter, defaultdict
 import threading
 import time
+from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
@@ -24,16 +24,15 @@ import pypdfium2 as pdfium
 from .classify import classify, in_region, signature_pages
 from .images import process_images
 from .imgfeat import image_features
-from .interpreter import (Caches, PageWalker, apply, invert, page_box, page_rotation, user_to_view,
-                          view_mapper, view_to_user)
+from .interpreter import Caches, PageWalker, apply, invert, page_box, page_rotation, user_to_view, view_mapper, view_to_user
 from .model import IMAGE, TEXT, Overrides, PageInfo, PageOp, Settings
 from .pageops import apply_page_ops, nup
 
-# pdfium iş parçacığı güvenli değildir; tüm render çağrıları bu kilitten geçer.
+# pdfium is not thread-safe; every render call goes through this lock.
 PDFIUM_LOCK = threading.RLock()
 
 
-FEATURE_MIN_AREA = 0.02  # içerik analizi bu boyuttan büyük görsellere yapılır (logo/ikonlar atlanır)
+FEATURE_MIN_AREA = 0.02  # content analysis only for images larger than this (logos/icons are skipped)
 
 
 def _analyze_range(data: bytes, start: int, stop: int):
@@ -44,7 +43,7 @@ def _analyze_range(data: bytes, start: int, stop: int):
 
 
 def _features_for(pdf, pages, known=None) -> dict:
-    """Büyük görsellerin içerik özellikleri, imzaya göre (aynı görsel bir kez analiz edilir)."""
+    """Content features of large images, keyed by signature (each image is analysed once)."""
     feats = {}
     known = known or {}
     for p in pages:
@@ -72,8 +71,8 @@ def _needs_rewrite(drops, s: Settings) -> bool:
 
 
 def distill_pages(pdf: pikepdf.Pdf, items, drops: dict, s: Settings, clips: dict | None = None) -> set:
-    """items: [(sayfa_nesnesi, kaynak_indeks)] – sayfaları yerinde yeniden yazar.
-    Görünür kalan görsel objgen kümesini döner."""
+    """items: [(page_object, source_index)] – rewrites the pages in place.
+    Returns the set of image objgens that remain visible."""
     caches = Caches()
     kept = set()
     for page_obj, idx in items:
@@ -109,13 +108,13 @@ class DistillDocument:
         self._decisions: dict = {}
         self._pdfium = None
         self.analysis_seconds = 0.0
-        self._page_text: dict[int, str] = {}     # pdfium ile çıkarılan sayfa metni
-        self._el_text: dict[str, str] = {}       # metin kutusu kimliği -> okunur metin
-        self.img_feats: dict = {}                # görsel imzası -> içerik özellikleri (imgfeat)
+        self._page_text: dict[int, str] = {}     # page text extracted with pdfium
+        self._el_text: dict[str, str] = {}       # text box id -> readable text
+        self.img_feats: dict = {}                # image signature -> content features (imgfeat)
         self._by_id: dict = {}
         self._by_sig: dict = {}
 
-    # -------------------------------------------------------------- analiz
+    # -------------------------------------------------------------- analysis
     def analyze(self, workers: int | None = None) -> list[PageInfo]:
         t = time.perf_counter()
         n = self.n_pages
@@ -146,14 +145,14 @@ class DistillDocument:
         self.analysis_seconds = time.perf_counter() - t
         return self.pages
 
-    # -------------------------------------------------------------- kararlar
+    # -------------------------------------------------------------- decisions
     def decide(self, s: Settings, ov: Overrides):
-        """(drops, labels) – bkz. classify."""
+        """(drops, labels) – see classify."""
         return self.decide_full(s, ov)[:2]
 
     def decide_full(self, s: Settings, ov: Overrides):
-        """(drops, labels, clips). clips: {sayfa: {görsel_id: {"keep": [çokgen], "erase": [çokgen]}}}
-        çokgenler görselin birim karesinde (PDF görsel uzayı, sol-alt orijin)."""
+        """(drops, labels, clips). clips: {page: {image_id: {"keep": [polygon], "erase": [polygon]}}}
+        Polygons are in the image's unit square (PDF image space, bottom-left origin)."""
         key = hashlib.md5(json.dumps([s.to_dict(), ov.to_dict()], sort_keys=True).encode()).hexdigest()
         r = self._decisions.get(key)
         if r is None:
@@ -167,9 +166,9 @@ class DistillDocument:
             self._decisions[key] = r
         return r
 
-    # -------------------------------------------------------------- kırpma
+    # -------------------------------------------------------------- cropping
     def features(self, e) -> dict | None:
-        """Görselin içerik özellikleri (önbellekli; küçük görseller için istek anında hesaplanır)."""
+        """Content features of an image (cached; computed on demand for small images)."""
         if e.sig not in self.img_feats:
             with self.lock:
                 self.img_feats[e.sig] = image_features(self.pdf, e.obj) if e.obj else None
@@ -177,7 +176,7 @@ class DistillDocument:
 
     @staticmethod
     def _photo_polys(f) -> list:
-        # analiz kutuları sol-üst orijinli; PDF görsel birim karesi sol-alt orijinli
+        # analysis boxes have a top-left origin; the PDF image unit square has a bottom-left origin
         return [[(u0, 1 - v1), (u1, 1 - v1), (u1, 1 - v0), (u0, 1 - v0)] for u0, v0, u1, v1 in f["photos"]]
 
     def _manual_clips(self, ov: Overrides):
@@ -212,7 +211,7 @@ class DistillDocument:
                 if e.kind != IMAGE or e.id in d or e.area < FEATURE_MIN_AREA or e.id in clips.get(p.index, {}):
                     continue
                 f = self.img_feats.get(e.sig)
-                # sadece karma görseller: içinde yazı da olan (saf fotoğrafı tamamen silmek kırpma değil)
+                # mixed images only: ones that also contain text (removing a pure photo entirely is not a crop)
                 if f and f["photos"] and f["text"] >= 0.35:
                     clips[p.index][e.id] = {"keep": [], "erase": self._photo_polys(f)}
 
@@ -223,8 +222,9 @@ class DistillDocument:
         return {"keep": [conv(p) for p in spec.get("keep", [])], "erase": [conv(p) for p in spec.get("erase", [])]}
 
     def page_elements(self, i: int, s: Settings, ov: Overrides, min_area: float = 0.0008):
-        """Arayüz için: bir sayfanın tıklanabilir öğeleri, sınıf ve silinme durumu ile.
-        Metin kutularında okunur metin ("text") ve aynı konumda metin bulunan sayfa sayısı da döner."""
+        """For the UI: a page's clickable elements with class and removal state.
+        Text boxes also carry their readable text ("text") and the number of pages with text at the
+        same position."""
         drops, labels, clips = self.decide_full(s, ov)
         d = drops.get(i, set())
         pclips = clips.get(i, {})
@@ -257,7 +257,7 @@ class DistillDocument:
             x0, y0, x1, y1 = e.bbox
             with PDFIUM_LOCK:
                 tp = self._pdfium_doc()[e.page].get_textpage()
-                # kenarlardan biraz içeride sor: komşu satırdan harf taşımasın
+                # query slightly inside the edges so letters from neighbouring lines don't leak in
                 h = y1 - y0
                 t = tp.get_text_bounded(x0, y0 + h * 0.2, x1, y1 - h * 0.2)
                 tp.close()
@@ -272,7 +272,7 @@ class DistillDocument:
                 n += 1
         return n
 
-    # -------------------------------------------------------------- kelime sayacı
+    # -------------------------------------------------------------- word counter
     def page_text(self, i: int) -> str:
         t = self._page_text.get(i)
         if t is None:
@@ -285,8 +285,8 @@ class DistillDocument:
 
     def word_counts(self, s: Settings, ov: Overrides, pages: list[int] | None = None,
                     exclude_removed: bool = True) -> list[dict]:
-        """Belgedeki kelimeler: [{w, n, pages}] – büyük/küçük harf duyarsız, en sık yazılış biçimiyle.
-        exclude_removed: kaldırılacak metin kutularındaki kelimeler sayılmaz (ör. alt bilgi)."""
+        """Words in the document: [{w, n, pages}] – case-insensitive, shown in their most common spelling.
+        exclude_removed: words in text boxes that will be removed (e.g. a footer) are not counted."""
         drops, _ = self.decide(s, ov) if exclude_removed else ({}, {})
         idx = sorted({p for p in (pages if pages is not None else range(self.n_pages)) if 0 <= p < self.n_pages})
         counts: Counter = Counter()
@@ -353,7 +353,7 @@ class DistillDocument:
             doc.close()
         return _png(img)
 
-    # -------------------------------------------------------------- mürekkep tahmini
+    # -------------------------------------------------------------- ink estimate
     def ink_estimate(self, s: Settings, ov: Overrides, samples: int = 24, width: int = 160) -> dict:
         n = self.n_pages
         if n == 0:
@@ -381,7 +381,7 @@ class DistillDocument:
         return {"original": round(o, 4), "processed": round(p, 4),
                 "saving": round(1 - p / o, 4) if o > 0 else 0.0, "pages": len(idx)}
 
-    # -------------------------------------------------------------- dışa aktarma
+    # -------------------------------------------------------------- export
     def export(self, s: Settings, ov: Overrides, ops: list[PageOp] | None = None) -> bytes:
         drops, _, clips = self.decide_full(s, ov)
         pdf = pikepdf.open(io.BytesIO(self.data))
@@ -408,14 +408,14 @@ _WORD = re.compile(r"[^\W\d_](?:[\w'’-]*[^\W_])?|\d+(?:[.,/:]\d+)*")
 
 
 def tokenize(text: str) -> list[str]:
-    """Kelimeler ve sayılar. Satır sonundaki tirelemeyi birleştirir (Wahrschein-\nlichkeit)."""
+    """Words and numbers. Joins end-of-line hyphenation (Wahrschein-\nlichkeit)."""
     text = re.sub(r"(\w)-\s*\r?\n\s*(\w)", r"\1\2", text)
     return _WORD.findall(text)
 
 
 def region_for(view):
-    """Bir metin kutusundan "aynı konum" alanı: yatayda ve dikeyde biraz pay bırakır
-    (sayfa numarası 9'dan 10'a geçince kutu birkaç punto genişler)."""
+    """A "same position" region from a text box, with some slack in both directions
+    (when the page number goes from 9 to 10 the box grows by a few points)."""
     x0, y0, x1, y1 = view
     h = y1 - y0
     return (max(0.0, x0 - 0.02), max(0.0, y0 - 0.3 * h), min(1.0, x1 + 0.02), min(1.0, y1 + 0.3 * h))

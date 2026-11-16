@@ -1,4 +1,4 @@
-"""Sunucu katmanı testleri (FastAPI TestClient; httpx gerekir)."""
+"""Server layer tests (FastAPI TestClient; needs httpx)."""
 from __future__ import annotations
 
 import io
@@ -13,9 +13,9 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 pytest.importorskip("httpx")
+import make_samples  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
-import make_samples  # noqa: E402
 from app.server import app  # noqa: E402
 
 BASE = "http://127.0.0.1"
@@ -42,7 +42,7 @@ def test_export_non_ascii_filename(client, name):
     assert r.status_code == 200
     assert r.content.startswith(b"%PDF")
     cd = r.headers["content-disposition"]
-    cd.encode("ascii")  # başlık ASCII kalmalı
+    cd.encode("ascii")  # header must stay ASCII
     utf8 = cd.split("filename*=UTF-8''", 1)[1]
     assert unquote(utf8) == Path(name).stem + "_print.pdf"
 

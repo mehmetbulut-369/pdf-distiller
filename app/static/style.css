@@ -1,14 +1,14 @@
 :root {
-  --desk: #E6E9ED;      /* çalışma masası */
+  --desk: #E6E9ED;      /* desk */
   --panel: #F6F7F9;
   --paper: #FFFFFF;
   --ink: #1C1F23;
   --muted: #5D6670;
   --line: #CDD3DA;
-  --cyan: #0089BC;      /* ana vurgu: işlem rengi C */
+  --cyan: #0089BC;      /* main accent: process cyan */
   --magenta: #CF2A6E;   /* zemin */
   --yellow: #D9A600;    /* tekrarlayan */
-  --sky: #2F9FD6;       /* büyük */
+  --sky: #2F9FD6;       /* large */
   --other: #8A939D;
   --radius: 6px;
   font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
@@ -19,12 +19,12 @@ html, body { margin: 0; height: 100%; background: var(--desk); }
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 
-/* ------------------------------------------------ üst çubuk */
+/* ------------------------------------------------ top bar */
 .bar { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px;
   background: var(--paper); border-bottom: 1px solid var(--line); }
 .brand { font-weight: 700; letter-spacing: -.01em; margin-right: 6px; white-space: nowrap; }
 .docname { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 32ch; min-width: 0; flex-shrink: 1; }
-.bar > :not(.docname):not(.spacer) { flex-shrink: 0; } /* dar ekranda önce dosya adı kısalsın */
+.bar > :not(.docname):not(.spacer) { flex-shrink: 0; } /* on narrow screens the file name shrinks first */
 .langsel { height: 32px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); padding: 0 6px; }
 .spacer { flex: 1; }
 
@@ -46,7 +46,7 @@ button, input, select { font: inherit; color: inherit; }
 .seg.wide { display: flex; }
 .seg.wide button { flex: 1; }
 
-/* ------------------------------------------------ yerleşim */
+/* ------------------------------------------------ layout */
 .app { display: grid; grid-template-columns: 300px 1fr 230px; height: calc(100% - 52px); }
 .panel { background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; padding: 16px 16px 40px; }
 .panel h2, .panel summary { font-size: 13px; font-weight: 650; margin: 0 0 8px; }
@@ -56,7 +56,7 @@ button, input, select { font: inherit; color: inherit; }
 .hint { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
 .row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 
-/* mürekkep göstergesi */
+/* ink meter */
 .gauge { display: flex; align-items: flex-end; gap: 18px; padding: 14px; background: var(--paper);
   border: 1px solid var(--line); border-radius: 10px; }
 .cartridges { display: flex; gap: 10px; }
@@ -126,7 +126,7 @@ button, input, select { font: inherit; color: inherit; }
 .busy { position: absolute; inset: 0; background: rgba(255,255,255,.55); opacity: 0; pointer-events: none; transition: opacity .15s; }
 .busy.on { opacity: 1; }
 
-/* ------------------------------------------------ küçük resimler */
+/* ------------------------------------------------ thumbnails */
 .rail { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; }
 .railhead { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between;
   padding: 8px 10px; background: var(--panel); border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
@@ -141,7 +141,7 @@ button, input, select { font: inherit; color: inherit; }
 .thumb .acts button { border: 0; background: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; color: var(--muted); font-size: 13px; }
 .thumb .acts button:hover { background: rgba(0,0,0,.07); color: var(--ink); }
 
-/* ------------------------------------------------ boş durum, menü, bildirim */
+/* ------------------------------------------------ empty state, menu, toast */
 .empty { position: fixed; inset: 52px 0 0 0; display: flex; align-items: center; justify-content: center; background: var(--desk); }
 .empty.hidden { display: none; }
 .empty.drag .dropzone { border-color: var(--cyan); background: #F1F9FC; }
@@ -172,7 +172,7 @@ button, input, select { font: inherit; color: inherit; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
-/* ------------------------------------------------ metin seçimi */
+/* ------------------------------------------------ text selection */
 .overlay[data-tool="text"] { cursor: crosshair; }
 .overlay[data-tool="graphics"] .el.k-text, .overlay[data-tool="graphics"] .region { display: none; }
 .overlay[data-tool="text"] .el:not(.k-text) { display: none; }
@@ -187,7 +187,7 @@ button, input, select { font: inherit; color: inherit; }
 .menu .quote { display: block; color: var(--ink); font-size: 13px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; }
 .menu button small { display: block; color: var(--muted); font-size: 11px; }
 
-/* ------------------------------------------------ sağ şerit sekmeleri ve kelimeler */
+/* ------------------------------------------------ right rail tabs and words */
 .tabs { position: sticky; top: 0; z-index: 3; display: flex; background: var(--panel); border-bottom: 1px solid var(--line); }
 .tabs button { flex: 1; height: 38px; border: 0; background: none; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; }
 .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--cyan); font-weight: 600; }
@@ -207,7 +207,7 @@ button, input, select { font: inherit; color: inherit; }
 .words li .n { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; }
 .words .more { color: var(--muted); font-size: 12px; cursor: default; display: block; }
 
-/* ------------------------------------------------ nokta bazlı seçim */
+/* ------------------------------------------------ point selection */
 .overlay { cursor: pointer; touch-action: none; }
 .overlay .el, .overlay .region { pointer-events: none; }
 .el.c-text_image { border-color: #2E8B57; }
@@ -216,7 +216,7 @@ button, input, select { font: inherit; color: inherit; }
 .menu .note { padding: 6px 8px 2px; font-size: 12px; color: var(--muted); }
 .hint.indent { margin: -2px 0 6px 24px; }
 
-/* ------------------------------------------------ kırpma */
+/* ------------------------------------------------ cropping */
 .overlay[data-tool="crop"] { cursor: crosshair; }
 .cropbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; padding: 8px 16px;
   background: var(--paper); border-bottom: 1px solid var(--line); }

@@ -1,8 +1,7 @@
-"""Lokal web sunucusu. Sadece 127.0.0.1'de dinler; PDF'ler bilgisayardan çıkmaz.
+"""Local web server. Listens on 127.0.0.1 only; PDFs never leave the computer.
 
-Arayüz ile çekirdek motor arasındaki ince katman: iş mantığı burada değil,
-distill_core içinde. Yeni bir arayüz (masaüstü, mobil, bulut) aynı uç noktaları
-kullanabilir.
+A thin layer between the UI and the core engine: the logic lives in distill_core,
+not here. A new front end (desktop, mobile, cloud) can use the same endpoints.
 """
 from __future__ import annotations
 
@@ -12,11 +11,10 @@ import logging
 import re
 import sys
 import threading
+import unicodedata
 import uuid
 from collections import OrderedDict
 from pathlib import Path
-
-import unicodedata
 from urllib.parse import quote
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -38,11 +36,11 @@ log = logging.getLogger("pdf_distiller")
 
 app = FastAPI(title="PDF Distiller", docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
-# DNS rebinding koruması: başka bir alan adı 127.0.0.1'e çözülse bile istekler reddedilir.
+# DNS rebinding protection: requests are rejected even if another domain resolves to 127.0.0.1.
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])
 
-_docs: "OrderedDict[str, DistillDocument]" = OrderedDict()
-_png_cache: "OrderedDict[str, bytes]" = OrderedDict()
+_docs: OrderedDict[str, DistillDocument] = OrderedDict()
+_png_cache: OrderedDict[str, bytes] = OrderedDict()
 _lock = threading.Lock()
 
 
@@ -83,7 +81,7 @@ def _cache_put(key, v):
         _png_cache.popitem(last=False)
 
 
-# ----------------------------------------------------------------------------- sayfalar
+# ----------------------------------------------------------------------------- pages
 @app.get("/")
 def index():
     return FileResponse(STATIC / "index.html", headers={"Cache-Control": "no-cache"})
@@ -93,7 +91,7 @@ def index():
 async def no_stale_static(request, call_next):
     resp = await call_next(request)
     if request.url.path.startswith("/static/"):
-        resp.headers["Cache-Control"] = "no-cache"  # güncellemeden sonra eski arayüz görünmesin
+        resp.headers["Cache-Control"] = "no-cache"  # no stale UI after an update
     return resp
 
 
@@ -103,13 +101,13 @@ def tiers():
 
 
 @app.post("/api/open")
-def open_pdf(file: UploadFile = File(...)):  # sync: analiz iş parçacığında koşar, olay döngüsünü kilitlemez
+def open_pdf(file: UploadFile = File(...)):  # sync: analysis runs in the threadpool, not on the event loop
     data = file.file.read()
     if not data.startswith(b"%PDF") and b"%PDF" not in data[:1024]:
         raise HTTPException(400, "error.not_pdf")
     try:
         doc = DistillDocument(data, file.filename or "document.pdf")
-    except Exception as e:  # şifreli veya bozuk PDF
+    except Exception as e:  # encrypted or broken PDF
         log.warning("PDF could not be opened: %s", e)
         raise HTTPException(400, "error.pdf_open_failed") from e
     doc.analyze()
@@ -194,13 +192,13 @@ def export(doc_id: str, job: Job):
             raise HTTPException(400, "error.no_pages")
     data = d.export(s, ov, ops)
     name = (re.sub(r"[^\w\-. ]", "_", Path(d.name).stem)[:80] or "document") + "_print.pdf"
-    # HTTP başlıkları ASCII olmalı: ASCII yedek ad + UTF-8 asıl ad (RFC 6266 / 5987)
+    # HTTP headers must be ASCII: ASCII fallback + UTF-8 real name (RFC 6266 / 5987)
     fallback = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode() or "document_print.pdf"
     return Response(data, media_type="application/pdf", headers={
         "Content-Disposition": f"attachment; filename=\"{fallback}\"; filename*=UTF-8''{quote(name)}"})
 
 
-# ----------------------------------------------------------------------------- profiller
+# ----------------------------------------------------------------------------- profiles
 def _safe(name: str) -> str:
     n = re.sub(r"[^\w\- ]", "", name, flags=re.UNICODE).strip()[:60]
     if not n:

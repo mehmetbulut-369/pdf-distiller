@@ -1,47 +1,47 @@
-"""Veri modelleri: ayarlar, kademeler, öğeler, manuel düzeltmeler, sayfa işlemleri.
+"""Data models: settings, tiers, elements, manual overrides, page operations.
 
-Bu dosya arayüzden bağımsızdır; web arayüzü, masaüstü sarmalayıcı veya toplu
-işlem betiği aynı modelleri JSON olarak gönderip alır.
+This file is UI-independent; the web UI, a desktop wrapper or a batch script
+exchange the same models as JSON.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field, asdict, fields
+from dataclasses import asdict, dataclass, field, fields
 from typing import Literal
 
 TextMode = Literal["keep", "auto", "black"]
 
-# Öğe türleri
-IMAGE = "image"      # raster görsel (XObject veya satır içi)
-FILL = "fill"        # dolgulu vektör şekil
-STROKE = "stroke"    # çizgi / kontur
-SHADING = "shading"  # gradyan (sh operatörü)
-TEXT = "text"        # aynı satırdaki ardışık metin parçaları (bir "metin kutusu")
+# Element kinds
+IMAGE = "image"      # raster image (XObject or inline)
+FILL = "fill"        # filled vector shape
+STROKE = "stroke"    # line / stroke
+SHADING = "shading"  # shading (sh operator)
+TEXT = "text"        # consecutive text pieces on one line (a "text box")
 
 
 @dataclass
 class Settings:
-    """Bir distilasyon işleminin tüm ayarları. Kademeler bunun hazır halleridir."""
+    """All settings of one distillation. Tiers are presets of this."""
 
-    remove_backgrounds: bool = False   # sayfanın büyük kısmını kaplayan zeminler
-    remove_repeated: bool = False      # sayfaların çoğunda tekrar eden tema öğeleri
-    remove_large_images: bool = False  # eşik üstü raster görseller
-    remove_large_shapes: bool = False  # eşik üstü dolgulu şekiller / gradyanlar
-    remove_all_graphics: bool = False  # metin dışı her şey (beyaz dolgular hariç)
-    remove_repeated_text: bool = False # aynı yerde, aynı içerikle tekrar eden metin (üst/alt bilgi)
-    keep_text_images: bool = True      # yazı içeren görseller (tablo, formül, ekran görüntüsü) otomatik silinmez
-    auto_crop_photos: bool = False     # korunan görsellerin içindeki fotoğraf bölgelerini otomatik kırp
+    remove_backgrounds: bool = False   # backgrounds covering most of the page
+    remove_repeated: bool = False      # theme elements repeated on most pages
+    remove_large_images: bool = False  # raster images above the threshold
+    remove_large_shapes: bool = False  # filled shapes / shadings above the threshold
+    remove_all_graphics: bool = False  # everything except text (white fills excepted)
+    remove_repeated_text: bool = False # text repeated at the same place with the same content (header/footer)
+    keep_text_images: bool = True      # images containing text (tables, formulas, screenshots) are not removed automatically
+    auto_crop_photos: bool = False     # automatically crop photo regions out of kept images
 
-    large_threshold: float = 0.10      # sayfa alanına oranla "büyük" eşiği
-    repeat_ratio: float = 0.30         # bir öğe sayfaların en az bu oranında geçerse "tekrarlayan"
-    background_coverage: float = 0.60  # sayfanın bu oranından fazlasını kaplayan dolgu = zemin
+    large_threshold: float = 0.10      # "large" threshold as a share of the page area
+    repeat_ratio: float = 0.30         # an element on at least this share of pages counts as "repeated"
+    background_coverage: float = 0.60  # a fill covering more than this share of the page = background
 
-    text_mode: TextMode = "auto"       # keep | auto (açık renkli metni siyah yap) | black (tüm metin siyah)
-    grayscale: bool = False            # vektör renkleri ve görselleri griye çevir
-    image_fade: float = 0.0            # kalan görselleri beyaza doğru soldur (0 = kapalı, 0.8 = çok soluk)
-    nup: int = 1                       # kâğıt başına sayfa: 1, 2, 4, 6
+    text_mode: TextMode = "auto"       # keep | auto (make light text black) | black (all text black)
+    grayscale: bool = False            # convert vector colours and images to gray
+    image_fade: float = 0.0            # fade remaining images towards white (0 = off, 0.8 = very faint)
+    nup: int = 1                       # pages per sheet: 1, 2, 4, 6
 
     @classmethod
-    def from_dict(cls, d: dict | None) -> "Settings":
+    def from_dict(cls, d: dict | None) -> Settings:
         d = d or {}
         names = {f.name for f in fields(cls)}
         s = cls(**{k: v for k, v in d.items() if k in names})
@@ -61,7 +61,7 @@ class Settings:
 
 
 def tier_settings(tier: int, base: Settings | None = None) -> Settings:
-    """Kademe hazır ayarları. Eşikler ve ek anahtarlar (gri, N-up) `base`'den korunur."""
+    """Tier presets. Thresholds and extra switches (gray, N-up) are kept from `base`."""
     s = Settings.from_dict(base.to_dict() if base else {})
     s.remove_backgrounds = tier >= 1
     s.remove_repeated = tier >= 1
@@ -82,19 +82,20 @@ TIERS = {
 
 @dataclass
 class Overrides:
-    """Kullanıcının manuel kararları. Otomatik sınıflandırmanın üstüne yazılır.
+    """The user's manual decisions. They override the automatic classification.
 
-    elements:   {"<sayfa>-<sıra>": "keep" | "remove"}  tek bir öğe (metin kutusu kimliği "<sayfa>-t<sıra>")
-    signatures: {"<imza>": "keep" | "remove"}          aynı imzalı tüm öğeler (metinde: aynı içerik + aynı konum)
-    crops:      [{"id": "<görsel öğe kimliği>", "all": bool, "mode": "keep"|"erase"|"auto",
-                  "points": [[x, y], ...]}]  görüntü koordinatlarında çokgen (dörtgen = 4 nokta).
-                keep: sadece çokgenin içi basılır; erase: çokgenin içi silinir; auto: görseldeki fotoğraf
-                bölgeleri silinir. all=True aynı görselin tüm sayfalardaki kopyalarına uygular.
-                Kırpılan görsel otomatik olarak korunur.
+    elements:   {"<page>-<seq>": "keep" | "remove"}  a single element (text box id: "<page>-t<seq>")
+    signatures: {"<sig>": "keep" | "remove"}         all elements with that signature
+                                                     (for text: same content + same position)
+    crops:      [{"id": "<image element id>", "all": bool, "mode": "keep"|"erase"|"auto",
+                  "points": [[x, y], ...]}]  polygon in view coordinates (quad = 4 points).
+                keep: only the inside is printed; erase: the inside is removed; auto: the photo
+                regions of the image are removed. all=True applies to every copy of the same image
+                on all pages. A cropped image is kept automatically.
     regions:    [{"box": [x0,y0,x1,y1], "action": "remove"|"keep"}]
-                görüntü koordinatlarında (0..1) alan; her sayfada bu alandaki METİN kutularına uygulanır
-                (içerik farklı olsa da: sayfa numaralı alt bilgi gibi)
-    Öncelik: element > signature > region > otomatik.
+                region in view coordinates (0..1); applied on every page to the TEXT boxes in it
+                (even if the content differs, e.g. a footer with page numbers)
+    Priority: element > signature > region > automatic.
     """
 
     elements: dict[str, str] = field(default_factory=dict)
@@ -103,7 +104,7 @@ class Overrides:
     crops: list[dict] = field(default_factory=list)
 
     @classmethod
-    def from_dict(cls, d: dict | None) -> "Overrides":
+    def from_dict(cls, d: dict | None) -> Overrides:
         d = d or {}
         regions = []
         for r in d.get("regions") or []:
@@ -132,7 +133,7 @@ class Overrides:
 
 @dataclass
 class PageOp:
-    """Çıktıdaki bir sayfa: kaynak sayfa indeksi + ek döndürme (90'ın katı)."""
+    """One output page: source page index + extra rotation (multiple of 90)."""
 
     src: int
     rotate: int = 0
@@ -140,18 +141,18 @@ class PageOp:
 
 @dataclass
 class Element:
-    """Analizde bulunan, silinebilir bir görsel öğe."""
+    """A removable visual element found during analysis."""
 
-    id: str               # "<sayfa>-<sıra>": aynı sayfada çizim sırasına göre deterministik
+    id: str               # "<page>-<seq>": deterministic, by drawing order on the page
     page: int
     kind: str             # image | fill | stroke | shading
-    bbox: tuple           # PDF kullanıcı uzayında (x0, y0, x1, y1), kırpma ile kesişmiş
-    view: tuple           # görüntüde normalize (0..1) kutu, sol-üst orijinli, döndürme uygulanmış
-    area: float           # sayfa alanına oranı (0..1)
-    lum: float            # parlaklık 0 (siyah) .. 1 (beyaz); bilinmiyorsa 0.5
-    sig: str              # tekrar tespiti imzası
-    m: tuple | None = None    # görsellerde: çizim anındaki CTM (birim kare -> sayfa); kırpma için
-    obj: tuple | None = None  # görsellerde: XObject objgen; içerik analizi için
+    bbox: tuple           # (x0, y0, x1, y1) in PDF user space, intersected with the clip
+    view: tuple           # normalised (0..1) view box, top-left origin, rotation applied
+    area: float           # share of the page area (0..1)
+    lum: float            # luminance 0 (black) .. 1 (white); 0.5 if unknown
+    sig: str              # signature for repeat detection
+    m: tuple | None = None    # images: CTM at draw time (unit square -> page); for cropping
+    obj: tuple | None = None  # images: XObject objgen; for content analysis
 
     def to_dict(self) -> dict:
         return {
@@ -167,8 +168,8 @@ class Element:
 @dataclass
 class PageInfo:
     index: int
-    width: float          # görüntü genişliği (pt), döndürme uygulanmış
+    width: float          # view width (pt), rotation applied
     height: float
     rotate: int
     elements: list[Element] = field(default_factory=list)
-    box: tuple = (0.0, 0.0, 612.0, 792.0)  # PDF kullanıcı uzayında görünür kutu (CropBox)
+    box: tuple = (0.0, 0.0, 612.0, 792.0)  # visible box in PDF user space (CropBox)

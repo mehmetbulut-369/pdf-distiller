@@ -1,0 +1,25 @@
+[project]
+name = "pdf-distiller"
+version = "0.4.0"
+description = "Strip backgrounds, themes and images from lecture slides before printing. Runs locally."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py310"
+extend-exclude = ["samples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = [
+  "UP031",  # %-formatting is kept for PDF operator output
+  "B008",   # FastAPI's File(...) default is the documented pattern
+]
+
+[tool.ruff.lint.per-file-ignores]
+"distill_core/interpreter.py" = ["E701"]  # one-line min/max updates in the hot bbox loop

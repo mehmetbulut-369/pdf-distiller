@@ -1,7 +1,7 @@
-"""Test için sentetik ders slaytı PDF'leri üretir (gerçek slaytların tipik yapısını taklit eder).
+"""Generates synthetic lecture-slide PDFs for tests (mimicking the typical structure of real slides).
 
-    python tests/make_samples.py            -> samples/ altına 3 örnek
-    python tests/make_samples.py --pages 500 -> samples/bench_500.pdf (hız testi)
+    python tests/make_samples.py            -> samples into samples/
+    python tests/make_samples.py --pages 500 -> samples/bench_500.pdf (benchmark)
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import pikepdf
 from pikepdf import Array, Dictionary, Name
 from PIL import Image, ImageDraw
 
-W, H = 720.0, 405.0  # 16:9 slayt
+W, H = 720.0, 405.0  # 16:9 slide
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "samples"
 
@@ -78,25 +78,25 @@ def dark_deck(n=12) -> pikepdf.Pdf:
     fnt, lg = font(pdf), logo(pdf)
     for i in range(n):
         xo = {"Logo": lg}
-        c = "q 0.10 0.12 0.20 rg 0 0 720 405 re f Q\n"           # koyu tam sayfa zemin
-        c += "q 0.20 0.40 0.80 rg 0 360 720 45 re f Q\n"          # tekrarlayan başlık bandı
-        c += "q 60 0 0 25 645 370 cm /Logo Do Q\n"                # tekrarlayan logo
+        c = "q 0.10 0.12 0.20 rg 0 0 720 405 re f Q\n"           # dark full-page background
+        c += "q 0.20 0.40 0.80 rg 0 360 720 45 re f Q\n"          # repeated title band
+        c += "q 60 0 0 25 645 370 cm /Logo Do Q\n"                # repeated logo
         c += text(30, 375, 22, f"Vorlesung 3 - Folie {i + 1}", (1, 1, 1))
         for k, line in enumerate(["Grundlagen der Wahrscheinlichkeit", "Bayes-Theorem und Anwendungen",
                                   "Beispiel: Klassifikation mit Naive Bayes"]):
             c += text(40, 310 - k * 32, 16, "- " + line, (0.92, 0.92, 0.95))
-        if i % 3 == 1:                                             # büyük içerik fotoğrafı
+        if i % 3 == 1:                                             # large content photo
             xo["Photo"] = photo(pdf, i)
             c += "q 300 0 0 200 390 60 cm /Photo Do Q\n"
-        if i % 4 == 2:                                             # koyu bilgi kutusu, beyaz metin
+        if i % 4 == 2:                                             # dark info box, white text
             x = 40 + (i * 37) % 120
             c += f"q 0.55 0.08 0.10 rg {x} 70 300 70 re f Q\n"
             c += text(x + 12, 100, 14, "Merke: P(A|B) = P(B|A)P(A)/P(B)", (1, 1, 1))
-        if i % 5 == 3:                                             # küçük çubuk grafik
+        if i % 5 == 3:                                             # small bar chart
             for b in range(6):
                 hgt = 20 + (b * 23 + i * 7) % 90
                 c += f"q 0.30 0.75 0.45 rg {420 + b * 40} 60 28 {hgt} re f Q\n"
-        c += "q 0.6 0.6 0.7 RG 1 w 30 30 m 690 30 l S Q\n"        # tekrarlayan alt çizgi
+        c += "q 0.6 0.6 0.7 RG 1 w 30 30 m 690 30 l S Q\n"        # repeated bottom rule
         c += text(660, 12, 10, str(i + 1), (0.7, 0.7, 0.75))
         add_page(pdf, c, xo, fnt)
     return pdf
@@ -112,16 +112,16 @@ def light_deck(n=10) -> pikepdf.Pdf:
     band_img = jpeg_image(pdf, band)
     for i in range(n):
         xo = {"Logo": lg, "Band": band_img}
-        c = "q 1 1 1 rg 0 0 720 405 re f Q\n"                     # beyaz zemin (silinmemeli)
-        c += "q 720 0 0 50 0 355 cm /Band Do Q\n"                 # tekrarlayan renkli bant görseli
-        c += "q 50 0 0 21 20 10 cm /Logo Do Q\n"                  # alt logo
+        c = "q 1 1 1 rg 0 0 720 405 re f Q\n"                     # white background (must not be removed)
+        c += "q 720 0 0 50 0 355 cm /Band Do Q\n"                 # repeated coloured band image
+        c += "q 50 0 0 21 20 10 cm /Logo Do Q\n"                  # bottom logo
         c += text(30, 372, 22, f"Kapitel {i + 1}: Datenstrukturen", (1, 1, 1))
         for k in range(4):
             c += text(40, 310 - k * 30, 15, f"- Punkt {k + 1}: Listen, Baeume und Graphen", (0.1, 0.1, 0.1))
         if i % 2 == 0:
             xo["Photo"] = photo(pdf, 100 + i)
             c += "q 280 0 0 190 410 80 cm /Photo Do Q\n"
-        if i % 3 == 1:                                             # büyük açık renkli kutu
+        if i % 3 == 1:                                             # large light-coloured box
             c += "q 0.80 0.88 1.0 rg 30 40 660 140 re f Q\n"
             c += text(45, 150, 14, "Definition: Ein Graph G = (V, E)", (0.0, 0.0, 0.3))
         add_page(pdf, c, xo, fnt)
@@ -129,7 +129,7 @@ def light_deck(n=10) -> pikepdf.Pdf:
 
 
 def form_deck(n=8) -> pikepdf.Pdf:
-    """Beamer benzeri: tema paylaşılan bir Form XObject içinde, gradyan zemin ile. Bir sayfa döndürülmüş."""
+    """Beamer-like: theme in a shared Form XObject, with a shading background. One page is rotated."""
     pdf = pikepdf.new()
     fnt = font(pdf)
     func = Dictionary(FunctionType=2, Domain=Array([0, 1]), C0=Array([0.05, 0.1, 0.3]),
@@ -146,22 +146,22 @@ def form_deck(n=8) -> pikepdf.Pdf:
         c = "/Theme Do\n"
         c += text(30, 360, 24, f"Beamer Folie {i + 1}", (1, 1, 1))
         c += text(40, 300, 16, "Text auf Verlaufshintergrund", (0.85, 0.9, 1.0))
-        c += "q 0.2 0.2 0.2 rg 40 120 200 80 re f Q\n"             # koyu kutu, açık metin (korunmalı)
+        c += "q 0.2 0.2 0.2 rg 40 120 200 80 re f Q\n"             # dark box, light text (must be kept)
         c += text(50, 150, 14, "Kasten mit hellem Text", (1, 1, 0.8))
         add_page(pdf, c, {"Theme": theme}, fnt, rotate=90 if i == n - 1 else 0)
     return pdf
 
 
 def hhn_deck(n=6) -> pikepdf.Pdf:
-    """Hochschule şablonu taklidi: sol üstte mavi "Informatik 1", mavi bant içinde beyaz "Informatik 1",
-    gövdede yine "Informatik 1" geçen başlık; alt bilgi kelime kelime ayrı Tj parçalarıyla
-    (PowerPoint dışa aktarımı gibi) ve sayfa numaralı bölüm satırı. Genişlik tablolu yazı tipi."""
+    """Imitates a university template: blue "Informatik 1" top left, white "Informatik 1" in a blue band,
+    a body title that again contains "Informatik 1"; a footer split into one Tj per word
+    (like a PowerPoint export) and a section line with page numbers. Font with a widths table."""
     pdf = pikepdf.new()
     fnt = pdf.make_indirect(Dictionary(Type=Name.Font, Subtype=Name.Type1, BaseFont=Name.Helvetica,
                                        Encoding=Name.WinAnsiEncoding, FirstChar=32, LastChar=255,
                                        Widths=Array([556] * 224)))
     lg = logo(pdf)
-    cw = 0.556  # em başına glif genişliği (Widths ile aynı)
+    cw = 0.556  # glyph width per em (same as Widths)
 
     def words(x, y, size, s, rgb):
         out = ""
@@ -172,16 +172,16 @@ def hhn_deck(n=6) -> pikepdf.Pdf:
 
     for i in range(n):
         c = "q 1 1 1 rg 0 0 720 405 re f Q\n"
-        c += text(30, 370, 16, "Informatik 1", (0.15, 0.4, 0.75))                 # sol üst başlık
+        c += text(30, 370, 16, "Informatik 1", (0.15, 0.4, 0.75))                 # top-left title
         c += "q 70 0 0 28 610 355 cm /Logo Do Q\n"
-        c += "q 0.35 0.6 0.9 rg 18 318 684 22 re f Q\n"                          # mavi bant
+        c += "q 0.35 0.6 0.9 rg 18 318 684 22 re f Q\n"                          # blue band
         c += text(310, 324, 13, "Informatik 1", (1, 1, 1))
         body = ["Vorlesung Informatik 1", "Hochschule Heilbronn", "Bachelor ESE & KID"] if i == 0 else \
                [f"Kapitel {i}: Algorithmen und Informatik 1", "Komplexitaet und Sortieren"]
         for k, line in enumerate(body):
             c += text(200, 270 - k * 26, 15, line, (0, 0, 0))
         c += text(20, 12, 7, "22/09/2026", (0, 0, 0))
-        c += words(80, 14, 7, "Prof. Dr. Dieter Maier Winter 26-27", (0, 0, 0))   # parça parça
+        c += words(80, 14, 7, "Prof. Dr. Dieter Maier Winter 26-27", (0, 0, 0))   # piece by piece
         c += text(560, 16, 6, f"Info1 Kapitel 0: Organisation - {i + 1}", (0.5, 0.5, 0.5))
         add_page(pdf, c, {"Logo": lg}, fnt)
     return pdf
@@ -191,13 +191,13 @@ def _font(size):
     from PIL import ImageFont
     try:
         return ImageFont.load_default(size=size)
-    except TypeError:  # eski Pillow
+    except TypeError:  # old Pillow
         return ImageFont.load_default()
 
 
 def screenshot_image(seed=1) -> Image.Image:
-    """Wikipedia ekran görüntüsü taklidi: solda yazı listesi (mavi altı çizili bağlantılar),
-    sağda iki fotoğraf, altta turuncu logo."""
+    """Imitates a Wikipedia screenshot: a text list on the left (blue underlined links),
+    two photos on the right, an orange logo at the bottom."""
     img = Image.new("RGB", (1200, 760), (255, 255, 255))
     d = ImageDraw.Draw(img)
     f = _font(22)
@@ -224,7 +224,7 @@ def screenshot_image(seed=1) -> Image.Image:
 
 
 def table_image() -> Image.Image:
-    """Formül/tablo görseli: beyaz zeminde siyah yazı, küçük kırmızı oklar ("Regeln")."""
+    """Formula/table image: black text on white, small red arrows ("Regeln")."""
     img = Image.new("RGB", (900, 520), (255, 255, 255))
     d = ImageDraw.Draw(img)
     f = _font(26)
@@ -249,8 +249,8 @@ def png_image(pdf, img: Image.Image):
 
 
 def mixed_deck(n=4) -> pikepdf.Pdf:
-    """Yazılı görseller: her sayfada aynı ekran görüntüsü (sayfa 0,2) veya tablo görseli (1,3)
-    + ayrı bir saf fotoğraf. Kırpma ve "yazılı görseli koru" testleri için."""
+    """Images containing text: the same screenshot on every page (pages 0,2) or a table image (1,3)
+    + a separate pure photo. For the cropping and "keep images with text" tests."""
     pdf = pikepdf.new()
     fnt = font(pdf)
     shot = png_image(pdf, screenshot_image())
@@ -288,8 +288,8 @@ def main():
         bench_deck(a.pages).save(p)
         print(p)
         return
-    for name, fn in (("dark_slides.pdf", dark_deck), ("light_slides.pdf", light_deck), ("hochschule_slides.pdf", hhn_deck), ("mixed_images.pdf", mixed_deck),
-                     ("beamer_slides.pdf", form_deck)):
+    for name, fn in (("dark_slides.pdf", dark_deck), ("light_slides.pdf", light_deck), ("hochschule_slides.pdf", hhn_deck),
+                     ("mixed_images.pdf", mixed_deck), ("beamer_slides.pdf", form_deck)):
         fn().save(OUT / name)
         print(OUT / name)
 

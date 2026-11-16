@@ -1,5 +1,5 @@
-"""Çeviri dosyaları kontrolü: her dilde aynı anahtarlar, aynı yer tutucular; kodda kullanılan
-her anahtar sözlükte var. Yeni metin eklerken üç dosyaya da eklemek yeterli, bu test unutulanı yakalar."""
+"""Translation file checks: the same keys and placeholders in every language, and every key used in
+the code exists. When adding text, add it to all three files; this test catches anything forgotten."""
 from __future__ import annotations
 
 import json
@@ -19,15 +19,15 @@ PLACEHOLDER = re.compile(r"\{(\w+)\}")
 @pytest.mark.parametrize("lang", LANGS[1:])
 def test_same_keys_as_english(lang):
     d = DICTS[lang]
-    assert sorted(set(EN) - set(d)) == [], f"{lang}.json'da eksik"
-    assert sorted(set(d) - set(EN)) == [], f"{lang}.json'da fazla"
+    assert sorted(set(EN) - set(d)) == [], f"missing in {lang}.json"
+    assert sorted(set(d) - set(EN)) == [], f"extra in {lang}.json"
 
 
 @pytest.mark.parametrize("lang", LANGS)
 def test_values_non_empty_and_placeholders_match(lang):
     for k, v in DICTS[lang].items():
-        assert isinstance(v, str) and v.strip(), f"{lang}:{k} boş"
-        assert set(PLACEHOLDER.findall(v)) == set(PLACEHOLDER.findall(EN[k])), f"{lang}:{k} yer tutucu farklı"
+        assert isinstance(v, str) and v.strip(), f"{lang}:{k} is empty"
+        assert set(PLACEHOLDER.findall(v)) == set(PLACEHOLDER.findall(EN[k])), f"{lang}:{k} placeholders differ"
 
 
 def _used_keys() -> set[str]:
@@ -35,13 +35,13 @@ def _used_keys() -> set[str]:
     js = (STATIC / "app.js").read_text("utf-8")
     server = (ROOT / "app" / "server.py").read_text("utf-8")
     keys = set(re.findall(r'data-i18n(?:-[a-z-]+)?="([^"]+)"', html))
-    # app.js: anahtar biçimindeki her dizge (t("a.b"), üçlü ifadeler, şablonlar dahil; ${…} içerenler hariç)
+    # app.js: every key-shaped string (t("a.b"), ternaries, templates; except those containing ${…})
     prefixes = {k.split(".")[0] for k in EN}
     for lit in re.findall(r'["`]([a-z_]+\.[a-z0-9_.-]+)["`]', js):
         if lit.split(".")[0] in prefixes:
             keys.add(lit)
     keys |= set(re.findall(r'HTTPException\(\d+, "([^"]+)"', server))
-    # dinamik anahtarlar: t(`tier.${t}.name`), t(`cls.${c}`) …
+    # dynamic keys: t(`tier.${t}.name`), t(`cls.${c}`) …
     keys |= {f"tier.{i}.{p}" for i in range(4) for p in ("name", "desc")}
     keys |= {f"cap.{x}" for x in ("graphics", "text", "crop")}
     keys |= {f"sort.{x}" for x in ("desc", "asc", "alpha")}
@@ -60,4 +60,4 @@ def test_every_used_key_exists():
 def test_server_errors_are_keys():
     server = (ROOT / "app" / "server.py").read_text("utf-8")
     for detail in re.findall(r"HTTPException\(\d+, ([^)]+)\)", server):
-        assert re.fullmatch(r'"error\.[a-z_]+"', detail.strip()), f"çevrilmemiş hata: {detail}"
+        assert re.fullmatch(r'"error\.[a-z_]+"', detail.strip()), f"untranslated error: {detail}"
