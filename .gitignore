@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+samples/bench_*.pdf
+.DS_Store
+.claude/settings.local.json
+.claude/.cc-writes/

@@ -1,0 +1,14 @@
+{
+  "remove_backgrounds": true,
+  "remove_repeated": true,
+  "remove_large_images": true,
+  "remove_large_shapes": true,
+  "remove_all_graphics": false,
+  "large_threshold": 0.1,
+  "repeat_ratio": 0.3,
+  "background_coverage": 0.6,
+  "text_mode": "auto",
+  "grayscale": true,
+  "image_fade": 0.4,
+  "nup": 4
+}
