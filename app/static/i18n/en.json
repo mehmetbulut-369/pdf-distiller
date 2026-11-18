@@ -211,5 +211,6 @@
   "ink.badge": "lots of ink",
   "toast.changed": "Done.",
   "toast.removed": "Removed.",
-  "toast.page_removed": "Page {n} removed."
+  "toast.page_removed": "Page {n} removed.",
+  "theme.dark": "Dark mode"
 }

@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PDF Distiller</title>
-<link rel="stylesheet" href="/static/style.css?v=0.4">
+<!-- before the stylesheet so a saved theme applies on the first paint (no flash of the other theme) -->
+<script>try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (_) {}</script>
+<link rel="stylesheet" href="/static/style.css?v=0.5">
 </head>
 <body>
 <header class="bar">
@@ -34,6 +36,14 @@
       <rect width="30" height="20" fill="#E30A17"/><circle cx="11.25" cy="10" r="5" fill="#FFFFFF"/><circle cx="12.5" cy="10" r="4" fill="#E30A17"/>
       <polygon fill="#FFFFFF" points="14.40,10.00 16.13,9.44 16.13,7.62 17.20,9.09 18.92,8.53 17.85,10.00 18.92,11.47 17.20,10.91 16.13,12.38 16.13,10.56"/></svg></span></button>
   </nav>
+  <!-- day/night: without a saved pick the system preference applies; CSS picks the icon -->
+  <button id="theme" class="themeswitch" aria-pressed="false" data-i18n-aria-label="theme.dark" data-i18n-title="theme.dark">
+    <svg class="to-dark" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor"
+      d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a.6.6 0 0 0-.8-.7A9.4 9.4 0 1 0 21.2 15.4a.6.6 0 0 0-.7-.8Z"/></svg>
+    <svg class="to-light" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.6" fill="currentColor"/>
+      <path d="M12 2.2v2.2M12 19.6v2.2M2.2 12h2.2M19.6 12h2.2M5.1 5.1l1.5 1.5M17.4 17.4l1.5 1.5M5.1 18.9l1.5-1.5M17.4 6.6l1.5-1.5"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
 </header>
 
 <main id="app" class="app">

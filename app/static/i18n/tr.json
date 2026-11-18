@@ -211,5 +211,6 @@
   "ink.badge": "çok mürekkep",
   "toast.changed": "Uygulandı.",
   "toast.removed": "Kaldırıldı.",
-  "toast.page_removed": "{n}. sayfa çıkarıldı."
+  "toast.page_removed": "{n}. sayfa çıkarıldı.",
+  "theme.dark": "Koyu tema"
 }

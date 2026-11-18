@@ -211,5 +211,6 @@
   "ink.badge": "viel Tinte",
   "toast.changed": "Übernommen.",
   "toast.removed": "Entfernt.",
-  "toast.page_removed": "Seite {n} entfernt."
+  "toast.page_removed": "Seite {n} entfernt.",
+  "theme.dark": "Dunkler Modus"
 }

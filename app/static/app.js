@@ -806,6 +806,16 @@ function bindProfiles() {
 }
 
 // ------------------------------------------------------------------ startup
+// day/night: html[data-theme] is set only by a pick (saved in localStorage, applied in index.html <head>)
+const darkMq = matchMedia("(prefers-color-scheme: dark)");
+const isDark = () => (document.documentElement.dataset.theme || (darkMq.matches ? "dark" : "light")) === "dark";
+const syncTheme = () => $("#theme").setAttribute("aria-pressed", String(isDark()));
+function toggleTheme() {
+  const next = isDark() ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("theme", next); } catch (_) {}
+  syncTheme();
+}
 async function init() {
   await loadLang(pickLang());
   applyDom();
@@ -813,6 +823,7 @@ async function init() {
   state.settings = { ...state.tiers[1].settings };
   buildTiers(); bindControls(); bindProfiles(); syncControls(); setTool("graphics");
   loadProfiles().catch(() => {});
+  syncTheme(); $("#theme").onclick = toggleTheme; darkMq.addEventListener("change", syncTheme);
   $$("#lang button").forEach((b) => (b.onclick = () => setLang(b.dataset.lang).catch((err) => toast(err.message, true))));
 
   $("#file").onchange = (e) => { openFile(e.target.files[0]); e.target.value = ""; };
