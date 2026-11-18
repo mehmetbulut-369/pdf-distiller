@@ -23,6 +23,7 @@ MAX_SIDE = 640
 TILE = 16
 TEXT_IMAGE = 0.6       # a text score above this means "image containing text"
 MIN_PHOTO = 0.015      # photo fragments smaller than this share of the image are ignored
+PHOTO_INK = 0.30       # an image this dark on average is a photo even if its tiles look "texty"
 
 
 def load_small(pdf: pikepdf.Pdf, objgen) -> Image.Image | None:
@@ -155,7 +156,9 @@ def analyze_image(im: Image.Image) -> dict:
         boxes.append((max(0, c0 - 0.5) / cols, max(0, r0 - 0.5) / rows,
                       min(cols, c1 + 1.5) / cols, min(rows, r1 + 1.5) / rows))
     boxes = [tuple(round(v, 4) for v in b) for b in _merge(boxes)]
-    return {"text": round(score, 3), "photos": boxes, "grid": [rows, cols]}
+    g = np.asarray(im.convert("L"), dtype=np.float32) / 255.0
+    ink = float((1.0 - g).mean())  # share of the image covered in ink (0 = blank paper)
+    return {"text": round(score, 3), "photos": boxes, "grid": [rows, cols], "ink": round(ink, 3)}
 
 
 def image_features(pdf: pikepdf.Pdf, objgen) -> dict | None:

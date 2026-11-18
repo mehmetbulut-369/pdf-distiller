@@ -20,11 +20,20 @@
   </div>
   <button id="undo" class="btn ghost" data-i18n="undo" data-i18n-title="undo.title" disabled>Undo</button>
   <button id="export" class="btn primary" data-i18n="export" disabled>Download print PDF</button>
-  <select id="lang" class="langsel" data-i18n-aria-label="lang.label">
-    <option value="en">English</option>
-    <option value="de">Deutsch</option>
-    <option value="tr">Türkçe</option>
-  </select>
+  <!-- Language as flags (as on kariyeraday.de): SVG because emoji flags don't render on Windows;
+       each language is named in itself so a lost user still finds theirs. -->
+  <nav id="lang" class="langflags" data-i18n-aria-label="lang.label">
+    <button data-lang="en" aria-label="English" title="English"><span class="flag"><svg viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice">
+      <clipPath id="fUKt"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>
+      <path d="M0,0 v30 h60 v-30 z" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#FFFFFF" stroke-width="6"/>
+      <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#fUKt)" stroke="#C8102E" stroke-width="4"/>
+      <path d="M30,0 v30 M0,15 h60" stroke="#FFFFFF" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></svg></span></button>
+    <button data-lang="de" aria-label="Deutsch" title="Deutsch"><span class="flag"><svg viewBox="0 0 5 3">
+      <rect width="5" height="1" fill="#000000"/><rect width="5" height="1" y="1" fill="#DD0000"/><rect width="5" height="1" y="2" fill="#FFCC00"/></svg></span></button>
+    <button data-lang="tr" aria-label="Türkçe" title="Türkçe"><span class="flag"><svg viewBox="0 0 30 20">
+      <rect width="30" height="20" fill="#E30A17"/><circle cx="11.25" cy="10" r="5" fill="#FFFFFF"/><circle cx="12.5" cy="10" r="4" fill="#E30A17"/>
+      <polygon fill="#FFFFFF" points="14.40,10.00 16.13,9.44 16.13,7.62 17.20,9.09 18.92,8.53 17.85,10.00 18.92,11.47 17.20,10.91 16.13,12.38 16.13,10.56"/></svg></span></button>
+  </nav>
 </header>
 
 <main id="app" class="app">
@@ -40,13 +49,19 @@
       </div>
     </section>
 
+    <section class="inkhot" id="inkHot" hidden>
+      <h2 data-i18n="ink.title">Uses the most ink</h2>
+      <p class="hint" data-i18n="ink.hint"></p>
+      <ol class="inklist" id="inkList"></ol>
+    </section>
+
     <section>
       <h2 data-i18n="tiers.title">Saving level</h2>
       <div class="tiers" id="tiers" role="radiogroup" data-i18n-aria-label="tiers.label"></div>
     </section>
 
-    <details class="block" open>
-      <summary data-i18n="remove.title">What to remove</summary>
+    <details class="block">
+      <summary data-i18n="remove.title">Fine-tune (optional)</summary>
       <label class="chk"><input type="checkbox" data-s="remove_backgrounds"> <span data-i18n="s.remove_backgrounds"></span> <i class="sw bg"></i></label>
       <label class="chk"><input type="checkbox" data-s="remove_repeated"> <span data-i18n="s.remove_repeated"></span> <i class="sw rep"></i></label>
       <label class="chk"><input type="checkbox" data-s="remove_large_images"> <span data-i18n="s.remove_large_images"></span> <i class="sw lg"></i></label>
@@ -65,7 +80,7 @@
         <input type="range" min="30" max="100" step="5" data-s="background_coverage" data-scale="100"></label>
     </details>
 
-    <details class="block" open>
+    <details class="block">
       <summary data-i18n="textcolor.title">Text and color</summary>
       <label class="sel"><span data-i18n="s.text_mode"></span>
         <select data-s="text_mode">
@@ -82,7 +97,7 @@
     <details class="block" open>
       <summary data-i18n="paper.title">Paper</summary>
       <div class="seg wide" id="nup" role="radiogroup" data-i18n-aria-label="paper.label">
-        <button data-n="1">1</button><button data-n="2">2</button><button data-n="4">4</button><button data-n="6">6</button>
+        <button data-n="1" role="radio">1</button><button data-n="2" role="radio">2</button><button data-n="4" role="radio">4</button><button data-n="6" role="radio">6</button>
       </div>
       <p class="hint" data-i18n="paper.hint"></p>
     </details>
@@ -117,7 +132,7 @@
         <button data-v="rect" class="on" data-i18n="crop.rect" data-i18n-title="crop.rect_title"></button><button data-v="free" data-i18n="crop.free" data-i18n-title="crop.free_title"></button>
       </div>
       <div class="seg" id="cropMode" role="radiogroup" data-i18n-aria-label="crop.mode_label">
-        <button data-v="keep" class="on" data-i18n="crop.keep" data-i18n-title="crop.keep_title"></button><button data-v="erase" data-i18n="crop.erase" data-i18n-title="crop.erase_title"></button>
+        <button data-v="erase" class="on" data-i18n="crop.erase" data-i18n-title="crop.erase_title"></button><button data-v="keep" data-i18n="crop.keep" data-i18n-title="crop.keep_title"></button>
       </div>
       <label class="chk inline"><input type="checkbox" id="cropAll"> <span id="cropAllLabel"></span></label>
       <span class="spacer"></span>
@@ -125,12 +140,14 @@
       <button class="btn ghost small" id="cropClear" data-i18n="crop.clear"></button>
       <button class="btn small" id="cropDone" data-i18n="crop.done"></button>
     </div>
+    <div class="inkwarn" id="inkWarn" role="status" hidden></div>
     <div class="views" id="views" data-mode="split">
       <figure class="sheet before"><div class="frame"><img id="imgBefore" data-i18n-alt="preview.original_alt" alt=""><div class="overlay" id="overlay"></div></div>
         <figcaption><span id="capBefore"></span>
           <span class="legend" id="legendGraphics">
             <span><i class="sw bg"></i><span data-i18n="cls.background"></span></span><span><i class="sw rep"></i><span data-i18n="cls.repeated"></span></span>
             <span><i class="sw lg"></i><span data-i18n="cls.large"></span></span><span><i class="sw ti"></i><span data-i18n="cls.text_image"></span></span><span><i class="sw ot"></i><span data-i18n="cls.other"></span></span>
+            <span><i class="sw x-drop"></i><span data-i18n="legend.dropped"></span></span><span><i class="sw x-manual"></i><span data-i18n="legend.manual"></span></span>
           </span>
           <span class="legend" id="legendText" hidden>
             <span><i class="sw tx"></i><span data-i18n="cls.text"></span></span><span><i class="sw txr"></i><span data-i18n="legend.same_every_page"></span></span><span><i class="sw rg"></i><span data-i18n="legend.region"></span></span>

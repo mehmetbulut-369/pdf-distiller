@@ -25,7 +25,7 @@ from .classify import classify, in_region, signature_pages
 from .images import process_images
 from .imgfeat import image_features
 from .interpreter import Caches, PageWalker, apply, invert, page_box, page_rotation, user_to_view, view_mapper, view_to_user
-from .model import IMAGE, TEXT, Overrides, PageInfo, PageOp, Settings
+from .model import FILL, IMAGE, SHADING, TEXT, Overrides, PageInfo, PageOp, Settings
 from .pageops import apply_page_ops, nup
 
 # pdfium is not thread-safe; every render call goes through this lock.
@@ -33,6 +33,8 @@ PDFIUM_LOCK = threading.RLock()
 
 
 FEATURE_MIN_AREA = 0.02  # content analysis only for images larger than this (logos/icons are skipped)
+INK_HEAVY_PAGE = 0.15    # a printed page above this ink coverage gets a warning (a text page is ~3-6 %)
+INK_HOTSPOT = 0.04       # a kept element costing at least this share of its page in ink is a hotspot
 
 
 def _analyze_range(data: bytes, start: int, stop: int):
@@ -380,6 +382,57 @@ class DistillDocument:
         o, p = o_sum / len(idx), p_sum / len(idx)
         return {"original": round(o, 4), "processed": round(p, 4),
                 "saving": round(1 - p / o, 4) if o > 0 else 0.0, "pages": len(idx)}
+
+    def _ink_cost(self, e, s: Settings) -> float:
+        """Estimated ink of one element as a share of its page (area x darkness). No rendering."""
+        if e.kind == IMAGE:
+            f = self.img_feats.get(e.sig)
+            ink = f.get("ink", 0.5) if f else 0.5
+            return e.area * ink * (1.0 - s.image_fade)
+        if e.kind in (FILL, SHADING):
+            return e.area * (1.0 - e.lum)
+        return 0.0  # text and thin strokes: small, and needed
+
+    def ink_report(self, s: Settings, ov: Overrides, top: int = 8) -> dict:
+        """Per-page ink estimate of the print output and the elements that cost the most ink.
+
+        Analytic (area x darkness of every kept element), so it is instant and covers every page;
+        overlaps are counted twice and capped at 100 %. The rendered gauge (ink_estimate) stays the
+        reference for the overall saving.
+        pages:    [estimate per source page]
+        heavy:    source pages above INK_HEAVY_PAGE
+        hotspots: kept elements >= INK_HOTSPOT, grouped by signature, most total ink first
+        page_hot: {heavy source page: [ids of its hotspot elements]} for highlighting in the preview
+        """
+        drops, labels, clips = self.decide_full(s, ov)
+        pages, groups, page_hot = [], {}, {}
+        for p in self.pages:
+            d, pc = drops.get(p.index, ()), clips.get(p.index, {})
+            total, hot_ids = 0.0, []
+            for e in p.elements:
+                if e.id in d:
+                    continue
+                c = self._ink_cost(e, s) * (0.5 if e.id in pc else 1.0)  # cropped: assume half stays
+                total += c
+                if c < INK_HOTSPOT:
+                    continue
+                hot_ids.append(e.id)
+                g = groups.get(e.sig)
+                if g is None:
+                    g = groups[e.sig] = {"id": e.id, "sig": e.sig, "page": p.index, "kind": e.kind,
+                                         "cls": labels.get(e.id, "other"), "share": 0.0, "pages": 0, "cost": 0.0}
+                g["pages"] += 1
+                g["cost"] += c
+                if c > g["share"]:
+                    g["share"], g["id"], g["page"] = c, e.id, p.index
+            pages.append(round(min(total, 1.0), 3))
+            if total >= INK_HEAVY_PAGE and hot_ids:
+                page_hot[p.index] = hot_ids
+        hot = sorted(groups.values(), key=lambda g: -g["cost"])[:top]
+        for g in hot:
+            g["share"], g["cost"] = round(min(g["share"], 1.0), 3), round(g["cost"], 3)
+        return {"pages": pages, "heavy": [i for i, v in enumerate(pages) if v >= INK_HEAVY_PAGE],
+                "limit": INK_HEAVY_PAGE, "hotspots": hot, "page_hot": page_hot}
 
     # -------------------------------------------------------------- export
     def export(self, s: Settings, ov: Overrides, ops: list[PageOp] | None = None) -> bytes:

@@ -344,3 +344,38 @@ def test_crop_forces_keep(mixed):
     assert photo.id not in drops.get(1, set())
     els = {e["id"]: e for e in mixed.page_elements(1, tier_settings(3), ov)}
     assert els[photo.id]["clips"]["keep"]
+
+
+# ----------------------------------------------------------------------------- ink warnings
+def test_image_ink_measure():
+    from PIL import Image
+
+    from distill_core.imgfeat import analyze_image
+    assert analyze_image(Image.new("RGB", (200, 200), "white"))["ink"] < 0.01
+    assert analyze_image(Image.new("RGB", (200, 200), (40, 40, 40)))["ink"] > 0.8
+
+
+def test_dark_photo_is_not_protected_as_text_image(mixed):
+    table = _image(mixed, 1)
+    real = dict(mixed.img_feats[table.sig])
+    try:
+        # a dark photo that the tile test mistakes for text (cars, machines on lecture title slides)
+        mixed.img_feats[table.sig] = {**real, "text": 0.9, "ink": 0.55}
+        mixed._decisions.clear()
+        drops, labels = mixed.decide(tier_settings(3), Overrides())
+        assert labels[table.id] != "text_image" and table.id in drops[1]
+    finally:
+        mixed.img_feats[table.sig] = real
+        mixed._decisions.clear()
+
+
+def test_ink_report_flags_heavy_pages_and_groups_hotspots(dark):
+    r0 = dark.ink_report(Settings(), Overrides())
+    assert len(r0["pages"]) == dark.n_pages
+    assert r0["heavy"] == list(range(dark.n_pages))           # dark backgrounds on every page
+    top = r0["hotspots"][0]
+    assert top["pages"] == dark.n_pages and top["share"] > 0.5  # the shared background, grouped once
+    assert r0["page_hot"][0]                                 # heavy pages name what to highlight
+    r1 = dark.ink_report(tier_settings(1), Overrides())
+    assert sum(r1["pages"]) < sum(r0["pages"]) / 2              # removing backgrounds saves most ink
+    assert all(h["sig"] != top["sig"] for h in r1["hotspots"])

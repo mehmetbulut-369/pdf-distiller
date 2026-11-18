@@ -14,7 +14,10 @@ bilgisayarınızda çalışır; PDF'leriniz hiçbir yere yüklenmez.
   *Orta* (+ büyük görseller ve şekiller), *Maksimum* (sadece metin kalır).
 - **Metin metin olarak kalır.** Resme çevirme yok, çıktı vektör PDF'tir. Kaldırılan koyu zemin
   üzerindeki açık renkli metin otomatik siyaha döner.
-- **Yazı içeren görseller** (tablo, formül, ekran görüntüsü) tanınır ve korunur.
+- **Yazı içeren görseller** (tablo, formül, ekran görüntüsü) tanınır ve korunur; koyu fotoğraflar yine
+  fotoğraf sayılır.
+- **Mürekkep uyarısı:** çok mürekkep harcayacak sayfalar işaretlenir; bir liste en çok harcayan
+  öğeleri gösterir, her biri tek tıkla kaldırılır.
 - **Tıkla ve seç:** herhangi bir öğeyi bu sayfada veya tüm sayfalarda kaldır ya da koru. Üst/alt
   bilgiyi konumuna göre kaldır, sayfa numarası değişse bile.
 - **Kayıpsız kırpma:** görselin bir kısmını bırak veya sil (dörtgen veya serbest), PDF kırpma
@@ -87,11 +90,14 @@ python run.py --window     # ayrı pencerede (önce: pip install pywebview)
 3. Önizlemedeki renkli kutular bulunan öğelerdir. Tıkladığınız noktadaki **en küçük** öğe seçilir;
    menüden bu sayfada veya tüm sayfalarda kaldırıp koruyabilirsiniz.
 4. **Metin seç** (`T`): bir metin kutusuna tıklayın veya sürükleyerek alan seçin.
-5. **Kırp** (`K`): bir görsele tıklayın, sonra üzerinde sürükleyin. *İçini bırak* veya *İçini sil*;
-   *Otomatik: fotoğrafları sil* fotoğraf bölgelerini siler, yazıyı bırakır.
-6. Sağ şeritte sayfaları silin, döndürün, sıralayın. **Geri al:** Ctrl/Cmd+Z.
-7. Ayarları **profil** olarak kaydedin (`~/.pdf-distiller/profiles/`).
-8. **Baskı PDF'ini indir.**
+5. **Kırp** (`K`): bir görsele tıklayın, sonra üzerinde sürükleyin. Varsayılan *Çizdiğimi sil*'dir;
+   *Yalnız çizdiğimi bas* yalnız o kısmı bırakır. *Fotoğrafları otomatik sil* fotoğraf bölgelerini
+   siler, yazıyı bırakır.
+6. **En çok mürekkep harcayanlar** (solda): çok mürekkep harcayacak sayfalar kırmızıyla işaretlenir;
+   liste en pahalı öğeleri gösterir, tek tıkla kaldırılır.
+7. Sağ şeritte sayfaları silin, döndürün, sıralayın. **Geri al:** Ctrl/Cmd+Z.
+8. Ayarları **profil** olarak kaydedin (`~/.pdf-distiller/profiles/`).
+9. **Baskı PDF'ini indir.**
 
 Nasıl çalıştığı, geliştirme ve bilinen sınırlar için: [README.md](README.md) (İngilizce) ve
 [ARCHITECTURE.md](ARCHITECTURE.md).

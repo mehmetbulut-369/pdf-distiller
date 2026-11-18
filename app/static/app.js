@@ -40,7 +40,9 @@ function applyDom() {
   for (const a of ["title", "aria-label", "placeholder", "alt"]) {
     $$(`[data-i18n-${a}]`).forEach((el) => el.setAttribute(a, t(el.getAttribute(`data-i18n-${a}`))));
   }
-  $("#lang").value = i18n.lang;
+  $$("#lang button").forEach((b) => {
+    if (b.dataset.lang === i18n.lang) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+  });
 }
 async function setLang(lang) {
   await loadLang(lang);
@@ -91,6 +93,14 @@ function toast(msg, err = false) {
   const t = $("#toast");
   t.textContent = msg; t.className = "toast" + (err ? " err" : ""); t.hidden = false;
   clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), err ? 6000 : 2600);
+}
+// Confirms a change and offers the way back; users rarely discover Ctrl/Cmd+Z on their own.
+function undoToast(msg) {
+  const el = $("#toast");
+  el.className = "toast"; el.hidden = false;
+  el.innerHTML = `${esc(msg)} <button class="lnk">${esc(t("undo"))}</button>`;
+  el.querySelector("button").onclick = () => { el.hidden = true; undo(); };
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.hidden = true), 5000);
 }
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 const pct = (v) => new Intl.NumberFormat(i18n.lang, { style: "percent", maximumFractionDigits: 0 }).format(v);
@@ -155,7 +165,7 @@ function syncControls() {
     else el.value = s[k];
   });
   $$("output[data-o]").forEach((o) => (o.textContent = pct(s[o.dataset.o])));
-  $$("#nup button").forEach((b) => b.classList.toggle("on", Number(b.dataset.n) === s.nup));
+  $$("#nup button").forEach((b) => { const on = Number(b.dataset.n) === s.nup; b.classList.toggle("on", on); b.setAttribute("aria-checked", on); });
 }
 function bindControls() {
   $$("[data-s]").forEach((el) => {
@@ -218,6 +228,7 @@ async function refreshPage() {
   const src = curSrc();
   if (src === null) { $("#pageLabel").textContent = t("page.none"); return; }
   $("#pageLabel").textContent = `${state.pos + 1} / ${state.ops.length}`;
+  renderInkWarn();
   const seq = ++state.reqSeq;
   const before = $("#imgBefore");
   const w = imgWidth(before);
@@ -278,14 +289,17 @@ function drawOverlay() {
     });
   }
   const els = state.elements.filter(selectable).sort((a, b) => b.area - a.area);
+  const hot = new Set(inkRep()?.page_hot?.[String(curSrc())] || []);
   for (const e of els) {
     const d = document.createElement("div");
     d.className = `el k-${e.kind} c-${e.cls}` + (e.drop ? " drop" : "") + (isManual(e) ? " manual" : "") +
-      (state.crop.target?.id === e.id ? " target" : "");
+      (state.crop.target?.id === e.id ? " target" : "") + (!e.drop && hot.has(e.id) ? " inkhot" : "");
     d.dataset.id = e.id;
     place(d, e.view);
     d.title = describe(e);
     d.tabIndex = 0;
+    d.setAttribute("role", "button");
+    d.setAttribute("aria-label", describe(e));
     d.onkeydown = (ev) => {
       if (ev.key !== "Enter" && ev.key !== " ") return;
       ev.preventDefault(); const r = d.getBoundingClientRect(); activate(e, [], r.left + 8, r.top + 8);
@@ -345,7 +359,7 @@ function menuStart(x, y, headHtml) {
   };
   return {
     // an action that changes settings: undoable, refreshes the preview
-    add(label, fn, hint) { button(label, hint, () => { closeMenu(); snapshot(); fn(); refreshAll(); }); },
+    add(label, fn, hint) { button(label, hint, () => { closeMenu(); snapshot(); fn(); refreshAll(); undoToast(t("toast.changed")); }); },
     // navigation only (change selection, switch tool)
     link(label, fn, hint) { button(label, hint, () => { closeMenu(); fn(); }); },
     note(text) { const d = document.createElement("div"); d.className = "note"; d.textContent = text; m.appendChild(d); },
@@ -364,7 +378,7 @@ const short = (t, n = 48) => (t.length > n ? t.slice(0, n - 1) + "…" : t);
 function openMenu(e, x, y, others = []) {
   markSelected(e);
   const n = e.pages_with_sig;
-  const head = `${kindText(e.kind)} · ${clsText(e.cls)} · ${t("menu.area", { area: pct(e.area) })}${n > 1 ? ` · ${t("menu.on_pages", { n })}` : ""}`;
+  const head = `${kindText(e.kind)} · ${clsText(e.cls)}${n > 1 ? ` · ${t("menu.on_pages", { n })}` : ""} · ${t(e.drop ? "el.drop" : "el.keep")}`;
   const m = menuStart(x, y, esc(head));
   const O = state.overrides;
   if (e.cls === "text_image" && !e.drop) m.note(t("menu.auto_kept"));
@@ -381,7 +395,7 @@ function openMenu(e, x, y, others = []) {
   if (others.length) {
     m.sep();
     m.note(t("menu.others"));
-    others.slice(0, 4).forEach((o) => m.link(`${kindText(o.kind)} · ${clsText(o.cls)} · ${t("menu.area", { area: pct(o.area) })}`,
+    others.slice(0, 4).forEach((o) => m.link(`${kindText(o.kind)} · ${clsText(o.cls)} · ${t(o.drop ? "el.drop" : "el.keep")}`,
       () => openMenu(o, x, y, [e, ...others.filter((z) => z !== o)])));
   }
   m.show();
@@ -434,7 +448,8 @@ function openRegionMenu(k, x, y) {
 function closeMenu() { $("#menu").hidden = true; $$(".el.sel, .el.picked").forEach((n) => n.classList.remove("sel", "picked")); }
 
 // ------------------------------------------------------------------ crop tool
-state.crop = { target: null, shape: "rect", mode: "keep", all: false };
+// "erase" first: a student who circles a logo wants it gone, not printed alone.
+state.crop = { target: null, shape: "rect", mode: "erase", all: false };
 
 function setCropTarget(e) {
   state.crop.target = e;
@@ -444,9 +459,8 @@ function setCropTarget(e) {
 function syncCropBar() {
   const c = state.crop, e = c.target;
   $("#cropbar").hidden = state.tool !== "crop";
-  $("#cropStatus").textContent = e
-    ? `${t("crop.selected", { area: pct(e.area) })}${e.cls === "text_image" ? ` · ${t("crop.has_text")}` : ""} — ${t("crop.drag")}`
-    : t("crop.pick");
+  $("#cropStatus").textContent = e ? t(c.mode === "keep" ? "crop.drag_keep" : "crop.drag_erase") : t("crop.pick");
+  $("#cropStatus").classList.toggle("go", !!e);
   $$("#cropShape button").forEach((b) => b.classList.toggle("on", b.dataset.v === c.shape));
   $$("#cropMode button").forEach((b) => b.classList.toggle("on", b.dataset.v === c.mode));
   const n = e ? e.pages_with_sig : 0;
@@ -525,7 +539,8 @@ function bindOverlay() {
         if (k >= 0) return openRegionMenu(k, ev.clientX, ev.clientY);
       }
       if (!hs.length) { closeMenu(); return; }
-      activate(hs[0], hs.slice(1), ev.clientX, ev.clientY);
+      // after the click event that follows pointerup, or the document click handler closes the menu again
+      setTimeout(() => activate(hs[0], hs.slice(1), ev.clientX, ev.clientY), 0);
       return;
     }
     if (state.tool === "text") {
@@ -567,9 +582,47 @@ function renderSummary() {
   $("#inkAfter").style.height = `${Math.min(100, (p / scale) * 92)}%`;
   $("#savingPct").textContent = pct(Math.max(0, d.ink.saving));
   $("#savingNote").textContent = [t("gauge.less_ink"), t("gauge.removed", { n: d.removed }), t("gauge.sample", { n: d.ink.pages })].join(" · ");
+  renderInk(); drawOverlay();
 }
 
 function refreshAll() { refreshPage(); refreshSummary(); refreshWords(); }
+
+// ------------------------------------------------------------------ ink warnings
+// The server estimates every printed page (area x darkness of what is kept) and lists the elements
+// that cost the most ink, so a student sees "this photo will drink your cartridge" before printing.
+const inkRep = () => state.summary?.ink_report;
+const posOfSrc = (src) => state.ops.findIndex((o) => o.src === src);
+function renderInk() {
+  const r = inkRep();
+  const list = $("#inkList");
+  list.innerHTML = "";
+  const hot = (r?.hotspots || []).filter((h) => posOfSrc(h.page) >= 0);
+  $("#inkHot").hidden = !hot.length;
+  for (const h of hot) {
+    const li = document.createElement("li");
+    const where = h.pages > 1 ? t("ink.on_pages", { n: h.pages }) : t("ink.on_page", { n: posOfSrc(h.page) + 1 });
+    li.innerHTML = `<button class="lnk" data-a="show">${esc(kindText(h.kind))} · ${esc(where)}</button>
+      <span class="inkpct">${esc(t("ink.share", { pct: pct(h.share) }))}</span>
+      <button class="btn small" data-a="rm">${esc(t(h.pages > 1 ? "ink.remove_all" : "ink.remove"))}</button>`;
+    li.querySelector('[data-a="show"]').onclick = () => goTo(posOfSrc(h.page));
+    li.querySelector('[data-a="rm"]').onclick = () => {
+      snapshot();
+      if (h.pages > 1) state.overrides.signatures[h.sig] = "remove"; else state.overrides.elements[h.id] = "remove";
+      refreshAll(); undoToast(t("toast.removed"));
+    };
+    list.appendChild(li);
+  }
+  const heavy = new Set(r?.heavy || []);
+  $$(".thumb").forEach((li, i) => li.classList.toggle("heavy", heavy.has(state.ops[i]?.src)));
+  renderInkWarn();
+}
+function renderInkWarn() {
+  const r = inkRep(), src = curSrc(), box = $("#inkWarn");
+  const v = r && src !== null ? r.pages[src] : 0;
+  box.hidden = !(r && v >= r.limit);
+  if (box.hidden) return;
+  box.innerHTML = `<strong>${esc(t("ink.page_heavy", { pct: pct(v) }))}</strong> ${esc(t("ink.page_heavy_hint"))}`;
+}
 
 // ------------------------------------------------------------------ page strip
 function renderThumbs() {
@@ -585,7 +638,7 @@ function renderThumbs() {
     li.style.setProperty("--ar", rot ? `${p.h}/${p.w}` : `${p.w}/${p.h}`);
     const up = esc(t("thumb.up")), down = esc(t("thumb.down")), rotT = esc(t("thumb.rotate"));
     li.innerHTML = `<button class="pick" aria-label="${esc(t("thumb.page", { n: i + 1 }))}"><div class="tw"><img loading="lazy" alt="" src="/api/doc/${state.doc.id}/original/${op.src}.png?w=280" style="transform:rotate(${op.rotate}deg);${rot ? `width:${(p.h / p.w) * 100}%` : ""}"></div></button>
-      <div class="meta"><span>${i + 1}${op.src !== i ? ` <small>${esc(t("thumb.orig", { n: op.src + 1 }))}</small>` : ""}</span><span class="acts">
+      <div class="meta"><span>${i + 1}${op.src !== i ? ` <small>${esc(t("thumb.orig", { n: op.src + 1 }))}</small>` : ""} <span class="inkbadge">${esc(t("ink.badge"))}</span></span><span class="acts">
       <button data-a="up" title="${up}" aria-label="${up}">↑</button><button data-a="down" title="${down}" aria-label="${down}">↓</button>
       <button data-a="rot" title="${rotT}" aria-label="${rotT}">↻</button><button data-a="del" title="${esc(t("thumb.delete_title"))}" aria-label="${esc(t("thumb.delete"))}">✕</button></span></div>`;
     li.querySelector(".pick").onclick = () => goTo(i);
@@ -600,7 +653,8 @@ function pageAction(i, a) {
   if (a === "rot") ops[i].rotate = (ops[i].rotate + 90) % 360;
   if (a === "up" && i > 0) { [ops[i - 1], ops[i]] = [ops[i], ops[i - 1]]; if (state.pos === i) state.pos--; }
   if (a === "down" && i < ops.length - 1) { [ops[i + 1], ops[i]] = [ops[i], ops[i + 1]]; if (state.pos === i) state.pos++; }
-  renderThumbs(); refreshPage(); refreshWords();
+  renderThumbs(); renderInk(); refreshPage(); refreshWords();
+  if (a === "del") undoToast(t("toast.page_removed", { n: i + 1 }));
 }
 function goTo(i) {
   if (!state.ops.length) return;
@@ -759,7 +813,7 @@ async function init() {
   state.settings = { ...state.tiers[1].settings };
   buildTiers(); bindControls(); bindProfiles(); syncControls(); setTool("graphics");
   loadProfiles().catch(() => {});
-  $("#lang").onchange = (e) => setLang(e.target.value).catch((err) => toast(err.message, true));
+  $$("#lang button").forEach((b) => (b.onclick = () => setLang(b.dataset.lang).catch((err) => toast(err.message, true))));
 
   $("#file").onchange = (e) => { openFile(e.target.files[0]); e.target.value = ""; };
   $("#export").onclick = doExport;
@@ -796,8 +850,8 @@ async function init() {
   document.addEventListener("click", (e) => { if (!$("#menu").contains(e.target)) closeMenu(); });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeMenu();
+    if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement?.tagName)) return; // let fields undo their own typing
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); return; }
-    if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement?.tagName)) return;
     if (e.key === "ArrowRight" || e.key === "PageDown") goTo(state.pos + 1);
     if (e.key === "ArrowLeft" || e.key === "PageUp") goTo(state.pos - 1);
   });

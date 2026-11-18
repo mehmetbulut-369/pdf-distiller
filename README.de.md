@@ -14,7 +14,10 @@ auf Ihrem eigenen Rechner; Ihre PDFs werden nirgendwohin hochgeladen.
   *Mittel* (+ große Bilder und Formen), *Maximal* (nur der Text bleibt).
 - **Text bleibt Text.** Nichts wird gerastert, das Ergebnis ist ein Vektor-PDF. Heller Text auf
   entferntem dunklem Hintergrund wird automatisch schwarz.
-- **Bilder mit Text** (Tabellen, Formeln, Screenshots) werden erkannt und behalten.
+- **Bilder mit Text** (Tabellen, Formeln, Screenshots) werden erkannt und beibehalten; dunkle Fotos
+  werden trotzdem als Fotos behandelt.
+- **Tintenwarnung:** Seiten, die viel Tinte verbrauchen würden, werden markiert, und eine Liste zeigt,
+  welche Elemente am meisten kosten – mit einem Klick entfernt.
 - **Per Klick:** jedes einzelne Element auf einer oder allen Seiten entfernen oder behalten.
   Kopf- und Fußzeilen nach Position entfernen, auch wenn sich die Seitenzahl ändert.
 - **Verlustfreies Zuschneiden:** einen Teil eines Bildes behalten oder löschen (Rechteck oder
@@ -88,12 +91,15 @@ Beim ersten Start wird eine lokale Umgebung eingerichtet (1–2 Minuten).
 3. Farbige Rahmen in der Vorschau zeigen die gefundenen Elemente. Ein Klick wählt das **kleinste**
    Element unter dem Mauszeiger; im Menü können Sie es auf dieser oder allen Seiten entfernen oder
    behalten.
-4. **Text wählen** (`T`): ein Textfeld anklicken oder einen Bereich aufziehen.
-5. **Zuschneiden** (`C`): ein Bild anklicken und darüber ziehen. *Innen behalten* oder *Innen löschen*;
-   *Automatisch: Fotos löschen* entfernt Fotobereiche und behält den Text.
-6. Seiten rechts löschen, drehen und sortieren. **Rückgängig:** Strg/Cmd+Z.
-7. Einstellungen als **Profil** speichern (`~/.pdf-distiller/profiles/`).
-8. **Druck-PDF herunterladen.**
+4. **Text auswählen** (`T`): ein Textfeld anklicken oder einen Bereich aufziehen.
+5. **Zuschneiden** (`C`): ein Bild anklicken und darüber ziehen. Standard ist *Das Gezeichnete löschen*;
+   *Nur das Gezeichnete drucken* behält nur diesen Teil. *Fotos automatisch löschen* entfernt
+   Fotobereiche und behält den Text.
+6. **Verbraucht die meiste Tinte** (links): Seiten mit hohem Tintenverbrauch sind rot markiert;
+   die Liste zeigt die teuersten Elemente.
+7. Seiten rechts löschen, drehen und sortieren. **Rückgängig:** Strg/Cmd+Z.
+8. Einstellungen als **Profil** speichern (`~/.pdf-distiller/profiles/`).
+9. **Druck-PDF herunterladen.**
 
 Funktionsweise, Entwicklung und bekannte Grenzen: siehe [README.md](README.md) (Englisch) und
 [ARCHITECTURE.md](ARCHITECTURE.md).

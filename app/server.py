@@ -164,7 +164,7 @@ def elements(doc_id: str, job: Job):
 def summary(doc_id: str, job: Job):
     d = _doc(doc_id)
     s, ov = _parse(job)
-    return {**d.summary(s, ov), "ink": d.ink_estimate(s, ov)}
+    return {**d.summary(s, ov), "ink": d.ink_estimate(s, ov), "ink_report": d.ink_report(s, ov)}
 
 
 class WordJob(Job):

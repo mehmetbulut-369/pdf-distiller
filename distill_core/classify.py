@@ -8,7 +8,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 
-from .imgfeat import TEXT_IMAGE
+from .imgfeat import PHOTO_INK, TEXT_IMAGE
 from .model import FILL, IMAGE, SHADING, TEXT, Overrides, PageInfo, Settings
 
 WHITE_LUM = 0.95          # fills lighter than this use no ink; never removed (so nothing underneath is uncovered)
@@ -75,7 +75,8 @@ def classify(pages: list[PageInfo], s: Settings, ov: Overrides, sig_pages: dict 
             is_large = visual and not white and e.area >= s.large_threshold
 
             f = img_feats.get(e.sig) if e.kind == IMAGE else None
-            text_img = bool(f) and f["text"] >= TEXT_IMAGE
+            # Dark photos (machines, cars) fool the tile test; real text images are mostly paper.
+            text_img = bool(f) and f["text"] >= TEXT_IMAGE and f.get("ink", 0.0) < PHOTO_INK
             if white:
                 label = "white"
             elif text_img:

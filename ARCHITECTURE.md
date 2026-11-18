@@ -68,6 +68,12 @@ Do not make the engine depend on a UI.
   + the inverse CTM.
 - **Images containing text:** `imgfeat` inspects images larger than 2% of the page once (by signature)
   during analysis; those with a text score ≥ 0.6 get the `text_image` class and are not removed by tiers.
+  Exception: an image with mean ink ≥ `PHOTO_INK` (0.30) is a photo, whatever its tiles say. Dark photos
+  (cars, machines) fool the tile test; real tables and formulas are mostly white paper.
+- **Ink report:** `ink_report()` estimates every printed page analytically (kept element area × darkness,
+  no rendering, ~ms for 500 pages) and lists the kept elements that cost the most ink. Pages above
+  `INK_HEAVY_PAGE` get a warning in the UI. The rendered gauge (`ink_estimate`) stays the reference for the
+  overall saving; the report is for "where is the ink going".
 - **Selection in the UI** is by the smallest element at the clicked point (`hitsAt`), not DOM order.
 - **Word counter** gets its text from pdfium (which decodes font encodings); text in removed boxes is
   subtracted from the count.

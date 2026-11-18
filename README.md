@@ -14,7 +14,10 @@ your own computer; your PDFs are never uploaded.
   *Medium* (+ large images and shapes), *Maximum* (only the text remains).
 - **Text stays text.** No rasterising: the output is a vector PDF. Light text on removed dark
   backgrounds is turned black automatically.
-- **Images that contain text** (tables, formulas, screenshots) are recognised and kept.
+- **Images that contain text** (tables, formulas, screenshots) are recognised and kept; dark photos
+  are still treated as photos.
+- **Ink warnings:** pages that would use a lot of ink are flagged, and a list shows which elements
+  cost the most, each removable with one click.
 - **Point and click:** remove or keep any single element, on one page or on all pages.
   Remove headers and footers by position, even when the page number changes.
 - **Lossless cropping:** keep or erase part of an image (rectangle or freehand) with a PDF clip
@@ -96,11 +99,14 @@ The first run sets up a local environment (1–2 minutes).
 4. **Select text** (`T`): click a text box or drag an area. *Remove on all pages* only removes the
    exact same text at the same position; *remove text at this position on every page* also catches
    footers whose page number changes.
-5. **Crop** (`C`): click an image, then drag across it. *Keep inside* or *Erase inside*; *Auto: erase
-   photos* removes photo regions and keeps the text.
-6. Delete, rotate and reorder pages in the right-hand strip. **Undo:** Ctrl/Cmd+Z.
-7. Save your settings as a **profile** (`~/.pdf-distiller/profiles/`).
-8. **Download print PDF.**
+5. **Crop** (`C`): click an image, then drag across it. The default is *Erase what I draw*; *Print
+   only what I draw* keeps just that part. *Erase photos automatically* removes photo regions and
+   keeps the text.
+6. **Uses the most ink** (left): pages with heavy ink use are marked in red; the list shows the most
+   expensive elements.
+7. Delete, rotate and reorder pages in the right-hand strip. **Undo:** Ctrl/Cmd+Z.
+8. Save your settings as a **profile** (`~/.pdf-distiller/profiles/`).
+9. **Download print PDF.**
 
 ## How it works
 
