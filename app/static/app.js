@@ -300,6 +300,7 @@ async function refreshPage() {
     if (state.crop.target) state.crop.target = els.find((e) => e.id === state.crop.target.id) || null;
     syncCropBar();
     drawOverlay();
+    renderLayers();
     if (state.afterUrl) URL.revokeObjectURL(state.afterUrl);
     state.afterUrl = URL.createObjectURL(blob);
     $("#imgAfter").src = state.afterUrl;
@@ -448,8 +449,10 @@ function openMenu(e, x, y, others = []) {
   if (others.length) {
     m.sep();
     m.note(t("menu.others"));
-    others.slice(0, 4).forEach((o) => m.link(`${kindText(o.kind)} · ${clsText(o.cls)} · ${t(o.drop ? "el.drop" : "el.keep")}`,
-      () => openMenu(o, x, y, [e, ...others.filter((z) => z !== o)])));
+    others.slice(0, 6).forEach((o) => m.link(o.kind === "text"
+      ? `${kindText("text")} · “${short(o.text || "", 28)}” · ${t(o.drop ? "el.drop" : "el.keep")}`
+      : `${kindText(o.kind)} · ${clsText(o.cls)} · ${t(o.drop ? "el.drop" : "el.keep")}`,
+    () => (o.kind === "text" ? openTextMenu(o, x, y) : openMenu(o, x, y, [e, ...others.filter((z) => z !== o)]))));
   }
   m.show();
 }
@@ -591,9 +594,12 @@ function bindOverlay() {
         const k = state.overrides.regions.findIndex((r) => contains(r.box, start));
         if (k >= 0) return openRegionMenu(k, ev.clientX, ev.clientY);
       }
-      if (!hs.length) { closeMenu(); return; }
-      // after the click event that follows pointerup, or the document click handler closes the menu again
-      setTimeout(() => activate(hs[0], hs.slice(1), ev.clientX, ev.clientY), 0);
+      // graphics tool: also offer the text under the click (e.g. a URL hidden behind a photo)
+      const under = state.tool === "graphics" ? state.elements.filter((e) => e.kind === "text" && contains(e.view, start)) : [];
+      if (!hs.length && !under.length) { closeMenu(); return; }
+      // setTimeout: after the click event that follows pointerup, or the document click handler closes the menu again
+      if (!hs.length) { setTimeout(() => openTextMenu(under[0], ev.clientX, ev.clientY), 0); return; }
+      setTimeout(() => activate(hs[0], [...hs.slice(1), ...under], ev.clientX, ev.clientY), 0);
       return;
     }
     if (state.tool === "text") {
@@ -800,10 +806,62 @@ function exportCsv() {
 }
 
 function showTab(which) {
-  const words_ = which === "words";
-  $("#tabPages").setAttribute("aria-selected", !words_); $("#tabWords").setAttribute("aria-selected", words_);
-  $("#panePages").hidden = words_; $("#paneWords").hidden = !words_;
-  if (words_) refreshWords();
+  for (const k of ["pages", "layers", "words"]) {
+    const T = k[0].toUpperCase() + k.slice(1);
+    $(`#tab${T}`).setAttribute("aria-selected", k === which);
+    $(`#pane${T}`).hidden = k !== which;
+  }
+  if (which === "words") refreshWords();
+  if (which === "layers") renderLayers();
+}
+
+// ------------------------------------------------------------------ layers
+// Every element of the page, top (painted last) first, like the layer list of an image editor.
+// Text hidden behind a photo can't be clicked in the preview, but it prints once the photo is
+// removed; here it can always be reached.
+const LAYER_ICON = { text: "T", image: "▣", fill: "■", stroke: "╱", shading: "◩" };
+const coveredBy = (e, top) => {
+  const [a, b] = [e.view, top.view];
+  const w = Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0])), h = Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
+  return w * h >= 0.8 * Math.max((a[2] - a[0]) * (a[3] - a[1]), 1e-9);
+};
+function renderLayers() {
+  const ol = $("#layers");
+  if (!ol || $("#paneLayers").hidden) return;
+  ol.innerHTML = "";
+  const els = state.elements.filter((e) => e.cls !== "white").sort((a, b) => b.z - a.z);
+  if (!els.length) { ol.innerHTML = `<li class="empty">${esc(t("layers.empty"))}</li>`; return; }
+  for (const e of els) {
+    // hidden: a kept image painted later covers it
+    const behind = !e.drop && els.some((o) => o.z > e.z && o.kind === "image" && !o.drop && coveredBy(e, o));
+    const name = e.kind === "text" ? `“${short(e.text || "", 34)}”` : `${kindText(e.kind)} · ${clsText(e.cls)}`;
+    const li = document.createElement("li");
+    li.className = "layer" + (e.drop ? " off" : "") + (isManual(e) ? " manual" : "");
+    li.innerHTML = `<button class="eye" aria-pressed="${!e.drop}" title="${esc(t(e.drop ? "layers.show" : "layers.hide"))}"
+        aria-label="${esc(t(e.drop ? "layers.show" : "layers.hide"))}: ${esc(name)}">${e.drop ? "○" : "●"}</button>
+      <button class="lname"><span class="lic">${LAYER_ICON[e.kind] || "·"}</span>${esc(name)}</button>
+      ${behind ? `<span class="lbadge" title="${esc(t("layers.behind_title"))}">${esc(t("layers.behind"))}</span>` : ""}`;
+    li.onmouseenter = () => highlight(e);
+    li.onmouseleave = () => highlight(null);
+    li.querySelector(".eye").onclick = () => {
+      snapshot();
+      state.overrides.elements[e.id] = e.drop ? "keep" : "remove";
+      refreshAll(); undoToast(t(e.drop ? "toast.changed" : "toast.removed"));
+    };
+    li.querySelector(".lname").onclick = (ev) => {
+      ev.stopPropagation();
+      const r = ev.currentTarget.getBoundingClientRect();
+      setTimeout(() => (e.kind === "text" ? openTextMenu(e, r.left, r.bottom) : openMenu(e, r.left, r.bottom)), 0);
+    };
+    ol.appendChild(li);
+  }
+}
+function highlight(e) {
+  $("#overlay .lyrhl")?.remove();
+  if (!e) return;
+  const d = document.createElement("div");
+  d.className = "lyrhl"; place(d, e.view);
+  $("#overlay").appendChild(d);
 }
 
 // ------------------------------------------------------------------ export
@@ -900,6 +958,7 @@ async function init() {
   $("#cropDone").onclick = () => setTool("graphics");
   $("#tabPages").onclick = () => showTab("pages");
   $("#tabWords").onclick = () => showTab("words");
+  $("#tabLayers").onclick = () => showTab("layers");
   $("#wordSort").onclick = () => { words.sort = (words.sort + 1) % SORTS.length; renderWords(); };
   $("#wordCsv").onclick = exportCsv;
   $("#wordSearch").oninput = debounce(renderWords, 120);

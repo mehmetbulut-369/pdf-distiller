@@ -221,5 +221,12 @@
   "load.slow": "Große Dateien brauchen einen Moment · {s} s",
   "load.done": "Geöffnet: {name} · {n} Seiten",
   "load.done_one": "Geöffnet: {name} · 1 Seite",
-  "load.busy": "Es wird bereits eine Datei geöffnet."
+  "load.busy": "Es wird bereits eine Datei geöffnet.",
+  "tab.layers": "Ebenen",
+  "layers.hint": "Alles auf dieser Seite, oberste Ebene zuerst. ● = wird gedruckt. Für weitere Optionen auf den Namen klicken.",
+  "layers.show": "Drucken",
+  "layers.hide": "Nicht drucken",
+  "layers.behind": "verdeckt",
+  "layers.behind_title": "Von einem Bild verdeckt. Wird gedruckt, sobald Sie das Bild entfernen.",
+  "layers.empty": "Keine Elemente auf dieser Seite."
 }

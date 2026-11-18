@@ -221,5 +221,12 @@
   "load.slow": "Large files take a moment · {s} s",
   "load.done": "Opened: {name} · {n} pages",
   "load.done_one": "Opened: {name} · 1 page",
-  "load.busy": "A file is already being opened."
+  "load.busy": "A file is already being opened.",
+  "tab.layers": "Layers",
+  "layers.hint": "Everything on this page, top layer first. ● = will print. Click a name for more options.",
+  "layers.show": "Print this",
+  "layers.hide": "Don't print this",
+  "layers.behind": "hidden",
+  "layers.behind_title": "Hidden behind an image. It will print if you remove that image.",
+  "layers.empty": "No elements on this page."
 }

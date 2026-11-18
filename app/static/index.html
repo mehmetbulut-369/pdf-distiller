@@ -172,7 +172,12 @@
   <aside class="rail" data-i18n-aria-label="rail.label">
     <div class="tabs" role="tablist">
       <button role="tab" id="tabPages" aria-selected="true" aria-controls="panePages" data-i18n="tab.pages">Pages</button>
+      <button role="tab" id="tabLayers" aria-selected="false" aria-controls="paneLayers" data-i18n="tab.layers">Layers</button>
       <button role="tab" id="tabWords" aria-selected="false" aria-controls="paneWords" data-i18n="tab.words">Words</button>
+    </div>
+    <div id="paneLayers" role="tabpanel" hidden>
+      <p class="hint layershint" data-i18n="layers.hint"></p>
+      <ol id="layers" class="layers"></ol>
     </div>
     <div id="panePages" role="tabpanel">
       <div class="railhead"><span id="railCount"></span><button class="btn ghost small" id="resetPages" data-i18n="pages.reset">Reset</button></div>

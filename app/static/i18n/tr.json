@@ -221,5 +221,12 @@
   "load.slow": "Büyük dosyalar biraz sürer · {s} sn",
   "load.done": "Açıldı: {name} · {n} sayfa",
   "load.done_one": "Açıldı: {name} · 1 sayfa",
-  "load.busy": "Zaten bir dosya açılıyor."
+  "load.busy": "Zaten bir dosya açılıyor.",
+  "tab.layers": "Katmanlar",
+  "layers.hint": "Bu sayfadaki her şey, en üstteki katman başta. ● = basılacak. Diğer seçenekler için ada tıklayın.",
+  "layers.show": "Bas",
+  "layers.hide": "Basma",
+  "layers.behind": "arkada",
+  "layers.behind_title": "Bir görselin arkasında kalmış. O görseli kaldırırsanız basılır.",
+  "layers.empty": "Bu sayfada öğe yok."
 }

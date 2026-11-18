@@ -226,16 +226,17 @@ class DistillDocument:
     def page_elements(self, i: int, s: Settings, ov: Overrides, min_area: float = 0.0008):
         """For the UI: a page's clickable elements with class and removal state.
         Text boxes also carry their readable text ("text") and the number of pages with text at the
-        same position."""
+        same position. "z" is the drawing order (higher = painted later, i.e. on top) for the layer list."""
         drops, labels, clips = self.decide_full(s, ov)
         d = drops.get(i, set())
         pclips = clips.get(i, {})
         out = []
-        for e in self.pages[i].elements:
+        for z, e in enumerate(self.pages[i].elements):
             is_text = e.kind == TEXT
             if e.area < min_area and not is_text:
                 continue
             item = e.to_dict()
+            item["z"] = z
             item["cls"] = labels.get(e.id, "other")
             item["drop"] = e.id in d
             item["pages_with_sig"] = len(self.sig_pages.get(e.sig, ()))

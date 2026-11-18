@@ -379,3 +379,10 @@ def test_ink_report_flags_heavy_pages_and_groups_hotspots(dark):
     r1 = dark.ink_report(tier_settings(1), Overrides())
     assert sum(r1["pages"]) < sum(r0["pages"]) / 2              # removing backgrounds saves most ink
     assert all(h["sig"] != top["sig"] for h in r1["hotspots"])
+
+
+def test_page_elements_carry_drawing_order(dark):
+    els = dark.page_elements(0, Settings(), Overrides())
+    zs = [e["z"] for e in els]
+    assert zs == sorted(zs) and len(set(zs)) == len(zs)  # layer list sorts by this: higher = on top
+    assert any(e["kind"] == "text" for e in els)
