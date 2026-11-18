@@ -171,14 +171,26 @@ button, input, select { font: inherit; color: inherit; }
 
 .overlay { position: absolute; inset: 0; }
 .overlay.hidden { display: none; }
-.el { position: absolute; border: 2px solid var(--other); cursor: pointer; border-radius: 1px; }
-.el.c-background { border-color: var(--magenta); }
-.el.c-repeated { border-color: var(--yellow); }
-.el.c-large { border-color: var(--sky); }
+/* --c: the element's class colour; the frame, hover and selection all use it */
+.el { --c: var(--other); position: absolute; border: 2px solid var(--c); cursor: pointer; border-radius: 1px; }
+.el.c-background { --c: var(--magenta); }
+.el.c-repeated { --c: var(--yellow); }
+.el.c-large { --c: var(--sky); }
+.el.c-text_image { --c: var(--green); }
+.el.inkhot { --c: var(--danger); }
 .el.c-white { border-style: dotted; border-color: var(--line); }
 .el.drop { background: repeating-linear-gradient(135deg, rgba(207,42,110,.20) 0 6px, rgba(207,42,110,.05) 6px 12px); border-style: dashed; }
 .el.manual::after { content: ""; position: absolute; top: -5px; right: -5px; width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); border: 2px solid #fff; }
-.el:hover, .el.sel { outline: 2px solid var(--ink); outline-offset: 1px; z-index: 5; }
+.el:hover { outline: 2px solid var(--ink); outline-offset: 1px; z-index: 5; }
+/* Selected: a soft glow in the element's own colour that blooms once (outline and box-shadow only,
+   so nothing moves; never use a class named "sel" here: .sel is the settings <label> and adds a margin). */
+.overlay .el.chosen { outline: 2px solid var(--c); outline-offset: 2px; z-index: 6;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 30%, transparent), inset 0 0 0 999px color-mix(in srgb, var(--c) 10%, transparent);
+  animation: chosen .32s ease-out; }
+@keyframes chosen {
+  from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 70%, transparent), inset 0 0 0 999px color-mix(in srgb, var(--c) 22%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) { .overlay .el.chosen { animation: none; } }
 
 .busy { position: absolute; inset: 0; background: rgba(255,255,255,.55); opacity: 0; pointer-events: none; transition: opacity .15s; }
 .busy.on { opacity: 1; }
@@ -249,7 +261,7 @@ button, input, select { font: inherit; color: inherit; }
 .overlay[data-tool="text"] { cursor: crosshair; }
 .overlay[data-tool="graphics"] .el.k-text, .overlay[data-tool="graphics"] .region { display: none; }
 .overlay[data-tool="text"] .el:not(.k-text) { display: none; }
-.el.k-text { border: 1px dotted var(--cyan); border-radius: 2px; }
+.el.k-text { --c: var(--cyan); border: 1px dotted var(--cyan); border-radius: 2px; }
 .el.k-text.c-text_repeated { border-style: solid; }
 .el.k-text:hover { background: rgba(0,137,188,.10); outline: none; }
 .el.k-text.picked { background: rgba(0,137,188,.22); border-style: solid; }

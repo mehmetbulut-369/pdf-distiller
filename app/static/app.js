@@ -395,8 +395,8 @@ function activate(e, others, x, y) {
   openMenu(e, x, y, others);
 }
 function markSelected(e) {
-  $$(".el.sel").forEach((n) => n.classList.remove("sel"));
-  $(`#overlay [data-id="${e.id}"]`)?.classList.add("sel");
+  $$(".el.chosen").forEach((n) => n.classList.remove("chosen"));
+  $(`#overlay [data-id="${e.id}"]`)?.classList.add("chosen");
 }
 
 // ------------------------------------------------------------------ menus
@@ -501,7 +501,7 @@ function openRegionMenu(k, x, y) {
   m.add(t("region.delete"), () => state.overrides.regions.splice(k, 1));
   m.show();
 }
-function closeMenu() { $("#menu").hidden = true; $$(".el.sel, .el.picked").forEach((n) => n.classList.remove("sel", "picked")); }
+function closeMenu() { $("#menu").hidden = true; $$(".el.chosen, .el.picked").forEach((n) => n.classList.remove("chosen", "picked")); }
 
 // ------------------------------------------------------------------ crop tool
 // "erase" first: a student who circles a logo wants it gone, not printed alone.
