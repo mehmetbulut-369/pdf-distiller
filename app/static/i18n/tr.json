@@ -180,7 +180,6 @@
   "csv.count": "adet",
   "csv.page_count": "sayfa_sayisi",
   "csv.pages": "sayfalar",
-  "doc.analyzing": "{name} – analiz ediliyor…",
   "doc.info": "{name} · {n} sayfa · analiz {secs} sn",
   "doc.info_one": "{name} · 1 sayfa · analiz {secs} sn",
   "empty.title": "Ders slaytlarını yazdırmadan önce sadeleştirin",
@@ -212,5 +211,15 @@
   "toast.changed": "Uygulandı.",
   "toast.removed": "Kaldırıldı.",
   "toast.page_removed": "{n}. sayfa çıkarıldı.",
-  "theme.dark": "Koyu tema"
+  "theme.dark": "Koyu tema",
+  "drop.here": "PDF'i açmak için bırakın",
+  "drop.replace": "Bunun yerine bu PDF'i açmak için bırakın",
+  "drop.only_pdf": "Yalnız PDF dosyaları açılabilir",
+  "load.upload": "Dosya yükleniyor…",
+  "load.analyze": "Sayfalar okunuyor…",
+  "load.render": "Önizleme hazırlanıyor…",
+  "load.slow": "Büyük dosyalar biraz sürer · {s} sn",
+  "load.done": "Açıldı: {name} · {n} sayfa",
+  "load.done_one": "Açıldı: {name} · 1 sayfa",
+  "load.busy": "Zaten bir dosya açılıyor."
 }

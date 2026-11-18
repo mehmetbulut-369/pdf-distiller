@@ -203,6 +203,25 @@
   </div>
 </div>
 
+<!-- Drag feedback over the whole window, also when a document is already open. -->
+<div id="dropveil" class="dropveil" hidden>
+  <div class="dropcard">
+    <svg class="dropicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 17v3h16v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <strong id="dropMsg"></strong>
+  </div>
+</div>
+
+<!-- Opening progress: upload (measured) → reading pages (server, indeterminate) → first preview. -->
+<div id="loader" class="loader" hidden role="status" aria-live="polite">
+  <div class="loadcard">
+    <div class="spinner" aria-hidden="true"></div>
+    <strong id="loadTitle"></strong>
+    <span id="loadFile" class="loadfile"></span>
+    <div class="bar" id="loadBarWrap"><i id="loadBar"></i></div>
+    <span id="loadHint" class="loadhint"></span>
+  </div>
+</div>
+
 <div id="menu" class="menu" role="menu" hidden></div>
 <div id="toast" class="toast" role="status" hidden></div>
 <script src="/static/app.js?v=0.4"></script>

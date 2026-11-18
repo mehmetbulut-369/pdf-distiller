@@ -185,15 +185,61 @@ function bindControls() {
 }
 
 // ------------------------------------------------------------------ opening a document
+const isPdf = (f) => /\.pdf$/i.test(f.name) || f.type === "application/pdf";
+const mb = (bytes) => new Intl.NumberFormat(i18n.lang, { maximumFractionDigits: 1 }).format(bytes / 1048576) + " MB";
+
+// The user must always see that the file arrived and that the app is working on it,
+// otherwise a 3-second analysis looks like a frozen app.
+const loader = { timer: null, started: 0 };
+function showLoader(stage, file, frac = null) {
+  const el = $("#loader");
+  el.hidden = false;
+  el.dataset.stage = stage;
+  $("#loadTitle").textContent = t(`load.${stage}`);
+  if (file) $("#loadFile").textContent = `${file.name} · ${mb(file.size)}`;
+  $("#loadBarWrap").classList.toggle("indet", frac === null);
+  $("#loadBar").style.width = frac === null ? "" : `${Math.round(frac * 100)}%`;
+  if (!loader.timer) {
+    loader.started = performance.now();
+    loader.timer = setInterval(() => {
+      const s = Math.round((performance.now() - loader.started) / 1000);
+      $("#loadHint").textContent = s >= 3 ? t("load.slow", { s }) : ""; // reassure only when it actually takes long
+    }, 500);
+  }
+}
+function hideLoader() {
+  clearInterval(loader.timer); loader.timer = null;
+  $("#loader").hidden = true; $("#loadHint").textContent = "";
+}
+
+// fetch() cannot report upload progress; XHR can.
+function uploadPdf(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    const x = new XMLHttpRequest();
+    x.open("POST", "/api/open");
+    x.responseType = "json";
+    x.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+    x.upload.onload = () => onProgress(1);
+    x.onload = () => {
+      if (x.status >= 200 && x.status < 300) return resolve(x.response);
+      const d = x.response?.detail;
+      reject(new Error(typeof d === "string" ? (has(d) ? t(d) : d) : t("error.request_failed", { status: x.status })));
+    };
+    x.onerror = () => reject(new Error(t("error.request_failed", { status: 0 })));
+    x.send(fd);
+  });
+}
+
 async function openFile(file) {
   if (!file) return;
-  if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") return toast(t("error.choose_pdf"), true);
-  const fd = new FormData();
-  fd.append("file", file);
-  $("#docname").textContent = t("doc.analyzing", { name: file.name });
+  if (!isPdf(file)) return toast(t("error.choose_pdf"), true);
+  if (state.loading) return toast(t("load.busy"));
+  state.loading = true;
+  showLoader("upload", file, 0);
   try {
-    const r = await api("/api/open", { method: "POST", body: fd });
-    const d = await r.json();
+    const d = await uploadPdf(file, (f) => (f < 1 ? showLoader("upload", null, f) : showLoader("analyze")));
     state.doc = d;
     state.ops = d.pages.map((_, i) => ({ src: i, rotate: 0 }));
     state.pos = 0;
@@ -203,10 +249,17 @@ async function openFile(file) {
     renderDocName();
     $("#empty").classList.add("hidden");
     $("#export").disabled = false;
-    renderThumbs(); refreshAll();
+    showLoader("render");
+    renderThumbs();
+    const first = refreshPage();
+    refreshSummary(); refreshWords();
+    await first;
+    toast(t("load.done", { name: d.name, n: d.n_pages }));
   } catch (e) {
-    $("#docname").textContent = "";
     toast(e.message, true);
+  } finally {
+    state.loading = false;
+    hideLoader();
   }
 }
 
@@ -873,9 +926,26 @@ async function init() {
   });
   window.addEventListener("resize", debounce(refreshPage, 300));
 
-  const empty = $("#empty");
-  ["dragenter", "dragover"].forEach((t) => window.addEventListener(t, (e) => { e.preventDefault(); empty.classList.add("drag"); }));
-  ["dragleave", "drop"].forEach((t) => window.addEventListener(t, (e) => { e.preventDefault(); empty.classList.remove("drag"); }));
-  window.addEventListener("drop", (e) => openFile(e.dataTransfer.files[0]));
+  // Drag feedback: a veil over the whole window says "drop to open" (or "only PDF") before the user lets go.
+  // dragenter/dragleave fire for every child element, so a counter tells when the pointer really left.
+  const empty = $("#empty"), veil = $("#dropveil");
+  let depth = 0;
+  const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes("Files");
+  const setVeil = (on, e) => {
+    veil.hidden = !on; empty.classList.toggle("drag", on);
+    if (!on) return;
+    const it = e.dataTransfer.items?.[0];
+    const bad = it && it.type && it.type !== "application/pdf"; // type can be empty while dragging; then assume OK
+    veil.classList.toggle("bad", !!bad);
+    $("#dropMsg").textContent = t(bad ? "drop.only_pdf" : state.doc ? "drop.replace" : "drop.here");
+  };
+  window.addEventListener("dragenter", (e) => { if (!hasFiles(e)) return; e.preventDefault(); if (depth++ === 0) setVeil(true, e); });
+  window.addEventListener("dragover", (e) => { if (!hasFiles(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = veil.classList.contains("bad") ? "none" : "copy"; });
+  window.addEventListener("dragleave", (e) => { if (!hasFiles(e)) return; if (--depth <= 0) { depth = 0; setVeil(false); } });
+  window.addEventListener("drop", (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); depth = 0; setVeil(false);
+    openFile(e.dataTransfer.files[0]);
+  });
 }
 init().catch((e) => toast(e.message, true));

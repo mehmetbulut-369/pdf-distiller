@@ -180,7 +180,6 @@
   "csv.count": "Anzahl",
   "csv.page_count": "Anzahl_Seiten",
   "csv.pages": "Seiten",
-  "doc.analyzing": "{name} – wird analysiert…",
   "doc.info": "{name} · {n} Seiten · analysiert in {secs} s",
   "doc.info_one": "{name} · 1 Seite · analysiert in {secs} s",
   "empty.title": "Vorlesungsfolien vor dem Drucken entschlacken",
@@ -212,5 +211,15 @@
   "toast.changed": "Übernommen.",
   "toast.removed": "Entfernt.",
   "toast.page_removed": "Seite {n} entfernt.",
-  "theme.dark": "Dunkler Modus"
+  "theme.dark": "Dunkler Modus",
+  "drop.here": "Loslassen, um das PDF zu öffnen",
+  "drop.replace": "Loslassen, um stattdessen dieses PDF zu öffnen",
+  "drop.only_pdf": "Es lassen sich nur PDF-Dateien öffnen",
+  "load.upload": "Datei wird geladen…",
+  "load.analyze": "Seiten werden gelesen…",
+  "load.render": "Vorschau wird vorbereitet…",
+  "load.slow": "Große Dateien brauchen einen Moment · {s} s",
+  "load.done": "Geöffnet: {name} · {n} Seiten",
+  "load.done_one": "Geöffnet: {name} · 1 Seite",
+  "load.busy": "Es wird bereits eine Datei geöffnet."
 }

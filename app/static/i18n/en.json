@@ -180,7 +180,6 @@
   "csv.count": "count",
   "csv.page_count": "page_count",
   "csv.pages": "pages",
-  "doc.analyzing": "{name} – analyzing…",
   "doc.info": "{name} · {n} pages · analyzed in {secs} s",
   "doc.info_one": "{name} · 1 page · analyzed in {secs} s",
   "empty.title": "Simplify lecture slides before you print them",
@@ -212,5 +211,15 @@
   "toast.changed": "Done.",
   "toast.removed": "Removed.",
   "toast.page_removed": "Page {n} removed.",
-  "theme.dark": "Dark mode"
+  "theme.dark": "Dark mode",
+  "drop.here": "Drop to open the PDF",
+  "drop.replace": "Drop to open this PDF instead",
+  "drop.only_pdf": "Only PDF files can be opened",
+  "load.upload": "Loading the file…",
+  "load.analyze": "Reading the pages…",
+  "load.render": "Preparing the preview…",
+  "load.slow": "Large files take a moment · {s} s",
+  "load.done": "Opened: {name} · {n} pages",
+  "load.done_one": "Opened: {name} · 1 page",
+  "load.busy": "A file is already being opened."
 }

@@ -305,3 +305,32 @@ button, input, select { font: inherit; color: inherit; }
 .sw.x-manual { border: 2px solid #fff; background: var(--cyan); border-radius: 50%; box-shadow: 0 0 0 1px var(--line); }
 .cropstatus.go { color: var(--ink); font-weight: 600; }
 .thumb .acts button { width: 32px; height: 32px; font-size: 15px; }
+
+/* ------------------------------------------------ drag & opening feedback */
+.dropveil { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--desk) 70%, transparent); backdrop-filter: blur(3px); pointer-events: none; }
+.dropveil[hidden], .loader[hidden] { display: none; }
+.dropcard { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 36px 56px; border-radius: 16px;
+  border: 3px dashed var(--cyan); background: var(--paper); color: var(--cyan); font-size: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.18); }
+.dropicon { width: 44px; height: 44px; animation: nudge 1s ease-in-out infinite; }
+.dropveil.bad .dropcard { border-color: var(--danger); color: var(--danger); }
+.dropveil.bad .dropicon { animation: none; opacity: .5; }
+@keyframes nudge { 50% { transform: translateY(5px); } }
+
+.loader { position: fixed; inset: 0; z-index: 65; display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--desk) 60%, transparent); }
+.loadcard { display: grid; justify-items: center; gap: 8px; width: min(380px, 90vw); padding: 28px 32px; border-radius: 14px;
+  background: var(--paper); border: 1px solid var(--line); box-shadow: 0 12px 40px rgba(0,0,0,.2); text-align: center; }
+.loadcard strong { font-size: 16px; }
+.loadfile { font-size: 12px; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loadhint { font-size: 12px; color: var(--muted); min-height: 1.4em; }
+.spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--cyan); animation: spin .8s linear infinite; }
+.bar { position: relative; width: 100%; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--cyan); border-radius: 3px; transition: width .2s; }
+.bar.indet i { width: 35%; animation: slide 1.1s ease-in-out infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes slide { from { left: -35%; } to { left: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .spinner, .dropicon, .bar.indet i { animation: none; }
+  .bar.indet i { width: 100%; opacity: .5; }
+}
