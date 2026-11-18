@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest       # Apple Silicon
+            asset: dist/PDF-Distiller-macOS.dmg
+          - os: windows-latest
+            asset: dist/PDF-Distiller-Windows.zip
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements-dev.txt pyinstaller pywebview
+      - run: python -m pytest -q
+      - run: python packaging/build.py
+      - name: Zip Windows build
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path "dist/PDF Distiller.exe", dist/LICENSE, dist/THIRD_PARTY_NOTICES.md, dist/licenses -DestinationPath dist/PDF-Distiller-Windows.zip
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.asset }}

@@ -7,3 +7,5 @@ samples/bench_*.pdf
 .claude/settings.local.json
 .claude/.cc-writes/
 .claude/launch.json
+build/
+dist/

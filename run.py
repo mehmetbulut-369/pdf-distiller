@@ -2,10 +2,14 @@
 
     python run.py            -> opens in the browser
     python run.py --window   -> opens in a desktop window (needs: pip install pywebview)
+
+Packaged builds (PyInstaller) always open a desktop window; closing it stops the server.
 """
 from __future__ import annotations
 
 import argparse
+import multiprocessing
+import os
 import socket
 import sys
 import threading
@@ -34,6 +38,12 @@ def main():
     ap.add_argument("--window", action="store_true", help="desktop window instead of the browser")
     ap.add_argument("--no-browser", action="store_true")
     a = ap.parse_args()
+    if getattr(sys, "frozen", False):
+        # windowed builds have no console; uvicorn's log formatter fails on a None stream
+        sys.stdout = sys.stdout or open(os.devnull, "w")  # noqa: SIM115
+        sys.stderr = sys.stderr or open(os.devnull, "w")  # noqa: SIM115
+        if not a.no_browser:
+            a.window = True
 
     import uvicorn
 
@@ -55,7 +65,8 @@ def main():
         while not server.started:
             time.sleep(0.05)
         webview.create_window("PDF Distiller", url, width=1440, height=900)
-        webview.start()
+        webview.start()  # blocks until the window is closed
+        server.should_exit = True
         return
 
     if not a.no_browser:
@@ -65,4 +76,5 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()  # analysis uses worker processes; required in frozen builds
     main()

@@ -17,7 +17,8 @@ distill_core/        UI-independent engine (plain Python library)
 app/
   server.py          FastAPI, 127.0.0.1 only. No business logic.
   static/            index.html + style.css + app.js + i18n/*.json (no build step)
-run.py               Starts the server; --window opens a pywebview window
+run.py               Starts the server; --window opens a pywebview window (always in packaged builds)
+packaging/build.py   PyInstaller build: macOS .app/.dmg, Windows .exe
 tests/               make_samples.py (synthetic slides), test_core.py, test_server.py, test_i18n.py
 profiles/            Built-in profiles (JSON). User profiles: ~/.pdf-distiller/profiles
 docs/                README assets, ADRs

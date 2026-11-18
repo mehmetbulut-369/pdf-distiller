@@ -50,7 +50,24 @@ Apple Silicon, 10 cores, Python 3.13):
 | Ink estimate | 0.13 s |
 | Single-page preview | 8 ms |
 
-## Getting started
+## Download
+
+Ready-to-run builds (no Python needed) are attached to each [release](../../releases):
+
+- **macOS (Apple Silicon):** `PDF-Distiller-macOS.dmg`. Open it and drag *PDF Distiller* to *Applications*.
+- **Windows:** `PDF-Distiller-Windows.zip`. Unzip it and run `PDF Distiller.exe`.
+
+The builds are not code-signed, so the system warns on the first launch. This happens once:
+
+- **macOS:** double-click the app; macOS says it cannot verify it. Click *Done*, open
+  *System Settings › Privacy & Security*, scroll down to the message about *PDF Distiller* and click
+  *Open Anyway*, then confirm with *Open*. (Or in Terminal:
+  `xattr -dr com.apple.quarantine "/Applications/PDF Distiller.app"`.)
+- **Windows:** SmartScreen shows *Windows protected your PC*. Click *More info*, then *Run anyway*.
+
+The app opens in its own window; closing the window quits it.
+
+## Running from source
 
 Requires Python 3.10 or newer.
 
@@ -66,8 +83,7 @@ python run.py              # opens http://127.0.0.1:8765 in your browser
 python run.py --window     # in its own window (first: pip install pywebview)
 ```
 
-The first run sets up a local environment (1–2 minutes). Ready-to-run packages without Python are
-planned.
+The first run sets up a local environment (1–2 minutes).
 
 ## Using it
 
@@ -111,7 +127,10 @@ ruff check .                   # lint (config in pyproject.toml)
 python tests/make_samples.py   # regenerate the sample decks in samples/
 python bench.py [file.pdf]     # speed benchmark (synthetic 500-page deck by default)
 python docs/readme_assets.py   # regenerate the README image and ink table
+python packaging/build.py      # build the .app/.dmg (macOS) or .exe (Windows); needs pyinstaller pywebview
 ```
+
+Pushing a `v*` tag builds both packages in GitHub Actions and attaches them to a release.
 
 CI runs ruff and the tests on Linux, macOS and Windows (Python 3.10 and 3.13).
 

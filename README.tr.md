@@ -44,7 +44,24 @@ Hız, 500 sayfalık ve ~155.000 vektör öğeli sentetik bir destede (`python be
 10 çekirdek, Python 3.13): analiz 2,4 sn, dışa aktarma 1,6–1,9 sn, tek sayfa önizleme 8 ms.
 Ayrıntılar: [README.md](README.md#results).
 
-## Başlarken
+## İndir
+
+Python gerektirmeyen hazır paketler her [sürümde](../../releases) bulunur:
+
+- **macOS (Apple Silicon):** `PDF-Distiller-macOS.dmg` dosyasını açın, *PDF Distiller*'ı *Uygulamalar*'a sürükleyin.
+- **Windows:** `PDF-Distiller-Windows.zip` dosyasını açın, `PDF Distiller.exe`'yi çalıştırın.
+
+Paketler imzalı değil, bu yüzden sistem ilk açılışta uyarır. Bu yalnızca bir kez gerekir:
+
+- **macOS:** Uygulamaya çift tıklayın; macOS doğrulanamadığını söyler. *Bitti*'ye tıklayın,
+  *Sistem Ayarları › Gizlilik ve Güvenlik*'i açın, aşağıdaki *PDF Distiller* uyarısına inip
+  *Yine de Aç*'a tıklayın ve *Aç* ile onaylayın. (Ya da Terminal'de:
+  `xattr -dr com.apple.quarantine "/Applications/PDF Distiller.app"`.)
+- **Windows:** SmartScreen *Windows bilgisayarınızı korudu* der. *Ek bilgi*'ye, sonra *Yine de çalıştır*'a tıklayın.
+
+Uygulama kendi penceresinde açılır; pencereyi kapatınca uygulama da kapanır.
+
+## Kaynak koddan çalıştırma
 
 Gerekli: Python 3.10 veya üstü.
 
@@ -60,7 +77,7 @@ python run.py              # tarayıcıda http://127.0.0.1:8765 açar
 python run.py --window     # ayrı pencerede (önce: pip install pywebview)
 ```
 
-İlk çalıştırmada yerel bir ortam kurulur (1–2 dakika). Python gerektirmeyen hazır paketler planlanıyor.
+İlk çalıştırmada yerel bir ortam kurulur (1–2 dakika).
 
 ## Kullanım
 

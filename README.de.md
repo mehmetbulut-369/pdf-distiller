@@ -44,7 +44,25 @@ Geschwindigkeit mit einem synthetischen Foliensatz aus 500 Seiten und ~155.000 V
 (`python bench.py`; Apple Silicon, 10 Kerne, Python 3.13): Analyse 2,4 s, Export 1,6–1,9 s,
 Vorschau einer Seite 8 ms. Details: [README.md](README.md#results).
 
-## Start
+## Download
+
+Fertige Pakete (ohne Python) liegen jedem [Release](../../releases) bei:
+
+- **macOS (Apple Silicon):** `PDF-Distiller-macOS.dmg` öffnen und *PDF Distiller* in *Programme* ziehen.
+- **Windows:** `PDF-Distiller-Windows.zip` entpacken und `PDF Distiller.exe` starten.
+
+Die Pakete sind nicht signiert, daher warnt das System beim ersten Start. Das ist nur einmal nötig:
+
+- **macOS:** App doppelklicken; macOS meldet, dass sie nicht überprüft werden kann. *Fertig* klicken,
+  *Systemeinstellungen › Datenschutz & Sicherheit* öffnen, nach unten zum Hinweis auf *PDF Distiller*
+  scrollen, *Dennoch öffnen* klicken und mit *Öffnen* bestätigen. (Oder im Terminal:
+  `xattr -dr com.apple.quarantine "/Applications/PDF Distiller.app"`.)
+- **Windows:** SmartScreen zeigt *Der Computer wurde durch Windows geschützt*. Auf *Weitere
+  Informationen* und dann *Trotzdem ausführen* klicken.
+
+Die App öffnet sich in einem eigenen Fenster; Schließen des Fensters beendet sie.
+
+## Aus dem Quellcode starten
 
 Voraussetzung: Python 3.10 oder neuer.
 
@@ -60,8 +78,7 @@ python run.py              # öffnet http://127.0.0.1:8765 im Browser
 python run.py --window     # in einem eigenen Fenster (vorher: pip install pywebview)
 ```
 
-Beim ersten Start wird eine lokale Umgebung eingerichtet (1–2 Minuten). Fertige Pakete ohne Python
-sind geplant.
+Beim ersten Start wird eine lokale Umgebung eingerichtet (1–2 Minuten).
 
 ## Bedienung
 
