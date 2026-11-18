@@ -136,6 +136,8 @@
       </div>
       <span class="spacer"></span>
       <label class="chk inline"><input type="checkbox" id="showOverlay" checked> <span data-i18n="overlay.show"></span></label>
+      <!-- only under 1100 px, where the right rail becomes a drawer -->
+      <button class="btn railtoggle" id="railToggle" aria-expanded="false" aria-controls="rail" data-i18n="rail.open">Pages & layers</button>
     </div>
     <div class="cropbar" id="cropbar" hidden>
       <span id="cropStatus" class="cropstatus"></span>
@@ -169,11 +171,13 @@
     </div>
   </section>
 
-  <aside class="rail" data-i18n-aria-label="rail.label">
+  <div class="railscrim" id="railScrim"></div>
+  <aside class="rail" id="rail" data-i18n-aria-label="rail.label">
     <div class="tabs" role="tablist">
       <button role="tab" id="tabPages" aria-selected="true" aria-controls="panePages" data-i18n="tab.pages">Pages</button>
       <button role="tab" id="tabLayers" aria-selected="false" aria-controls="paneLayers" data-i18n="tab.layers">Layers</button>
       <button role="tab" id="tabWords" aria-selected="false" aria-controls="paneWords" data-i18n="tab.words">Words</button>
+      <button class="railclose" id="railClose" data-i18n-aria-label="rail.close" data-i18n-title="rail.close">✕</button>
     </div>
     <div id="paneLayers" role="tabpanel" hidden>
       <p class="hint layershint" data-i18n="layers.hint"></p>
@@ -222,7 +226,7 @@
     <div class="spinner" aria-hidden="true"></div>
     <strong id="loadTitle"></strong>
     <span id="loadFile" class="loadfile"></span>
-    <div class="bar" id="loadBarWrap"><i id="loadBar"></i></div>
+    <div class="progress" id="loadBarWrap"><i id="loadBar"></i></div>
     <span id="loadHint" class="loadhint"></span>
   </div>
 </div>

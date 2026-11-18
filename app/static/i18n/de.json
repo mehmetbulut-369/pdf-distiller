@@ -150,7 +150,7 @@
   "region.head_keep": "Bereichsregel · Text bleibt erhalten",
   "region.delete": "Bereichsregel löschen",
   "toast.no_text_here": "In diesem Bereich ist kein Text.",
-  "rail.label": "Seiten und Wörter",
+  "rail.label": "Seiten, Ebenen und Wörter",
   "tab.pages": "Seiten",
   "tab.words": "Wörter",
   "pages.reset": "Zurücksetzen",
@@ -228,5 +228,7 @@
   "layers.hide": "Nicht drucken",
   "layers.behind": "verdeckt",
   "layers.behind_title": "Von einem Bild verdeckt. Wird gedruckt, sobald Sie das Bild entfernen.",
-  "layers.empty": "Keine Elemente auf dieser Seite."
+  "layers.empty": "Keine Elemente auf dieser Seite.",
+  "rail.open": "Seiten & Ebenen",
+  "rail.close": "Schließen"
 }

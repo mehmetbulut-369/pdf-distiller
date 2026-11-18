@@ -153,7 +153,8 @@ button, input, select { font: inherit; color: inherit; }
 
 /* ------------------------------------------------ sahne */
 .stage { display: flex; flex-direction: column; min-width: 0; }
-.stagebar { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--desk); }
+.stagebar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--desk); }
+.stagebar > :not(.spacer) { flex-shrink: 0; } /* wrap to a second row instead of clipping the tool buttons */
 #pageLabel { font-variant-numeric: tabular-nums; min-width: 9ch; text-align: center; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); font-size: 12px; margin-top: 6px; }
 .legend[hidden] { display: none; }
@@ -216,15 +217,31 @@ button, input, select { font: inherit; color: inherit; }
   background: var(--ink); color: var(--on-ink); border-radius: 8px; max-width: 90vw; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
 .toast.err, .toast.err .lnk { background: #A3123F; color: #FFFFFF; }
 
+/* right rail: a column on wide screens, a drawer from the right below 1100 px */
+.railtoggle, .railclose, .railscrim { display: none; }
 @media (max-width: 1100px) {
   .app { grid-template-columns: 270px 1fr; }
-  .rail { display: none; }
   .views { grid-template-columns: 1fr; }
+  .railtoggle { display: inline-flex; }
+  .rail { position: fixed; top: 52px; right: 0; bottom: 0; z-index: 56; width: min(340px, 92vw);
+    transform: translateX(100%); visibility: hidden; transition: transform .22s ease, visibility 0s linear .22s;
+    box-shadow: -12px 0 32px rgba(0,0,0,.22); }
+  /* visible at once when opening (so focus can move in), hidden only after the slide-out when closing */
+  .rail.open { transform: none; visibility: visible; transition: transform .22s ease, visibility 0s; }
+  .railscrim { display: block; position: fixed; inset: 52px 0 0 0; z-index: 55; background: rgba(10,12,15,.32);
+    opacity: 0; pointer-events: none; transition: opacity .22s; }
+  .railscrim.on { opacity: 1; pointer-events: auto; }
+  .railclose { display: block; flex: 0 0 40px; border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 15px; }
+  .railclose:hover { color: var(--ink); }
+  .menu { z-index: 58; } /* menus opened from inside the drawer stay on top */
 }
 @media (max-width: 760px) {
+  .rail { width: 100vw; }
   .app { grid-template-columns: 1fr; height: auto; }
   .panel { border-right: 0; }
-  .legend, .docname { display: none; }
+  .legend, .docname, .ver { display: none; }
+  /* the header no longer fits: let it scroll sideways instead of widening the whole page */
+  header.bar { overflow-x: auto; scrollbar-width: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
@@ -325,14 +342,15 @@ button, input, select { font: inherit; color: inherit; }
 .loadfile { font-size: 12px; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .loadhint { font-size: 12px; color: var(--muted); min-height: 1.4em; }
 .spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--cyan); animation: spin .8s linear infinite; }
-.bar { position: relative; width: 100%; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
-.bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--cyan); border-radius: 3px; transition: width .2s; }
-.bar.indet i { width: 35%; animation: slide 1.1s ease-in-out infinite; }
+/* not ".bar": that is the header */
+.progress { position: relative; width: 100%; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.progress i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--cyan); border-radius: 3px; transition: width .2s; }
+.progress.indet i { width: 35%; animation: slide 1.1s ease-in-out infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes slide { from { left: -35%; } to { left: 100%; } }
 @media (prefers-reduced-motion: reduce) {
-  .spinner, .dropicon, .bar.indet i { animation: none; }
-  .bar.indet i { width: 100%; opacity: .5; }
+  .spinner, .dropicon, .progress.indet i { animation: none; }
+  .progress.indet i { width: 100%; opacity: .5; }
 }
 
 /* ------------------------------------------------ layers */

@@ -150,7 +150,7 @@
   "region.head_keep": "Area rule · text is kept",
   "region.delete": "Delete area rule",
   "toast.no_text_here": "There is no text in this area.",
-  "rail.label": "Pages and words",
+  "rail.label": "Pages, layers and words",
   "tab.pages": "Pages",
   "tab.words": "Words",
   "pages.reset": "Reset",
@@ -228,5 +228,7 @@
   "layers.hide": "Don't print this",
   "layers.behind": "hidden",
   "layers.behind_title": "Hidden behind an image. It will print if you remove that image.",
-  "layers.empty": "No elements on this page."
+  "layers.empty": "No elements on this page.",
+  "rail.open": "Pages & layers",
+  "rail.close": "Close"
 }

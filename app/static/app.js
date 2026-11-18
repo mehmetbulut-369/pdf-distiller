@@ -975,9 +975,31 @@ async function init() {
     refreshPage();
   }));
 
-  document.addEventListener("click", (e) => { if (!$("#menu").contains(e.target)) closeMenu(); });
+  // Right rail as a drawer under 1100 px (CSS decides; JS only opens/closes and moves focus).
+  const rail = $("#rail"), railBtn = $("#railToggle"), narrow = matchMedia("(max-width: 1100px)");
+  const railOpen = () => rail.classList.contains("open");
+  const setRail = (open, restoreFocus = true) => {
+    rail.classList.toggle("open", open);
+    $("#railScrim").classList.toggle("on", open);
+    railBtn.setAttribute("aria-expanded", open);
+    if (open) setTimeout(() => rail.querySelector('[role="tab"][aria-selected="true"]')?.focus(), 50); // after visibility flips
+    else if (restoreFocus && rail.contains(document.activeElement)) railBtn.focus();
+  };
+  railBtn.onclick = (e) => { e.stopPropagation(); setRail(!railOpen()); };
+  $("#railClose").onclick = () => setRail(false);
+  $("#railScrim").onclick = () => setRail(false);
+  narrow.addEventListener("change", () => { if (!narrow.matches && railOpen()) setRail(false, false); });
+
+  document.addEventListener("click", (e) => {
+    if ($("#menu").contains(e.target)) return;
+    closeMenu();
+    if (railOpen() && !rail.contains(e.target)) setRail(false, false); // the scrim covers the page; this catches the header
+  });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeMenu();
+    if (e.key === "Escape") {
+      // a menu opened from the drawer closes first, the drawer on the next Escape
+      if (!$("#menu").hidden) closeMenu(); else if (railOpen()) setRail(false);
+    }
     if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement?.tagName)) return; // let fields undo their own typing
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); return; }
     if (e.key === "ArrowRight" || e.key === "PageDown") goTo(state.pos + 1);

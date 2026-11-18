@@ -150,7 +150,7 @@
   "region.head_keep": "Alan kuralı · metin korunuyor",
   "region.delete": "Alan kuralını sil",
   "toast.no_text_here": "Bu alanda metin yok.",
-  "rail.label": "Sayfalar ve kelimeler",
+  "rail.label": "Sayfalar, katmanlar ve kelimeler",
   "tab.pages": "Sayfalar",
   "tab.words": "Kelimeler",
   "pages.reset": "Sıfırla",
@@ -228,5 +228,7 @@
   "layers.hide": "Basma",
   "layers.behind": "arkada",
   "layers.behind_title": "Bir görselin arkasında kalmış. O görseli kaldırırsanız basılır.",
-  "layers.empty": "Bu sayfada öğe yok."
+  "layers.empty": "Bu sayfada öğe yok.",
+  "rail.open": "Sayfalar ve katmanlar",
+  "rail.close": "Kapat"
 }
