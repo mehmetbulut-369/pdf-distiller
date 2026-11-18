@@ -70,3 +70,9 @@ def test_foreign_host_rejected(client):
 def test_not_a_pdf_is_400(client):
     r = client.post("/api/open", files={"file": ("x.pdf", b"hello", "application/pdf")})
     assert r.status_code == 400
+
+
+def test_version_names_the_running_code(client):
+    from distill_core import __version__
+    v = client.get("/api/version").json()
+    assert v["version"] == __version__ and v["build"]  # a commit id from source, the BUILD stamp when packaged

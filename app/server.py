@@ -9,6 +9,7 @@ import hashlib
 import json
 import logging
 import re
+import subprocess
 import sys
 import threading
 import unicodedata
@@ -26,7 +27,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from distill_core import TIERS, DistillDocument, Overrides, PageOp, Settings, tier_settings  # noqa: E402
+from distill_core import TIERS, DistillDocument, Overrides, PageOp, Settings, __version__, tier_settings  # noqa: E402
 
 STATIC = Path(__file__).resolve().parent / "static"
 BUILTIN_PROFILES = ROOT / "profiles"
@@ -93,6 +94,28 @@ async def no_stale_static(request, call_next):
     if request.url.path.startswith("/static/"):
         resp.headers["Cache-Control"] = "no-cache"  # no stale UI after an update
     return resp
+
+
+def _build() -> str:
+    """Which code is running: packaged apps carry a BUILD file written by packaging/build.py;
+    from source it is the git commit ("-dirty" = uncommitted changes)."""
+    f = ROOT / "BUILD"
+    if f.is_file():
+        return f.read_text("utf-8").strip()
+    try:
+        out = subprocess.run(["git", "-C", str(ROOT), "describe", "--always", "--dirty"],
+                             capture_output=True, text=True, timeout=2).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        out = ""
+    return f"{out} · source" if out else "source"
+
+
+BUILD = _build()
+
+
+@app.get("/api/version")
+def version():
+    return {"version": __version__, "build": BUILD}
 
 
 @app.get("/api/tiers")

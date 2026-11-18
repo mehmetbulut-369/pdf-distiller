@@ -11,6 +11,7 @@ from __future__ import annotations
 import shutil
 import subprocess
 import sys
+from datetime import datetime
 from importlib import metadata
 from pathlib import Path
 
@@ -20,6 +21,19 @@ ROOT = Path(__file__).resolve().parent.parent
 NAME = "PDF Distiller"
 DEPS = ["pikepdf", "pypdfium2", "pillow", "numpy", "fastapi", "starlette", "uvicorn", "python-multipart", "pywebview"]
 SEP = ";" if sys.platform == "win32" else ":"
+
+
+def stamp() -> Path:
+    """BUILD file shown in the app header, so a packaged app can be matched to `git log`."""
+    def git(*a):
+        return subprocess.run(["git", "-C", str(ROOT), *a], capture_output=True, text=True).stdout.strip()
+    commit = git("describe", "--always", "--dirty") or "unknown"
+    if commit.endswith("-dirty"):
+        print("warning: uncommitted changes are being packaged; the app will say so", file=sys.stderr)
+    f = ROOT / "build" / "BUILD"
+    f.parent.mkdir(exist_ok=True)
+    f.write_text(f"{commit} · {datetime.now():%Y-%m-%d %H:%M}\n", "utf-8")
+    return f
 
 
 def main() -> None:
@@ -34,6 +48,7 @@ def main() -> None:
         "--specpath", str(ROOT / "build"),
         "--add-data", f"{ROOT / 'app' / 'static'}{SEP}app/static",
         "--add-data", f"{ROOT / 'profiles'}{SEP}profiles",
+        "--add-data", f"{stamp()}{SEP}.",
         "--collect-submodules", "uvicorn",
         "--collect-all", "pypdfium2_raw",
         "--osx-bundle-identifier", "io.github.pdf-distiller",

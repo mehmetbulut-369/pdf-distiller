@@ -821,6 +821,11 @@ async function init() {
   applyDom();
   state.tiers = await (await api("/api/tiers")).json();
   state.settings = { ...state.tiers[1].settings };
+  // which code is running (compare with `git log -1`): "v0.4.0 · 5a487a5"
+  api("/api/version").then((r) => r.json()).then((v) => {
+    $("#ver").textContent = `v${v.version} · ${v.build.split(" ")[0]}`;
+    $("#ver").title = `${v.version} · ${v.build}`;
+  }).catch(() => {});
   buildTiers(); bindControls(); bindProfiles(); syncControls(); setTool("graphics");
   loadProfiles().catch(() => {});
   syncTheme(); $("#theme").onclick = toggleTheme; darkMq.addEventListener("change", syncTheme);
