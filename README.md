@@ -130,6 +130,7 @@ FastAPI, and a plain JavaScript front end with no build step.
 pip install -r requirements-dev.txt
 python -m pytest -q            # engine, server and translation tests
 ruff check .                   # lint (config in pyproject.toml)
+python tools/corpus_check.py --weird   # damaged/unusual PDFs end to end (see docs/robustness.md)
 python tests/make_samples.py   # regenerate the sample decks in samples/
 python bench.py [file.pdf]     # speed benchmark (synthetic 500-page deck by default)
 python docs/readme_assets.py   # regenerate the README image and ink table
@@ -154,6 +155,8 @@ from one language.
   as photos and very faint screenshots as text. Crop or keep by hand when unsure.
 - The text colour decision is based on where a line starts; very long lines can occasionally be
   misjudged.
+- Damaged PDFs are repaired where possible (1100 of the 1103 files in the pdf.js test corpus pass);
+  a few files that crash or stall the renderer itself are listed in [docs/robustness.md](docs/robustness.md).
 
 ## License
 
