@@ -53,7 +53,7 @@ def best_grid(n: int, pw: float, ph: float):
 def nup(pdf: pikepdf.Pdf, n: int) -> pikepdf.Pdf:
     if n <= 1 or len(pdf.pages) == 0:
         return pdf
-    pw, ph = _display_size(pdf.pages[0])
+    pw, ph = (max(v, 1.0) for v in _display_size(pdf.pages[0]))
     _, cols, rows, sw, sh, cw, ch = best_grid(n, pw, ph)
     out = pikepdf.new()
     pages = list(pdf.pages)
@@ -63,5 +63,9 @@ def nup(pdf: pikepdf.Pdf, n: int) -> pikepdf.Pdf:
             r, c = divmod(k, cols)
             x0 = MARGIN + c * (cw + GUTTER)
             y1 = sh - MARGIN - r * (ch + GUTTER)
-            sheet.add_overlay(src, Rectangle(x0, y1 - ch, x0 + cw, y1))
+            try:
+                sheet.add_overlay(src, Rectangle(x0, y1 - ch, x0 + cw, y1))
+            except pikepdf.PdfError:  # undecodable content stream: pdfium shows the page blank anyway
+                src.obj.Contents = pdf.make_stream(b"")
+                sheet.add_overlay(src, Rectangle(x0, y1 - ch, x0 + cw, y1))
     return out

@@ -230,5 +230,8 @@
   "layers.behind_title": "Hidden behind an image. It will print if you remove that image.",
   "layers.empty": "No elements on this page.",
   "rail.open": "Pages & layers",
-  "rail.close": "Close"
+  "rail.close": "Close",
+  "error.pdf_encrypted": "This PDF is password-protected. Remove the password (e.g. in Preview: File → Export) and open it again.",
+  "error.pdf_empty": "This PDF has no pages.",
+  "load.failed_pages": "{n} page(s) could not be analysed and will be kept unchanged: {pages}."
 }

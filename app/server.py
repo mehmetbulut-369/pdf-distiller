@@ -18,6 +18,7 @@ from collections import OrderedDict
 from pathlib import Path
 from urllib.parse import quote
 
+import pikepdf
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -28,6 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from distill_core import TIERS, DistillDocument, Overrides, PageOp, Settings, __version__, tier_settings  # noqa: E402
+from distill_core.engine import EmptyPdf  # noqa: E402
 
 STATIC = Path(__file__).resolve().parent / "static"
 BUILTIN_PROFILES = ROOT / "profiles"
@@ -130,10 +132,22 @@ def open_pdf(file: UploadFile = File(...)):  # sync: analysis runs in the thread
         raise HTTPException(400, "error.not_pdf")
     try:
         doc = DistillDocument(data, file.filename or "document.pdf")
-    except Exception as e:  # encrypted or broken PDF
+    except pikepdf.PasswordError as e:
+        raise HTTPException(400, "error.pdf_encrypted") from e
+    except EmptyPdf as e:
+        raise HTTPException(400, "error.pdf_empty") from e
+    except Exception as e:  # damaged beyond repair
         log.warning("PDF could not be opened: %s", e)
         raise HTTPException(400, "error.pdf_open_failed") from e
-    doc.analyze()
+    if doc.n_pages == 0:
+        doc.close()
+        raise HTTPException(400, "error.pdf_empty")
+    try:
+        doc.analyze()
+    except Exception as e:
+        log.exception("analysis failed")
+        doc.close()
+        raise HTTPException(400, "error.pdf_open_failed") from e
     doc_id = uuid.uuid4().hex[:12]
     with _lock:
         _docs[doc_id] = doc
@@ -145,6 +159,7 @@ def open_pdf(file: UploadFile = File(...)):  # sync: analysis runs in the thread
         "name": doc.name,
         "n_pages": doc.n_pages,
         "analysis_seconds": round(doc.analysis_seconds, 2),
+        "failed_pages": doc.failed_pages,
         "pages": [{"w": p.width, "h": p.height, "rot": p.rotate} for p in doc.pages],
     }
 

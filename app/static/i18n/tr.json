@@ -230,5 +230,8 @@
   "layers.behind_title": "Bir görselin arkasında kalmış. O görseli kaldırırsanız basılır.",
   "layers.empty": "Bu sayfada öğe yok.",
   "rail.open": "Sayfalar ve katmanlar",
-  "rail.close": "Kapat"
+  "rail.close": "Kapat",
+  "error.pdf_encrypted": "Bu PDF parola korumalı. Parolayı kaldırıp (ör. Önizleme: Dosya → Dışa Aktar) yeniden açın.",
+  "error.pdf_empty": "Bu PDF'de hiç sayfa yok.",
+  "load.failed_pages": "{n} sayfa çözümlenemedi, olduğu gibi bırakılacak: {pages}."
 }

@@ -230,5 +230,8 @@
   "layers.behind_title": "Von einem Bild verdeckt. Wird gedruckt, sobald Sie das Bild entfernen.",
   "layers.empty": "Keine Elemente auf dieser Seite.",
   "rail.open": "Seiten & Ebenen",
-  "rail.close": "Schließen"
+  "rail.close": "Schließen",
+  "error.pdf_encrypted": "Diese PDF ist passwortgeschützt. Entfernen Sie das Passwort (z. B. in Vorschau: Ablage → Exportieren) und öffnen Sie sie erneut.",
+  "error.pdf_empty": "Diese PDF enthält keine Seiten.",
+  "load.failed_pages": "{n} Seite(n) konnten nicht analysiert werden und bleiben unverändert: {pages}."
 }

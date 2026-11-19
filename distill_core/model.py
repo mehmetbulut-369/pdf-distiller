@@ -173,3 +173,4 @@ class PageInfo:
     rotate: int
     elements: list[Element] = field(default_factory=list)
     box: tuple = (0.0, 0.0, 612.0, 792.0)  # visible box in PDF user space (CropBox)
+    failed: bool = False  # content could not be analysed; the page is kept as it is

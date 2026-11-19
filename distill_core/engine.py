@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import logging
 import os
 import re
 import threading
@@ -28,12 +29,15 @@ from .interpreter import Caches, PageWalker, apply, invert, page_box, page_rotat
 from .model import FILL, IMAGE, SHADING, TEXT, Overrides, PageInfo, PageOp, Settings
 from .pageops import apply_page_ops, nup
 
+log = logging.getLogger("distill")
+
 # pdfium is not thread-safe; every render call goes through this lock.
 PDFIUM_LOCK = threading.RLock()
 
 
 FEATURE_MIN_AREA = 0.02  # content analysis only for images larger than this (logos/icons are skipped)
 INK_HEAVY_PAGE = 0.15    # a printed page above this ink coverage gets a warning (a text page is ~3-6 %)
+MAX_RENDER_SIDE = 6000   # px; longest side of any rendered page image
 INK_HOTSPOT = 0.04       # a kept element costing at least this share of its page in ink is a hotspot
 
 
@@ -64,7 +68,11 @@ def _analyze_page(pdf, i, caches) -> PageInfo:
     if rot in (90, 270):
         w, h = h, w
     walker = PageWalker(pdf, i, page.obj, rewrite=False, to_view=view_mapper(box, rot), caches=caches)
-    walker.run()
+    try:
+        walker.run()
+    except Exception as e:  # one broken page must not take the document down; it is exported unchanged
+        log.warning("page %d could not be analysed: %s", i + 1, e)
+        return PageInfo(i, w, h, rot, [], box, failed=True)
     return PageInfo(i, w, h, rot, walker.elements, box)
 
 
@@ -88,9 +96,44 @@ def distill_pages(pdf: pikepdf.Pdf, items, drops: dict, s: Settings, clips: dict
             continue
         w = PageWalker(pdf, idx, page_obj, rewrite=True, drops=d, text_mode=s.text_mode,
                        grayscale=s.grayscale, caches=caches, clips=c)
-        w.run()
+        try:
+            w.run()
+        except Exception as e:  # page keeps its original content (Contents is only replaced at the end of run)
+            log.warning("page %d could not be rewritten: %s", idx + 1, e)
+            continue
         kept |= w.kept_images
     return kept
+
+
+def _pdfium_rebuild(data: bytes) -> bytes | None:
+    try:
+        src = pdfium.PdfDocument(data)
+    except pdfium.PdfiumError:
+        return None  # unreadable, or needs a password: then it really is locked
+    if len(src) == 0:
+        return None
+    new = pdfium.PdfDocument.new()
+    for i in range(len(src)):  # fresh page tree / xref; page by page so one bad page doesn't sink the rest
+        try:
+            new.import_pages(src, [i])
+        except pdfium.PdfiumError:
+            continue
+    if len(new) == 0:
+        return None
+    buf = io.BytesIO()
+    new.save(buf)
+    return buf.getvalue()
+
+
+def _pdfium_rewrite(data: bytes, timeout: float = 60) -> bytes | None:
+    """Second-chance repair for files qpdf can't open. Runs in a child process: this path only sees
+    badly damaged files, and a native crash there must not take the app down."""
+    try:
+        with ProcessPoolExecutor(max_workers=1) as ex:
+            return ex.submit(_pdfium_rebuild, data).result(timeout=timeout)
+    except Exception as e:  # BrokenProcessPool (native crash), timeout, ...
+        log.warning("pdfium repair failed: %s", e)
+        return None
 
 
 def ink_coverage(img) -> float:
@@ -98,18 +141,41 @@ def ink_coverage(img) -> float:
     return float((765.0 - a.sum(axis=2)).mean() / 765.0)
 
 
+class EmptyPdf(ValueError):
+    """The PDF has no pages."""
+
+
 class DistillDocument:
     def __init__(self, data: bytes, name: str = "document.pdf"):
         self.data = data
         self.name = name
         self.lock = threading.RLock()
-        self.pdf = pikepdf.open(io.BytesIO(data))
+        try:
+            self.pdf = pikepdf.open(io.BytesIO(data))
+        except pikepdf.PdfError as e:  # PasswordError included
+            # second chance: pdfium is more lenient than qpdf; let it rewrite a clean copy
+            fixed = _pdfium_rewrite(data)
+            if fixed is None:
+                raise e from None
+            self.data = data = fixed
+            self.pdf = pikepdf.open(io.BytesIO(data))
         self.n_pages = len(self.pdf.pages)
+        try:
+            pdfium.PdfDocument(data).close()
+        except pdfium.PdfiumError:
+            if self.n_pages == 0:
+                raise EmptyPdf("no pages") from None
+            # qpdf repaired what pdfium can't read (truncated file, broken xref): render from qpdf's copy
+            buf = io.BytesIO()
+            self.pdf.save(buf)
+            self.data = data = buf.getvalue()
+            pdfium.PdfDocument(data).close()
         self.pages: list[PageInfo] = []
         self.sig_pages: dict = {}
         self._decisions: dict = {}
         self._pdfium = None
         self.analysis_seconds = 0.0
+        self.failed_pages: list[int] = []        # pages whose content could not be analysed (kept unchanged)
         self._page_text: dict[int, str] = {}     # page text extracted with pdfium
         self._el_text: dict[str, str] = {}       # text box id -> readable text
         self.img_feats: dict = {}                # image signature -> content features (imgfeat)
@@ -136,6 +202,7 @@ class DistillDocument:
             caches = Caches()
             self.pages = [_analyze_page(self.pdf, i, caches) for i in range(n)]
             self.img_feats = _features_for(self.pdf, self.pages)
+        self.failed_pages = [p.index for p in self.pages if p.failed]
         self.sig_pages = signature_pages(self.pages)
         self._by_id = {e.id: e for p in self.pages for e in p.elements}
         self._by_sig: dict = defaultdict(list)
@@ -328,9 +395,15 @@ class DistillDocument:
     @staticmethod
     def _render(doc, i: int, width: int):
         page = doc[i]
-        w, _h = page.get_size()
-        scale = max(width / max(w, 1.0), 0.02)
-        return page.render(scale=scale).to_pil()
+        w, h = page.get_size()
+        # cap the long side: a page of 595 x 2^31 pt (seen in the wild) would otherwise exhaust memory
+        scale = max(min(width / max(w, 1.0), MAX_RENDER_SIDE / max(h, 1.0)), 0.0001)
+        try:
+            return page.render(scale=scale).to_pil()
+        except ValueError:  # invalid page box (pdfium: "Crop exceeds page dimensions"): show a blank sheet
+            from PIL import Image
+            tall = min(int(width * abs(h) / max(abs(w), 1.0)), MAX_RENDER_SIDE)
+            return Image.new("RGB", (max(int(width), 1), max(tall, 1)), "white")
 
     def render_original(self, i: int, width: int = 900) -> bytes:
         with PDFIUM_LOCK:
@@ -345,7 +418,7 @@ class DistillDocument:
             kept = distill_pages(new, [(new.pages[0].obj, i)], drops, s, clips)
             process_images(new, kept, s.grayscale, s.image_fade)
             buf = io.BytesIO()
-            new.save(buf)
+            new.save(buf, fix_metadata_version=False)
         return buf.getvalue()
 
     def render_processed(self, i: int, s: Settings, ov: Overrides, width: int = 900) -> bytes:
@@ -371,7 +444,7 @@ class DistillDocument:
             kept = distill_pages(new, [(new.pages[j].obj, i) for j, i in enumerate(idx)], drops, s, clips)
             process_images(new, kept, s.grayscale, s.image_fade)
             buf = io.BytesIO()
-            new.save(buf)
+            new.save(buf, fix_metadata_version=False)
         o_sum = p_sum = 0.0
         with PDFIUM_LOCK:
             od = self._pdfium_doc()
@@ -444,11 +517,28 @@ class DistillDocument:
         kept = distill_pages(pdf, [(pdf.pages[i].obj, i) for i in needed], drops, s, clips)
         process_images(pdf, kept, s.grayscale, s.image_fade)
         out = apply_page_ops(pdf, ops)
-        out = nup(out, s.nup)
+        try:
+            out = nup(out, s.nup)
+        except Exception as e:  # e.g. JBIG2 images that can't be copied without jbig2dec: 1-up beats no file
+            log.warning("N-up failed, exporting one page per sheet: %s", e)
         buf = io.BytesIO()
-        out.remove_unreferenced_resources()
-        out.save(buf, compress_streams=True, object_stream_mode=pikepdf.ObjectStreamMode.generate)
-        return buf.getvalue()
+        try:
+            out.remove_unreferenced_resources()
+        except Exception as e:  # size optimisation only
+            log.warning("could not prune resources: %s", e)
+        out.save(buf, compress_streams=True, object_stream_mode=pikepdf.ObjectStreamMode.generate,
+                 fix_metadata_version=False)
+        data = buf.getvalue()
+        try:  # never hand out an unreadable file (qpdf can write an xref stream without /Size for repaired input)
+            with pikepdf.open(io.BytesIO(data)) as chk:
+                len(chk.pages)
+        except pikepdf.PdfError:
+            log.warning("export failed verification; saving without object streams")
+            buf = io.BytesIO()
+            out.save(buf, compress_streams=True, object_stream_mode=pikepdf.ObjectStreamMode.disable,
+                     fix_metadata_version=False)
+            data = buf.getvalue()
+        return data
 
     def close(self):
         with PDFIUM_LOCK:

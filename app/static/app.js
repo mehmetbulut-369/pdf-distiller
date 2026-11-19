@@ -254,7 +254,11 @@ async function openFile(file) {
     const first = refreshPage();
     refreshSummary(); refreshWords();
     await first;
-    toast(t("load.done", { name: d.name, n: d.n_pages }));
+    if (d.failed_pages?.length) {
+      toast(t("load.failed_pages", { n: d.failed_pages.length, pages: d.failed_pages.slice(0, 10).map((i) => i + 1).join(", ") }), true);
+    } else {
+      toast(t("load.done", { name: d.name, n: d.n_pages }));
+    }
   } catch (e) {
     toast(e.message, true);
   } finally {

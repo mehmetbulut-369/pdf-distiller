@@ -263,6 +263,12 @@ def _q(v: float) -> float:
     return round(float(v), 4)
 
 
+def _cell(v: float, d: float) -> int:
+    """Coarse grid cell for signatures; survives inf/NaN coordinates from broken content streams."""
+    v = float(v)
+    return 0 if v != v else round(max(min(v, 1e9), -1e9) / d)
+
+
 class Caches:
     """Caches shared for the lifetime of one Pdf object."""
 
@@ -364,7 +370,7 @@ class PageWalker:
             if a <= 0:
                 continue
             sig = "t:%s:%d,%d" % (hashlib.md5(bytes(g["raw"])).hexdigest()[:16],
-                                  round(g["ox"] / 3), round(g["oy"] / 3))
+                                  _cell(g["ox"], 3), _cell(g["oy"], 3))
             self.elements.append(Element(g["id"], self.page_index, TEXT, clipped, self.to_view(clipped),
                                          min(a, 1.0), g["lum"], sig))
 
@@ -491,8 +497,8 @@ class PageWalker:
                     kind = STROKE if op in STROKE_ONLY else FILL
                     col = gs.stroke if kind == STROKE else gs.fill
                     lum = col.lum if col.kind not in ("pattern", "other") else 0.5
-                    sig = "%s:%d,%d,%d,%d:%s:%.2f" % (kind[0], round(bbox[0] / 4), round(bbox[1] / 4),
-                                                       round(bbox[2] / 4), round(bbox[3] / 4), col.kind, lum)
+                    sig = "%s:%d,%d,%d,%d:%s:%.2f" % (kind[0], _cell(bbox[0], 4), _cell(bbox[1], 4),
+                                                       _cell(bbox[2], 4), _cell(bbox[3], 4), col.kind, lum)
                     if self._element(kind, bbox, lum, sig):
                         emit(Instr([], Operator("n")))
                         changed = True
@@ -630,7 +636,7 @@ class PageWalker:
             # --- shading
             if op == "sh":
                 name = str(ins.operands[0]) if ins.operands else ""
-                sig = "sh:%s:%d,%d,%d,%d" % ((name,) + tuple(round(c / 4) for c in gs.clip))
+                sig = "sh:%s:%d,%d,%d,%d" % ((name,) + tuple(_cell(c, 4) for c in gs.clip))
                 if self._element(SHADING, gs.clip, 0.5, sig):
                     changed = True
                     continue
@@ -907,6 +913,8 @@ def page_box(page_obj):
     if len(mb) != 4:
         mb = [0, 0, 612, 792]
     mb = (min(mb[0], mb[2]), min(mb[1], mb[3]), max(mb[0], mb[2]), max(mb[1], mb[3]))
+    if mb[2] - mb[0] < 1 or mb[3] - mb[1] < 1:  # zero-size MediaBox: viewers fall back to Letter, so do we
+        mb = (0.0, 0.0, 612.0, 792.0)
     cb = _inherited(page_obj, "/CropBox")
     if cb is not None:
         c = nums(cb)

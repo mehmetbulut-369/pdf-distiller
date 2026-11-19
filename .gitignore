@@ -9,3 +9,4 @@ samples/bench_*.pdf
 .claude/launch.json
 build/
 dist/
+corpus_report.json
