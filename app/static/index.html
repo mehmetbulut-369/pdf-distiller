@@ -14,7 +14,7 @@
   <img class="logo" src="/static/logo.svg" alt="" width="28" height="28">
   <strong class="brand">PDF Distiller</strong>
   <span id="ver" class="ver"></span>
-  <label class="btn" for="file" data-i18n="app.open">Open PDF</label>
+  <label class="btn" for="file" tabindex="0" role="button" data-i18n="app.open">Open PDF</label>
   <input type="file" id="file" accept="application/pdf,.pdf" hidden>
   <span id="docname" class="docname"></span>
   <span class="spacer"></span>
@@ -365,7 +365,7 @@
     </div>
       <strong data-i18n="start.drop">Drag your PDF here</strong>
       <p class="hint" data-i18n="start.original"></p>
-      <label class="btn primary" for="file" data-i18n="empty.choose">Choose PDF</label>
+      <label class="btn primary" for="file" tabindex="0" role="button" data-i18n="empty.choose">Choose PDF</label>
     </div>
     <section class="recent" id="recent" hidden>
       <div class="recenthead"><h2 data-i18n="recent.title"></h2><button class="btn ghost small" id="recentClear" data-i18n="recent.clear"></button></div>

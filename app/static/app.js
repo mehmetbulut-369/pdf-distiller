@@ -1211,6 +1211,10 @@ async function init() {
   $("#file").onchange = (e) => { openFile(e.target.files[0]); e.target.value = ""; };
   // desktop: the native dialog returns a path (needed for the recent list); the <input> would not
   $$('label[for="file"]').forEach((l) => l.addEventListener("click", (e) => { if (desk()) { e.preventDefault(); choosePdf(); } }));
+  // a <label> is not keyboard-reachable on its own; tabindex + role in index.html, Enter/Space here
+  $$('label[for="file"]').forEach((l) => l.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); l.click(); }
+  }));
   $("#recentClear").onclick = async () => { await desk()?.clear_recent(); renderRecent(); };
   window.addEventListener("pywebviewready", renderRecent);
   if (desk()) renderRecent(); // the bridge may have been ready before this listener existed
