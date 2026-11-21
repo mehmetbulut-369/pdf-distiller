@@ -55,7 +55,7 @@ def main():
 
     if a.window:
         try:
-            import webview
+            import webview  # noqa: F401  (availability check; app.desktop uses it)
         except ImportError:
             print("For a desktop window:  pip install pywebview   (opening in the browser for now)")
             a.window = False
@@ -64,8 +64,8 @@ def main():
         threading.Thread(target=server.run, daemon=True).start()
         while not server.started:
             time.sleep(0.05)
-        webview.create_window("PDF Distiller", url, width=1440, height=900)
-        webview.start()  # blocks until the window is closed
+        from app.desktop import start
+        start(url)  # one window per document; blocks until the last one is closed
         server.should_exit = True
         return
 

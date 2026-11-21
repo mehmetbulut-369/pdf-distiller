@@ -57,7 +57,8 @@ button, input, select { font: inherit; color: inherit; }
 /* ------------------------------------------------ top bar */
 .bar { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px;
   background: var(--paper); border-bottom: 1px solid var(--line); }
-.brand { font-weight: 700; letter-spacing: -.01em; margin-right: 6px; white-space: nowrap; }
+.logo { display: block; width: 39px; height: 39px; flex-shrink: 0; margin-right: -2px; }
+.brand { font-size: 26px; font-weight: 700; letter-spacing: -.01em; margin-right: 6px; white-space: nowrap; }
 .ver { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; margin-right: 6px; }
 .docname { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 32ch; min-width: 0; flex-shrink: 1; }
 .bar > :not(.docname):not(.spacer) { flex-shrink: 0; } /* on narrow screens the file name shrinks first */
@@ -103,7 +104,15 @@ button, input, select { font: inherit; color: inherit; }
 .seg.wide button { flex: 1; }
 
 /* ------------------------------------------------ layout */
-.app { display: grid; grid-template-columns: 300px 1fr 230px; height: calc(100% - 52px); }
+.app { position: relative; display: grid; grid-template-columns: var(--lw, 300px) 1fr var(--rw, 230px); height: calc(100% - 52px); }
+/* drag handles: on the column edges, outside the grid flow (the panels keep their own scroll) */
+.gutter { position: absolute; top: 0; bottom: 0; z-index: 4; width: 9px; cursor: col-resize; touch-action: none; }
+.gutter::after { content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 1px; background: transparent; transition: background .15s; }
+.gutter:hover::after, .gutter:focus-visible::after, .gutter.on::after { background: var(--cyan); width: 2px; left: 3px; }
+#gutL { left: calc(var(--lw, 300px) - 5px); }
+#gutR { right: calc(var(--rw, 230px) - 5px); }
+.gutter.pagegutter { position: relative; width: auto; align-self: stretch; min-height: 200px; }
+.dragging, .dragging * { cursor: col-resize !important; user-select: none; }
 .panel { background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; padding: 16px 16px 40px; }
 .panel h2, .panel summary { font-size: 13px; font-weight: 650; margin: 0 0 8px; }
 .panel section, .block { margin-bottom: 18px; }
@@ -125,6 +134,10 @@ button, input, select { font: inherit; color: inherit; }
 .ink.after { background: linear-gradient(to top, var(--ink) 0 34%, var(--magenta) 34% 56%, var(--yellow) 56% 78%, var(--cyan) 78%); }
 .saving .big { font-size: 40px; font-weight: 750; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
 .saving .small { color: var(--muted); font-size: 12px; margin-top: 4px; max-width: 16ch; }
+.dots { margin: -8px 2px 18px; font-size: 13px; }
+.dots summary { cursor: pointer; }
+.dots .how { color: var(--muted); font-size: 12px; text-decoration: underline dotted; margin-left: 4px; }
+.dots p { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 6px 0 0; }
 
 .tiers { display: flex; flex-direction: column; gap: 6px; }
 .tier { display: grid; grid-template-columns: 22px 1fr; gap: 2px 8px; text-align: left; padding: 9px 10px;
@@ -161,9 +174,9 @@ button, input, select { font: inherit; color: inherit; }
 .seg button { white-space: nowrap; }
 .legend span { display: inline-flex; align-items: center; gap: 5px; }
 
-.views { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 24px; overflow: auto; align-items: start; }
+.views { flex: 1; display: grid; grid-template-columns: minmax(0, var(--sl, 1fr)) 9px minmax(0, var(--sr, 1fr)); gap: 8px; padding: 24px; overflow: auto; align-items: start; }
 .views[data-mode="before"], .views[data-mode="after"] { grid-template-columns: 1fr; max-width: 1100px; width: 100%; margin: 0 auto; }
-.views[data-mode="before"] .after, .views[data-mode="after"] .before { display: none; }
+.views[data-mode="before"] .after, .views[data-mode="after"] .before, .views:not([data-mode="split"]) .pagegutter { display: none; }
 .sheet { margin: 0; }
 .frame { position: relative; background: var(--paper); box-shadow: 0 1px 2px rgba(20,30,40,.18), 0 8px 24px rgba(20,30,40,.10); line-height: 0; }
 .frame img { width: 100%; height: auto; display: block; min-height: 120px; }
@@ -211,12 +224,50 @@ button, input, select { font: inherit; color: inherit; }
 .thumb .acts button:hover { background: var(--hover); color: var(--ink); }
 
 /* ------------------------------------------------ empty state, menu, toast */
-.empty { position: fixed; inset: 52px 0 0 0; display: flex; align-items: center; justify-content: center; background: var(--desk); }
+/* start screen: no document yet, so the header shows only the brand, languages and theme */
+.nodoc .bar label[for="file"], .nodoc #docname, .nodoc #viewmode, .nodoc #undo, .nodoc #export, .nodoc #ver { display: none; }
+.nodoc .app { display: none; } /* panels and resize handles only exist once a document is open */
+.empty { position: fixed; inset: 52px 0 0 0; overflow-y: auto; display: flex; justify-content: center; background: var(--desk); }
 .empty.hidden { display: none; }
+/* One dashed box: the walkthrough sits inside the drop zone, the instruction right under it. Sized so the
+   instruction and the button stay in the first screen of a 13" laptop. */
+.start { width: min(920px, 100%); padding: 6px 24px 32px; margin: auto 0; display: grid; gap: 12px; }
+.start h1 { font-size: 30px; line-height: 1.15; letter-spacing: -.025em; margin: 0; }
+.start .sub { color: var(--muted); font-size: 15px; margin: -4px 0 4px; }
+.start .dropzone { gap: 10px; padding: 4px 24px 54px; border-color: color-mix(in srgb, var(--muted) 65%, transparent); }
+.start .dropzone strong { font-size: 22px; }
+.start .intro { margin: 0; width: 100%; }
+.start .intro .introstage { border: 0; background: none; } /* the dashed drop box is the only frame */
+.start .intro .introstage svg { margin: 0 auto;
+  /* 680 px where the window is tall enough; shorter windows shrink the walkthrough so the button stays in view */
+  max-width: min(680px, calc((100vh - 395px) * 2.4)); }
+/* Inverted pyramid toward the button: walkthrough 680 px > caption > scene marks >
+   instruction > note 20ch > button (values set by the user in the tuning bar, 2026-11-21). Spacing tightens on the way down, so the eye lands on the button. */
+.start .intro .scenes { gap: 6px; padding: 2px 0 6px; }
+.start .intro .scenes button { min-width: 0; padding: 8px 0; }
+.start .intro .scenes i { width: 22px; }
+.start .intro .caps { height: 50px; margin-bottom: 0; }
+.start .intro .cap b { font-size: 19px; }
+.start .intro .cap span { font-size: 15px; }
+.start .dropzone strong { margin-top: 1px; font-size: 25px; }
+.start .dropzone .hint { max-width: 20ch; font-size: 13px; line-height: 1.45; }
+.start .dropzone .btn { margin-top: 2px; }
 .empty.drag .dropzone { border-color: var(--cyan); background: var(--drag-bg); }
-.dropzone { max-width: 520px; padding: 40px; border: 2px dashed var(--line); border-radius: 14px; background: var(--paper); }
-.dropzone h1 { font-size: 26px; line-height: 1.2; letter-spacing: -.02em; margin: 0 0 12px; }
-.dropzone p { color: var(--muted); margin: 0 0 22px; }
+.dropzone { display: grid; justify-items: center; gap: 14px; padding: 32px; border: 2px dashed var(--line); border-radius: 14px; background: var(--paper); text-align: center; }
+.dropzone strong { font-size: 18px; }
+.dropzone .hint { max-width: 52ch; margin: 0; }
+.recent { margin-top: 28px; }
+.recenthead { display: flex; align-items: center; justify-content: space-between; }
+.recent h2 { font-size: 14px; margin: 0; }
+.recentlist { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.recentlist .open { display: grid; gap: 6px; width: 100%; padding: 8px; text-align: left; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer; }
+.recentlist .open:hover { border-color: var(--cyan); }
+.recentlist img { width: 100%; aspect-ratio: 16/10; object-fit: contain; background: #fff; border-radius: 4px; }
+.recentlist .nm { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recentlist small { color: var(--muted); font-size: 11px; }
+.recentlist .gone .open { opacity: .55; }
+.recentlist .gone p { font-size: 12px; color: var(--muted); margin: 6px 2px; }
+.recentlist .gone .row { margin-top: 4px; }
 
 .menu { position: fixed; z-index: 50; min-width: 240px; padding: 6px; background: var(--paper); border: 1px solid var(--line);
   border-radius: 8px; box-shadow: 0 10px 30px rgba(20,30,40,.18); }
@@ -232,7 +283,9 @@ button, input, select { font: inherit; color: inherit; }
 /* right rail: a column on wide screens, a drawer from the right below 1100 px */
 .railtoggle, .railclose, .railscrim { display: none; }
 @media (max-width: 1100px) {
-  .app { grid-template-columns: 270px 1fr; }
+  .app { grid-template-columns: var(--lw, 270px) 1fr; }
+  #gutL { left: calc(var(--lw, 270px) - 5px); }
+  #gutR, .pagegutter { display: none; }
   .views { grid-template-columns: 1fr; }
   .railtoggle { display: inline-flex; }
   .rail { position: fixed; top: 52px; right: 0; bottom: 0; z-index: 56; width: min(340px, 92vw);
@@ -250,6 +303,7 @@ button, input, select { font: inherit; color: inherit; }
 @media (max-width: 760px) {
   .rail { width: 100vw; }
   .app { grid-template-columns: 1fr; height: auto; }
+  .gutter { display: none; }
   .panel { border-right: 0; }
   .legend, .docname, .ver { display: none; }
   /* the header no longer fits: let it scroll sideways instead of widening the whole page */
@@ -365,6 +419,21 @@ button, input, select { font: inherit; color: inherit; }
   .progress.indet i { width: 100%; opacity: .5; }
 }
 
+/* ------------------------------------------------ export reward: pointillist globe */
+.world { position: fixed; inset: 0; z-index: 66; display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--desk) 75%, transparent); }
+.world[hidden] { display: none; }
+.worldcard { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 300px); align-items: center; gap: 28px;
+  padding: 28px 32px; border-radius: 16px; background: var(--paper); border: 1px solid var(--line); box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+#worldCanvas { width: 100%; aspect-ratio: 1; }
+.worldtext { display: grid; gap: 8px; }
+.worldtext strong { font-size: 30px; line-height: 1.15; letter-spacing: -.02em; }
+.worldtext span { color: var(--ink); font-size: 15px; }
+.worldtext small { color: var(--muted); font-size: 13px; }
+.worldtext .btn { justify-self: start; margin-top: 8px; }
+.worldtext .btn[hidden] { display: none; }
+@media (max-width: 700px) { .worldcard { grid-template-columns: minmax(0, 260px); } }
+
 /* ------------------------------------------------ layers */
 .layershint { margin: 8px 10px 4px; }
 .layers { list-style: none; margin: 0; padding: 0 6px 10px; }
@@ -381,3 +450,120 @@ button, input, select { font: inherit; color: inherit; }
 .layers .empty { color: var(--muted); padding: 10px; }
 .overlay .lyrhl { position: absolute; pointer-events: none; outline: 3px solid var(--cyan); outline-offset: 1px;
   background: rgba(0,137,188,.18); border-radius: 2px; z-index: 5; }
+
+/* ------------------------------------------------ start screen: animated walkthrough (scoped under .intro) */
+.intro { --T: 16s; margin: 0 0 22px; }
+.intro .introstage { position:relative; border:1px solid var(--line); border-radius:14px; background:var(--panel); overflow:hidden; }
+.intro svg { display:block; width:100%; height:auto; }
+.intro .anim * { animation-duration:var(--T); animation-iteration-count:infinite; animation-timing-function:ease-in-out; animation-fill-mode:both; }
+
+/* timeline (share of --T): 0 problem 0–11 · 1 drop 12–21 · 2 checked locally 22–45 · 3 found + removed 46–71 · 4 result 72–96 */
+
+/* 0 · problem: a screen-made slide prints, the cartridge drains */
+.intro .p0 { animation-name:i-p0; }
+@keyframes i-p0 { 0%{opacity:0} 2%,9%{opacity:1} 11.5%,100%{opacity:0} }
+.intro .sheet0 { animation-name:i-sheet0; }
+@keyframes i-sheet0 { 0%,2%{transform:translateY(96px)} 9%,100%{transform:translateY(0)} }
+.intro .drain { animation-name:i-drain; transform-box:fill-box; transform-origin:bottom; }
+@keyframes i-drain { 0%,3%{transform:scaleY(1)} 10%,100%{transform:scaleY(.28)} }
+
+/* 1 · drop */
+.intro .file { animation-name:i-file; } .intro .cur1 { animation-name:i-cur1; } .intro .tray { animation-name:i-tray; }
+@keyframes i-file { 0%,12%{transform:translate(0,0);opacity:0} 13%{opacity:1} 18.5%{transform:translate(214px,20px)} 20%{transform:translate(214px,20px);opacity:1} 21.5%,100%{transform:translate(214px,20px);opacity:0} }
+@keyframes i-cur1 { 0%,12%{transform:translate(0,0);opacity:0} 13%{opacity:1} 18.5%{transform:translate(214px,20px)} 20%{opacity:1} 22%,100%{transform:translate(250px,40px);opacity:0} }
+@keyframes i-tray { 0%,12%{opacity:0} 14%{opacity:.35} 17%,20%{opacity:1} 22.5%,100%{opacity:0} }
+
+/* the slide, from the drop to the result; one camera move out to the laptop and back */
+.intro .slide { animation-name:i-slide; }
+@keyframes i-slide { 0%,20%{opacity:0} 22%,70%{opacity:1} 73%,100%{opacity:0} }
+.intro .cam { animation-name:i-cam; transform-origin:360px 150px; }
+@keyframes i-cam { 0%,23%{transform:none} 26.5%,41%{transform:translateY(-38px) scale(.4)} 45%,100%{transform:none} }
+
+/* 2 · checked on this computer: bell jar comes down, the X-ray runs under it */
+.intro .laptop { animation-name:i-laptop; }
+@keyframes i-laptop { 0%,23%{opacity:0} 26%,41%{opacity:1} 44%,100%{opacity:0} }
+.intro .cloud { animation-name:i-cloud; }
+@keyframes i-cloud { 0%,28.5%{opacity:1} 30%,100%{opacity:.3} }
+.intro .wire { animation-name:i-wire; stroke-dasharray:4 7; transform-box:fill-box; transform-origin:left center; }
+@keyframes i-wire { 0%,26.5%{opacity:0;transform:scaleX(0)} 27.8%,28.4%{opacity:1;transform:scaleX(1)} 29.2%,100%{opacity:0;transform:scaleX(0)} }
+.intro .dome { animation-name:i-dome; }
+@keyframes i-dome { 0%,27.5%{opacity:0;transform:translateY(-80px)} 28.3%{opacity:1} 29.4%{transform:translateY(4px)} 30%,41%{opacity:1;transform:translateY(0)} 44%,100%{opacity:0;transform:translateY(0)} }
+.intro .safe { animation-name:i-safe; transform-box:fill-box; transform-origin:center; }
+@keyframes i-safe { 0%,30%{opacity:0;transform:scale(.4)} 31%{opacity:1;transform:scale(1.15)} 32%,41%{opacity:1;transform:scale(1)} 44%,100%{opacity:0} }
+.intro .xray { animation-name:i-xray; } .intro .scan { animation-name:i-scan; }
+@keyframes i-xray { 0%,31%{opacity:0} 33%,39%{opacity:1} 41%,100%{opacity:0} }
+@keyframes i-scan { 0%,31%{transform:translateX(0);opacity:0} 32%{opacity:1} 39%{transform:translateX(316px);opacity:1} 40%,100%{transform:translateX(316px);opacity:0} }
+
+/* 3 · the program marks, the user confirms once, it evaporates */
+.intro .m1 { animation-name:i-m1; } .intro .m2 { animation-name:i-m2; } .intro .m3 { animation-name:i-m3; }
+@keyframes i-m1 { 0%,46.5%{opacity:0} 47.5%,56.5%{opacity:1} 58%,100%{opacity:0} }
+@keyframes i-m2 { 0%,48.5%{opacity:0} 49.5%,56.5%{opacity:1} 58%,100%{opacity:0} }
+@keyframes i-m3 { 0%,50.5%{opacity:0} 51.5%,56.5%{opacity:1} 58%,100%{opacity:0} }
+.intro .rmbtn { animation-name:i-rmbtn; transform-box:fill-box; transform-origin:center; }
+@keyframes i-rmbtn { 0%,51.5%{opacity:0;transform:scale(1)} 52.5%,56%{opacity:1;transform:scale(1)} 56.6%{transform:scale(.92)} 57.2%{transform:scale(1);opacity:1} 59%,100%{opacity:0} }
+.intro .cur2 { animation-name:i-cur2; }
+@keyframes i-cur2 { 0%,52%{transform:translate(0,0);opacity:0} 53%{opacity:1} 56%,57%{transform:translate(-118px,-20px);opacity:1} 60%,100%{transform:translate(-118px,-20px);opacity:0} }
+.intro .darkbg { animation-name:i-darkbg; }
+@keyframes i-darkbg { 0%,57%{opacity:1} 62%,100%{opacity:0} }
+.intro .gone { animation-name:i-gone; }
+@keyframes i-gone { 0%,57%{opacity:1} 61%,100%{opacity:0} }
+.intro .txtlight { animation-name:i-txtlight; } .intro .txtdark { animation-name:i-txtdark; }
+@keyframes i-txtlight { 0%,58%{opacity:1} 62%,100%{opacity:0} }
+@keyframes i-txtdark { 0%,58%{opacity:0} 62%,100%{opacity:1} }
+.intro .vap { opacity:0; animation-name:i-vap; }
+@keyframes i-vap { 0%,57%{opacity:0;transform:translate(0,0) scale(1)} 58%{opacity:.95}
+  67%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)} 100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)} }
+
+/* 4 · result without numbers: two pages, and under each the ink it takes (a bar = ink used).
+   After is about a quarter shorter; the part it no longer needs stays as a faint green outline; a leaf seal stamps the clean page. */
+.intro .result { animation-name:i-result; }
+@keyframes i-result { 0%,72%{opacity:0} 74%,97%{opacity:1} 100%{opacity:0} }
+.intro .before { animation-name:i-before; }
+@keyframes i-before { 0%,72%{opacity:0} 74%,80%{opacity:1} 82%,97%{opacity:.5} 100%{opacity:0} }
+.intro .nowside { animation-name:i-nowside; }
+@keyframes i-nowside { 0%,79%{opacity:0;transform:translateX(14px)} 81.5%,97%{opacity:1;transform:translateX(0)} 100%{opacity:0} }
+.intro .use1 { animation-name:i-use1; transform-box:fill-box; transform-origin:left; }
+@keyframes i-use1 { 0%,75%{transform:scaleX(0)} 79%,100%{transform:scaleX(1)} }
+.intro .use2 { animation-name:i-use2; transform-box:fill-box; transform-origin:left; }
+@keyframes i-use2 { 0%,81.5%{transform:scaleX(0)} 85%,100%{transform:scaleX(1)} }
+.intro .spared { animation-name:i-spared; }
+@keyframes i-spared { 0%,85%{opacity:0} 86.5%,100%{opacity:1} }
+.intro .seal { animation-name:i-seal; transform-box:fill-box; transform-origin:center; }
+@keyframes i-seal { 0%,86.5%{opacity:0;transform:scale(1.7) rotate(-12deg)} 88%{opacity:1;transform:scale(.94) rotate(-12deg)} 89%,100%{opacity:1;transform:scale(1) rotate(-12deg)} }
+
+/* captions: one headline + one short line, named after what is on screen right now */
+.intro .caps { position:relative; height:56px; margin:2px 16px 4px; text-align:center; }
+.intro .cap { position:absolute; inset:0; display:grid; align-content:start; justify-items:center; gap:2px; opacity:0; }
+.intro .cap b { font-size:20px; letter-spacing:-.01em; }
+.intro .cap span { color:var(--muted); font-size:14px; max-width:40ch; }
+.intro .cap.c0 {animation-name:i-c0} .intro .cap.c1 {animation-name:i-c1} .intro .cap.c2 {animation-name:i-c2} .intro .cap.c3 {animation-name:i-c3} .intro .cap.c4 {animation-name:i-c4}
+@keyframes i-c0 { 0%{opacity:0} 2%,10%{opacity:1} 11.5%,100%{opacity:0} }
+@keyframes i-c1 { 0%,11.5%{opacity:0} 13%,20.5%{opacity:1} 22%,100%{opacity:0} }
+@keyframes i-c2 { 0%,22%{opacity:0} 24%,43.5%{opacity:1} 45.5%,100%{opacity:0} }
+@keyframes i-c3 { 0%,45.5%{opacity:0} 47.5%,69.5%{opacity:1} 71.5%,100%{opacity:0} }
+@keyframes i-c4 { 0%,71.5%{opacity:0} 74%,97%{opacity:1} 100%{opacity:0} }
+
+/* scenes: click to jump (holds 5 s), plus a pause button (moving content needs one: WCAG 2.2.2) */
+.intro .scenes { display:flex; justify-content:center; align-items:end; gap:4px; padding:4px 12px 16px; flex-wrap:wrap; }
+.intro .scenes button { display:grid; gap:0; justify-items:center; min-width:76px; padding:6px 8px; border:0; border-radius:8px;
+  background:none; color:var(--muted); font:inherit; font-size:12px; cursor:pointer; }
+.intro .scenes button:hover, .intro .scenes button:focus-visible { background:var(--paper); color:var(--ink); }
+.intro .scenes i { width:100%; height:4px; border-radius:2px; background:var(--line); }
+.intro .scenes [data-at] i { animation-name:i-s0; }
+.intro .scenes [data-at]:nth-child(2) i {animation-name:i-s1} .intro .scenes [data-at]:nth-child(3) i {animation-name:i-s2}
+.intro .scenes [data-at]:nth-child(4) i {animation-name:i-s3} .intro .scenes [data-at]:nth-child(5) i {animation-name:i-s4}
+@keyframes i-s0 { 0%,11%{background:var(--cyan)} 12%,100%{background:var(--line)} }
+@keyframes i-s1 { 0%,11%{background:var(--line)} 12%,21%{background:var(--cyan)} 22%,100%{background:var(--line)} }
+@keyframes i-s2 { 0%,21%{background:var(--line)} 22%,45%{background:var(--cyan)} 46%,100%{background:var(--line)} }
+@keyframes i-s3 { 0%,45%{background:var(--line)} 46%,71%{background:var(--cyan)} 72%,100%{background:var(--line)} }
+@keyframes i-s4 { 0%,71%{background:var(--line)} 72%,98%{background:var(--cyan)} 100%{background:var(--line)} }
+.intro .hold { position:absolute; top:10px; right:12px; font-size:12px; color:var(--muted); opacity:0; transition:opacity .2s; }
+.intro .hold.on { opacity:1; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .intro .anim * { animation:none !important; }
+  .intro .p0, .intro .file, .intro .cur1, .intro .cur2, .intro .tray, .intro .slide, .intro .laptop, .intro .xray, .intro .scan, .intro .rmbtn, .intro .m1, .intro .m2, .intro .m3, .intro .vap, .intro .cap { opacity:0 !important; }
+  .intro .result, .intro .before, .intro .nowside, .intro .keep, .intro .cap.c4 { opacity:1 !important; }
+  .intro .before { opacity:.45 !important; }
+}

@@ -49,7 +49,7 @@ async function setLang(lang) {
   try { localStorage.setItem("lang", lang); } catch (_) {}
   applyDom();
   // redraw everything that renders dynamic text
-  buildTiers(); syncControls(); setTool(state.tool); renderThumbs(); renderWords(); renderSummary(); renderDocName();
+  buildTiers(); syncControls(); setTool(state.tool); renderThumbs(); renderWords(); renderSummary(); renderDocName(); renderRecent(); introText();
   if (state.doc) refreshPage();
   loadProfiles().catch(() => {});
 }
@@ -232,38 +232,185 @@ function uploadPdf(file, onProgress) {
   });
 }
 
+// Desktop app (pywebview): files open by path (recent list, one window per document). In a plain
+// browser the path is hidden, so the file is uploaded and replaces the current one.
+const desk = () => window.pywebview?.api;
+
 async function openFile(file) {
   if (!file) return;
   if (!isPdf(file)) return toast(t("error.choose_pdf"), true);
+  await opening(file, () => uploadPdf(file, (f) => (f < 1 ? showLoader("upload", null, f) : showLoader("analyze"))));
+}
+async function openPath(path) {
+  if (!path || !desk()) return;
+  const name = path.split(/[\\/]/).pop();
+  await opening({ name, size: 0 }, async () => {
+    showLoader("analyze");
+    const d = await desk().open(path);
+    if (d?.error) throw new Error(t(d.error));
+    return d;
+  });
+}
+// Shared by upload and path: one loader, one error path. With a document already open, the desktop app
+// shows the new one in its own window and leaves this one as it is.
+async function opening(file, load) {
   if (state.loading) return toast(t("load.busy"));
   state.loading = true;
   showLoader("upload", file, 0);
+  if (!file.size) $("#loadFile").textContent = file.name;
   try {
-    const d = await uploadPdf(file, (f) => (f < 1 ? showLoader("upload", null, f) : showLoader("analyze")));
-    state.doc = d;
-    state.ops = d.pages.map((_, i) => ({ src: i, rotate: 0 }));
-    state.pos = 0;
-    state.overrides = emptyOverrides();
-    state.words = null;
-    state.history = []; $("#undo").disabled = true;
-    renderDocName();
-    $("#empty").classList.add("hidden");
-    $("#export").disabled = false;
-    showLoader("render");
-    renderThumbs();
-    const first = refreshPage();
-    refreshSummary(); refreshWords();
-    await first;
-    if (d.failed_pages?.length) {
-      toast(t("load.failed_pages", { n: d.failed_pages.length, pages: d.failed_pages.slice(0, 10).map((i) => i + 1).join(", ") }), true);
-    } else {
-      toast(t("load.done", { name: d.name, n: d.n_pages }));
-    }
+    const d = await load();
+    if (state.doc && desk()) { await desk().new_window(d.id, d.name); toast(t("window.opened", { name: d.name })); return; }
+    await loadDoc(d);
   } catch (e) {
     toast(e.message, true);
+    renderRecent();
   } finally {
     state.loading = false;
     hideLoader();
+  }
+}
+async function loadDoc(d) {
+  state.doc = d;
+  state.ops = d.pages.map((_, i) => ({ src: i, rotate: 0 }));
+  state.pos = 0;
+  state.overrides = emptyOverrides();
+  state.words = null;
+  state.history = []; $("#undo").disabled = true;
+  renderDocName();
+  document.title = `${d.name} · PDF Distiller`;
+  document.body.classList.remove("nodoc");
+  $("#empty").classList.add("hidden");
+  $("#export").disabled = false;
+  showLoader("render");
+  renderThumbs();
+  const first = refreshPage();
+  refreshSummary(); refreshWords();
+  await first;
+  if (d.failed_pages?.length) {
+    toast(t("load.failed_pages", { n: d.failed_pages.length, pages: d.failed_pages.slice(0, 10).map((i) => i + 1).join(", ") }), true);
+  } else {
+    toast(t("load.done", { name: d.name, n: d.n_pages }));
+  }
+}
+
+// ------------------------------------------------------------------ recent files (desktop only)
+async function renderRecent() {
+  const box = $("#recent"), ol = $("#recentList");
+  const items = desk() ? await desk().recent().catch(() => []) : [];
+  box.hidden = !items.length;
+  ol.innerHTML = "";
+  const rel = new Intl.RelativeTimeFormat(i18n.lang, { numeric: "auto" });
+  const ago = (s) => { const d = Math.round((s * 1000 - Date.now()) / 86400000); return d > -1 ? rel.format(0, "day") : rel.format(d, "day"); };
+  for (const it of items) {
+    const li = document.createElement("li");
+    li.className = it.missing ? "gone" : "";
+    li.innerHTML = `<button class="open" title="${esc(it.path)}"><img alt="" src="${esc(it.thumb || "")}">
+      <span class="nm">${esc(it.name)}</span><small>${esc(t("recent.pages", { n: it.pages }))} · ${esc(ago(it.opened))}</small></button>
+      ${it.missing ? `<p>${esc(t("recent.missing"))}</p><div class="row"><button class="btn small" data-a="pick">${esc(t("recent.pick"))}</button>
+      <button class="btn ghost small" data-a="forget">${esc(t("recent.forget"))}</button></div>` : ""}`;
+    li.querySelector(".open").onclick = () => (it.missing ? null : openPath(it.path));
+    li.querySelector('[data-a="pick"]')?.addEventListener("click", async () => { await desk().forget(it.path); choosePdf(); });
+    li.querySelector('[data-a="forget"]')?.addEventListener("click", async () => { await desk().forget(it.path); renderRecent(); });
+    ol.appendChild(li);
+  }
+}
+async function choosePdf() {
+  if (!desk()) return $("#file").click();
+  const path = await desk().choose();
+  if (path) openPath(path);
+}
+
+// ------------------------------------------------------------------ start screen walkthrough
+// Five scenes in CSS (style.css, .intro). One clock for all of them through the Web Animations API:
+// a scene button seeks every animation to the same time and holds 5 s; after two rounds it rests on the
+// result. Pausing is always possible (moving content, WCAG 2.2.2).
+const intro = { hold: null, rounds: 0, seeking: false, loop: false };
+const introEl = (id) => document.getElementById(`intro-${id}`);
+function introText() {
+  for (let i = 0; i < 5; i++) {
+    introEl(`h${i}`).textContent = t(`intro.c${i}h`); introEl(`t${i}`).textContent = t(`intro.c${i}t`);
+    introEl("scenes").children[i].setAttribute("aria-label", `${i + 1}. ${t(`intro.c${i}h`)}`);
+  }
+  introEl("rmTxt").textContent = t("intro.remove");
+  introEl("lblBefore").textContent = t("intro.before"); introEl("lblAfter").textContent = t("intro.after");
+  introEl("hold").textContent = t("intro.hold");
+  introEl("capAll").textContent = [0, 1, 2, 3, 4].map((i) => `${t(`intro.c${i}h`)}. ${t(`intro.c${i}t`)}`).join(" ");
+}
+function bindIntro() {
+  const stage = introEl("stage");
+  // evaporation: the removed background, photo and banner rise as dots in their own colours
+  const vap = introEl("vapour"), NS = "http://www.w3.org/2000/svg";
+  const puff = (x0, y0, w, h, colors, n) => { for (let i = 0; i < n; i++) {
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", x0 + ((i * 37) % w)); c.setAttribute("cy", y0 + ((i * 53) % h)); c.setAttribute("r", 2.5 + (i % 3));
+    c.setAttribute("fill", colors[i % colors.length]); c.setAttribute("class", "vap");
+    c.style.setProperty("--dx", `${((i * 29) % 40) - 20}px`); c.style.setProperty("--dy", `${-40 - ((i * 17) % 50)}px`);
+    c.style.animationDelay = `${(i % 7) * 0.05}s`; vap.appendChild(c);
+  } };
+  puff(204, 64, 150, 140, ["#1E2A44", "#2B3A58"], 30);
+  puff(362, 100, 142, 96, ["#5C6B7E", "#3E4A59", "#C9D3DE"], 40);
+  puff(202, 216, 316, 22, ["#1E3A6E", "#9DB4DA", "#F2C230"], 30);
+
+  const anims = () => stage.getAnimations({ subtree: true });
+  const dur = () => parseFloat(getComputedStyle($(".intro")).getPropertyValue("--T")) * 1000;
+  const seek = (f) => { // crossing the loop end fires animationiteration too; those are not rounds
+    intro.seeking = true; anims().forEach((a) => { a.currentTime = f * dur(); a.pause(); });
+    requestAnimationFrame(() => requestAnimationFrame(() => (intro.seeking = false)));
+  };
+  const ended = (on) => stage.classList.toggle("ended", on);
+  const play = () => { intro.hold = null; introEl("hold").classList.remove("on"); ended(false); anims().forEach((a) => a.play()); };
+  for (const b of introEl("scenes").querySelectorAll("[data-at]")) b.onclick = () => {
+    ended(false); seek(Number(b.dataset.at)); clearTimeout(intro.hold);
+    intro.loop = true; // the viewer is watching on purpose: keep playing after the hold
+    introEl("hold").classList.add("on"); intro.hold = setTimeout(play, 5000); // a new click restarts the 5 s
+  };
+  stage.addEventListener("animationiteration", (e) => {
+    if (intro.seeking || intro.loop || !e.target.classList.contains("c0")) return;
+    if (++intro.rounds >= 2) { seek(0.9); ended(true); } // rest on the result; a scene click starts it again
+  });
+  introText();
+}
+
+// ------------------------------------------------------------------ resizable columns
+// Drag the edges of the side panels, or the line between the two pages; double-click resets.
+// The previews are <img width:100%>, so they scale while dragging; a sharp render follows on release.
+const LAYOUT_KEY = "layout";
+function bindGutters() {
+  const app = $("#app"), views = $("#views");
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const apply = (l) => {
+    for (const k of ["lw", "rw"]) if (l[k]) app.style.setProperty(`--${k}`, `${l[k]}px`); else app.style.removeProperty(`--${k}`);
+    if (l.sl) { views.style.setProperty("--sl", `${l.sl}fr`); views.style.setProperty("--sr", `${1 - l.sl}fr`); }
+    else { views.style.removeProperty("--sl"); views.style.removeProperty("--sr"); }
+  };
+  let layout = {};
+  try { layout = JSON.parse(localStorage.getItem(LAYOUT_KEY)) || {}; } catch (_) {}
+  apply(layout);
+  const save = () => { try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout)); } catch (_) {} };
+  const size = {
+    lw: (x) => clamp(x - app.getBoundingClientRect().left, 220, 520),
+    rw: (x) => clamp(app.getBoundingClientRect().right - x, 180, 460),
+    sl: (x) => { const r = views.getBoundingClientRect(); return clamp((x - r.left) / r.width, 0.2, 0.8); },
+  };
+  const edge = { lw: () => $(".panel").getBoundingClientRect().right, rw: () => $("#rail").getBoundingClientRect().left,
+    sl: () => $(".sheet.before").getBoundingClientRect().right };
+  for (const [id, k] of [["#gutL", "lw"], ["#gutR", "rw"], ["#gutV", "sl"]]) {
+    const g = $(id);
+    const set = (x) => { layout[k] = size[k](x); apply(layout); };
+    g.addEventListener("pointerdown", (e) => {
+      e.preventDefault(); g.setPointerCapture(e.pointerId); g.classList.add("on"); document.body.classList.add("dragging");
+      const move = (ev) => set(ev.clientX);
+      const up = () => { g.removeEventListener("pointermove", move); g.classList.remove("on"); document.body.classList.remove("dragging"); save(); refreshPage(); };
+      g.addEventListener("pointermove", move);
+      g.addEventListener("pointerup", up, { once: true });
+    });
+    g.addEventListener("dblclick", () => { delete layout[k]; apply(layout); save(); refreshPage(); });
+    g.addEventListener("keydown", (e) => {
+      const d = { ArrowLeft: -16, ArrowRight: 16 }[e.key];
+      if (!d) return;
+      e.preventDefault(); e.stopPropagation(); set(edge[k]() + d); save(); refreshPage();
+    });
   }
 }
 
@@ -645,7 +792,26 @@ function renderSummary() {
   $("#inkAfter").style.height = `${Math.min(100, (p / scale) * 92)}%`;
   $("#savingPct").textContent = pct(Math.max(0, d.ink.saving));
   $("#savingNote").textContent = [t("gauge.less_ink"), t("gauge.removed", { n: d.removed }), t("gauge.sample", { n: d.ink.pages })].join(" · ");
+  renderDots(o, p);
   renderInk(); drawOverlay();
+}
+
+// Saved ink as printer dots, with the formula shown: an A4 page at 600 dpi has 4961 x 7016 dot positions.
+const A4_DOTS = 4961 * 7016;
+function bigNum(v) {
+  const f = (x) => x.toLocaleString(i18n.lang, { maximumFractionDigits: x < 100 ? 1 : 0 });
+  if (v >= 1e9) return `${f(v / 1e9)} ${t("dots.billion")}`;
+  if (v >= 1e6) return `${f(v / 1e6)} ${t("dots.million")}`;
+  return Math.round(v).toLocaleString(i18n.lang);
+}
+const savedDots = () => (state.summary ? A4_DOTS * Math.max(0, state.summary.ink.original - state.summary.ink.processed) * state.ops.length : 0);
+function renderDots(o, p) {
+  const pages = state.ops.length, saved = savedDots();
+  $("#dots").hidden = saved < 1;
+  if (saved < 1) return;
+  const p1 = (v) => new Intl.NumberFormat(i18n.lang, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v);
+  $("#dotsLine").textContent = t("dots.line", { n: bigNum(saved) });
+  $("#dotsHow").textContent = t("dots.how", { a4: bigNum(A4_DOTS), before: p1(o), after: p1(p), pages, n: bigNum(saved) });
 }
 
 function refreshAll() { refreshPage(); refreshSummary(); refreshWords(); }
@@ -872,6 +1038,9 @@ function highlight(e) {
 async function doExport() {
   const b = $("#export");
   b.disabled = true; b.textContent = t("export.busy");
+  const gain = savedDots(), before = worldTotal();
+  const show = gain >= 1 ? playWorld(before, before + gain) : null;
+  let ok = false;
   try {
     const r = await post(`/api/doc/${state.doc.id}/export`, job({ ops: state.ops }));
     const blob = await r.blob();
@@ -880,8 +1049,101 @@ async function doExport() {
     a.href = URL.createObjectURL(blob); a.download = name; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     toast(t("export.done", { name }));
+    ok = true;
   } catch (e) { toast(e.message, true); }
-  finally { b.disabled = false; b.textContent = t("export"); }
+  finally {
+    b.disabled = false; b.textContent = t("export");
+    if (show) await show.finish(ok, gain);
+  }
+}
+
+// ------------------------------------------------------------------ export reward: the pointillist globe
+// Every saved dot lights one dot of a globe drawn from dots; the total grows export by export (stored
+// locally, never sent anywhere). The animation runs from the old total to the new one, not from zero:
+// the reward must be true. Land/sea: Natural Earth 1:110m land, rasterised to 120 x 60 cells of 3°.
+const LAND = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf4P+AAAAAAAAAAAAAAAD+P//ADQAAAYAAAAAAAZL8f/+AAAACADgAAAAAAYvsB/+AAAAgH/9BAAA8ADy/g/4AAMADf///+AeAAAAFHAf/+AMAgAAAAAA////7wcBgDv///////+B///+DAMAAPf//////9cAIP/+DoAACLP/////+BAAAD//j8AACCf/////4DAAAB//7+AAF////////CAAAAf//wAAB////////AAAAAf//wAAB/9e////9AAAAAf//gAAF34d////5AAAAAf/+AAAHBz+///9gAAAAAf/+AAAHCX+///+iAAAAAP/8AAAD4A////8MAAAAAH/4AAAH+Y////+QAAAAAB8IAAAP/+9///+AAAAAAA8AAAAf//+P//8AAAAAAAYEAAAf//fx/fwAAAAAAAcggAAf//Pg8egAAAAAAAHgAAA///vA4fCAAAAAAAAwAAA///8AYHAAAAAAAAAR0AAf//+AYBAAAAAAAAAD8AAP//+AAABAAAAAAAAD/gAEP/8AAIMAAAAAAAAD/gAAH/4AAG4AAAAAAAAH/4AAH/wAACaIAAAAAAAH/+AAD/gAACAHAAAAAAAH//AAD/gAAAwDgAAAAAAD//AAD/gAAAAAAAAAAAAB/+AAD/yAAAAZAA//////AB//8AZ///+Cf/AAAAAAf+AAD/EAAAD/gAAAAAAAf8AAB/MAAAP/wAAAAAAA/wAAB+AAAAP/4AAAAAAA/wAAB+AAAAP/4AAAAAAA/gAAA8AAAAH/4AAAAAAA/AAAAgAAAAEDwAAAAAAB+AAAAAAAAAABwCAAAAAB4AAAAAAAAAAAACAAAAAAwAAAAAAAAAAAAEAAAAABwAAAAAAAAAAAAIAAAAABgAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAQAAAAADwH///gAAAAAAA4AAALv/+/////AAAAQL08AAf/////////wAB////gAH//////////gAj///8AcP//////////AAH////8////////////gACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+const WORLD_GOAL = 1e9; // dots that light the whole globe; beyond it the globe stays full and the total keeps counting
+const WORLD_KEY = "savedDots";
+const worldTotal = () => { try { return Number(localStorage.getItem(WORLD_KEY)) || 0; } catch (_) { return 0; } };
+let globe = null;
+function globeDots() {
+  if (globe) return globe;
+  const bits = Uint8Array.from(atob(LAND), (c) => c.charCodeAt(0));
+  const land = (lat, lon) => {
+    const j = Math.min(59, Math.floor((90 - lat) / 3)), i = Math.min(119, Math.floor((((lon + 180) % 360) + 360) % 360 / 3));
+    const k = j * 120 + i;
+    return (bits[k >> 3] >> (7 - (k & 7))) & 1;
+  };
+  const R = 260, C = 280, step = 8.5, lat0 = (25 * Math.PI) / 180, lon0 = 15, deg = 180 / Math.PI;
+  const pts = [];
+  for (let dy = -R; dy <= R; dy += step) {
+    for (let dx = -R; dx <= R; dx += step) {
+      const x = dx / R, y = -dy / R, rho = Math.hypot(x, y);
+      if (rho > 1) continue;
+      const c = Math.asin(rho), sc = Math.sin(c), cc = Math.cos(c); // inverse orthographic projection
+      const lat = rho ? Math.asin(cc * Math.sin(lat0) + (y * sc * Math.cos(lat0)) / rho) * deg : lat0 * deg;
+      const lon = lon0 + Math.atan2(x * sc, rho * Math.cos(lat0) * cc - y * Math.sin(lat0) * sc) * deg;
+      const h = Math.sin(dx * 12.9898 + dy * 78.233) * 43758.5453; // stable order: the same dots stay lit across sessions
+      pts.push({ x: C + dx, y: C + dy, r: 1.2 + 2.6 * cc, land: land(lat, lon), o: h - Math.floor(h) });
+    }
+  }
+  return (globe = pts.sort((a, b) => a.o - b.o));
+}
+function drawGlobe(ctx, lit, zoom) {
+  const pts = globeDots(), k = Math.round(pts.length * Math.min(1, lit / WORLD_GOAL));
+  const off = getComputedStyle(document.documentElement).getPropertyValue("--line").trim() || "#ccc";
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, 560, 560);
+  ctx.setTransform(zoom.s, 0, 0, zoom.s, 280 - zoom.x * zoom.s, 280 - zoom.y * zoom.s);
+  pts.forEach((p, i) => {
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7);
+    ctx.fillStyle = i < k ? (p.land ? "#639922" : "#378ADD") : off;
+    ctx.fill();
+  });
+}
+function playWorld(from, to) {
+  const box = $("#world"), ctx = $("#worldCanvas").getContext("2d"), pts = globeDots();
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const k0 = Math.round(pts.length * Math.min(1, from / WORLD_GOAL)), k1 = Math.round(pts.length * Math.min(1, to / WORLD_GOAL));
+  // few new dots: fly in to where they light up, so a small saving still shows
+  const fresh = pts.slice(k0, k1);
+  const zoomTo = fresh.length && fresh.length < pts.length * 0.04
+    ? { s: Math.min(3, Math.sqrt((pts.length * 0.04) / fresh.length)), x: fresh.reduce((a, p) => a + p.x, 0) / fresh.length, y: fresh.reduce((a, p) => a + p.y, 0) / fresh.length }
+    : { s: 1, x: 280, y: 280 };
+  const ease = (u) => u * u * (3 - 2 * u);
+  const zoomAt = (u) => { const z = u < 0.25 ? ease(u / 0.25) : u > 0.75 ? ease((1 - u) / 0.25) : 1;
+    return { s: 1 + (zoomTo.s - 1) * z, x: 280 + (zoomTo.x - 280) * z, y: 280 + (zoomTo.y - 280) * z }; };
+  $("#worldHead").textContent = t("world.preparing");
+  for (const id of ["#worldDots", "#worldLit", "#worldTotal"]) $(id).textContent = "";
+  $("#worldClose").hidden = true;
+  box.hidden = false;
+  const MS = still ? 0 : 2600;
+  const ran = new Promise((done) => {
+    const t0 = performance.now();
+    const frame = (now) => {
+      const u = MS ? Math.min(1, (now - t0) / MS) : 1;
+      drawGlobe(ctx, from + (to - from) * ease(Math.min(1, u / 0.85)), zoomAt(u));
+      if (u < 1) requestAnimationFrame(frame); else done();
+    };
+    requestAnimationFrame(frame);
+  });
+  const close = () => { box.hidden = true; document.removeEventListener("keydown", esc_); $("#export").focus(); };
+  const esc_ = (e) => { if (e.key === "Escape") close(); };
+  return {
+    async finish(ok, gain) {
+      if (!ok) { box.hidden = true; return; }
+      await ran;
+      try { localStorage.setItem(WORLD_KEY, String(to)); } catch (_) {}
+      $("#worldHead").textContent = t("world.saved", { pct: pct(Math.max(0, state.summary.ink.saving)) });
+      $("#worldDots").textContent = t("world.dots", { n: bigNum(gain) });
+      $("#worldLit").textContent = t("world.lit", { n: bigNum(gain) });
+      $("#worldTotal").textContent = t("world.total", { n: bigNum(to) });
+      $("#worldClose").hidden = false; $("#worldClose").focus();
+      $("#worldClose").onclick = close;
+      box.onclick = (e) => { if (e.target === box) close(); };
+      document.addEventListener("keydown", esc_);
+    },
+  };
 }
 
 // ------------------------------------------------------------------ profiles
@@ -947,6 +1209,13 @@ async function init() {
   $$("#lang button").forEach((b) => (b.onclick = () => setLang(b.dataset.lang).catch((err) => toast(err.message, true))));
 
   $("#file").onchange = (e) => { openFile(e.target.files[0]); e.target.value = ""; };
+  // desktop: the native dialog returns a path (needed for the recent list); the <input> would not
+  $$('label[for="file"]').forEach((l) => l.addEventListener("click", (e) => { if (desk()) { e.preventDefault(); choosePdf(); } }));
+  $("#recentClear").onclick = async () => { await desk()?.clear_recent(); renderRecent(); };
+  window.addEventListener("pywebviewready", renderRecent);
+  if (desk()) renderRecent(); // the bridge may have been ready before this listener existed
+  bindGutters();
+  bindIntro();
   $("#export").onclick = doExport;
   $("#undo").onclick = undo;
   $("#prev").onclick = () => goTo(state.pos - 1);
@@ -1022,15 +1291,31 @@ async function init() {
     const it = e.dataTransfer.items?.[0];
     const bad = it && it.type && it.type !== "application/pdf"; // type can be empty while dragging; then assume OK
     veil.classList.toggle("bad", !!bad);
-    $("#dropMsg").textContent = t(bad ? "drop.only_pdf" : state.doc ? "drop.replace" : "drop.here");
+    $("#dropMsg").textContent = t(bad ? "drop.only_pdf" : !state.doc ? "drop.here" : desk() ? "drop.new_window" : "drop.replace");
   };
+  // Desktop: pywebview passes the dropped file's path to Python, which hands it back here. If no path
+  // arrives (e.g. a file dragged from a browser), fall back to uploading the file itself.
+  let pendingDrop = null;
+  window.__dropPath = (path) => { pendingDrop = null; openPath(path); };
   window.addEventListener("dragenter", (e) => { if (!hasFiles(e)) return; e.preventDefault(); if (depth++ === 0) setVeil(true, e); });
   window.addEventListener("dragover", (e) => { if (!hasFiles(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = veil.classList.contains("bad") ? "none" : "copy"; });
   window.addEventListener("dragleave", (e) => { if (!hasFiles(e)) return; if (--depth <= 0) { depth = 0; setVeil(false); } });
   window.addEventListener("drop", (e) => {
     if (!hasFiles(e)) return;
     e.preventDefault(); depth = 0; setVeil(false);
-    openFile(e.dataTransfer.files[0]);
+    const file = e.dataTransfer.files[0];
+    if (!desk() || !file || !isPdf(file)) return openFile(file);
+    pendingDrop = file;
+    setTimeout(() => { if (pendingDrop === file) { pendingDrop = null; openFile(file); } }, 800);
   });
+
+  // A second window opens with ?doc=<id>: the server already holds that document.
+  const docId = new URLSearchParams(location.search).get("doc");
+  if (docId) {
+    showLoader("render");
+    try { await loadDoc(await (await api(`/api/doc/${encodeURIComponent(docId)}`)).json()); }
+    catch (e) { toast(e.message, true); }
+    finally { hideLoader(); }
+  }
 }
 init().catch((e) => toast(e.message, true));

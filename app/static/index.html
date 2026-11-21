@@ -4,12 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PDF Distiller</title>
+<link rel="icon" href="/static/logo.svg" type="image/svg+xml">
 <!-- before the stylesheet so a saved theme applies on the first paint (no flash of the other theme) -->
 <script>try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (_) {}</script>
 <link rel="stylesheet" href="/static/style.css?v=0.5">
 </head>
-<body>
+<body class="nodoc">
 <header class="bar">
+  <img class="logo" src="/static/logo.svg" alt="" width="28" height="28">
   <strong class="brand">PDF Distiller</strong>
   <span id="ver" class="ver"></span>
   <label class="btn" for="file" data-i18n="app.open">Open PDF</label>
@@ -59,6 +61,10 @@
         <div class="small" id="savingNote" data-i18n="gauge.less_ink">less ink</div>
       </div>
     </section>
+    <details class="dots" id="dots" hidden>
+      <summary><strong id="dotsLine"></strong> <span class="how" data-i18n="dots.how_title">How we count</span></summary>
+      <p id="dotsHow"></p>
+    </details>
 
     <section class="inkhot" id="inkHot" hidden>
       <h2 data-i18n="ink.title">Uses the most ink</h2>
@@ -123,6 +129,7 @@
       </div>
     </details>
   </aside>
+  <div class="gutter" id="gutL" role="separator" aria-orientation="vertical" tabindex="0" data-i18n-aria-label="gutter.label" data-i18n-title="gutter.label"></div>
 
   <section class="stage" data-i18n-aria-label="stage.label">
     <div class="stagebar">
@@ -166,11 +173,13 @@
             <span><i class="sw tx"></i><span data-i18n="cls.text"></span></span><span><i class="sw txr"></i><span data-i18n="legend.same_every_page"></span></span><span><i class="sw rg"></i><span data-i18n="legend.region"></span></span>
           </span>
         </figcaption></figure>
+      <div class="gutter pagegutter" id="gutV" role="separator" aria-orientation="vertical" tabindex="0" data-i18n-aria-label="gutter.label" data-i18n-title="gutter.label"></div>
       <figure class="sheet after"><div class="frame"><img id="imgAfter" data-i18n-alt="preview.processed_alt" alt=""><div class="busy" id="busy"></div></div>
         <figcaption data-i18n="preview.after_caption"></figcaption></figure>
     </div>
   </section>
 
+  <div class="gutter" id="gutR" role="separator" aria-orientation="vertical" tabindex="0" data-i18n-aria-label="gutter.label" data-i18n-title="gutter.label"></div>
   <div class="railscrim" id="railScrim"></div>
   <aside class="rail" id="rail" data-i18n-aria-label="rail.label">
     <div class="tabs" role="tablist">
@@ -205,10 +214,163 @@
 </main>
 
 <div id="empty" class="empty">
-  <div class="dropzone">
-    <h1 data-i18n="empty.title">Simplify lecture slides before you print them</h1>
-    <p data-i18n="empty.body"></p>
-    <label class="btn primary" for="file" data-i18n="empty.choose">Choose PDF</label>
+  <div class="start">
+    <h1 data-i18n="start.title">Print the slides, not the ink</h1>
+    <p class="sub" data-i18n="start.sub"></p>
+    <!-- one dashed box: the walkthrough, then what to do; the whole box (and window) takes the drop -->
+    <div class="dropzone">
+  <div class="intro">
+    <div class="introstage anim" id="intro-stage">
+    <span class="hold" id="intro-hold"></span>
+    <svg viewBox="0 0 720 300" role="img" aria-labelledby="intro-capAll">
+      <defs>
+        <linearGradient id="intro-glass" x1="0" x2="1">
+          <stop offset="0" stop-color="var(--green)" stop-opacity=".30"/><stop offset=".18" stop-color="var(--green)" stop-opacity=".07"/>
+          <stop offset=".82" stop-color="var(--green)" stop-opacity=".07"/><stop offset="1" stop-color="var(--green)" stop-opacity=".30"/>
+        </linearGradient>
+        <clipPath id="intro-above"><rect x="0" y="0" width="720" height="172"/></clipPath>
+      </defs>
+
+      <!-- 0 · problem: a dark slide comes out of the printer, the cartridge drains -->
+      <g class="p0">
+        <g clip-path="url(#intro-above)"><g class="sheet0">
+          <rect x="296" y="56" width="128" height="116" fill="#1E2A44"/>
+          <rect x="306" y="66" width="70" height="8" rx="2" fill="#E8EAED"/>
+          <rect x="306" y="84" width="60" height="4" rx="2" fill="#E8EAED"/><rect x="306" y="94" width="54" height="4" rx="2" fill="#E8EAED"/>
+          <rect x="372" y="84" width="44" height="34" fill="#5C6B7E"/><rect x="296" y="150" width="128" height="14" fill="#1E3A6E"/>
+        </g></g>
+        <rect x="270" y="168" width="180" height="56" rx="10" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>
+        <rect x="292" y="166" width="136" height="6" rx="3" fill="var(--ink)"/>
+        <circle cx="430" cy="196" r="4" fill="var(--green)"/>
+        <g transform="translate(520 92)">
+          <rect width="40" height="124" rx="7" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+          <rect class="drain" x="4" y="8" width="32" height="112" rx="4" fill="var(--ink)"/>
+        </g>
+      </g>
+
+      <rect class="tray" x="196" y="56" width="328" height="188" rx="12" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-dasharray="7 6"/>
+
+      <!-- 2 · the laptop, the bell jar, the cloud it does not need -->
+      <g class="laptop">
+        <rect x="282" y="66" width="156" height="100" rx="8" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>
+        <path d="M262 176 H458 L472 206 Q472 212 466 212 H254 Q248 212 248 206 Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>
+        <g fill="var(--line)"><rect x="272" y="182" width="176" height="4" rx="2"/><rect x="268" y="189" width="184" height="4" rx="2"/>
+          <rect x="264" y="196" width="192" height="4" rx="2"/><rect x="330" y="204" width="60" height="4" rx="2" fill="var(--muted)"/></g>
+        <path class="cloud" d="M556 124 a24 24 0 0 1 8 -46 a30 30 0 0 1 56 -8 a22 22 0 0 1 22 38 a18 18 0 0 1 -10 16 z" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linejoin="round"/>
+        <path class="wire" d="M444 112 H552" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+
+      <!-- the slide: dark background, photo, a banner repeated on every page -->
+      <g class="slide"><g class="cam">
+        <rect x="200" y="60" width="320" height="180" rx="3" fill="#FFFFFF"/>
+        <rect class="darkbg" x="200" y="60" width="320" height="180" rx="3" fill="#1E2A44"/>
+        <g class="txtlight" fill="#E8EAED"><rect x="214" y="74" width="150" height="12" rx="2"/>
+          <rect x="214" y="104" width="122" height="6" rx="2"/><rect x="214" y="118" width="110" height="6" rx="2"/>
+          <rect x="214" y="132" width="126" height="6" rx="2"/><rect x="214" y="146" width="96" height="6" rx="2"/></g>
+        <g class="txtdark" fill="#1C1F23"><rect x="214" y="74" width="150" height="12" rx="2"/>
+          <rect x="214" y="104" width="122" height="6" rx="2"/><rect x="214" y="118" width="110" height="6" rx="2"/>
+          <rect x="214" y="132" width="126" height="6" rx="2"/><rect x="214" y="146" width="96" height="6" rx="2"/></g>
+        <g class="gone"><rect x="360" y="98" width="146" height="100" rx="2" fill="#5C6B7E"/>
+          <path d="M360 198 L402 152 L432 178 L462 140 L506 198 Z" fill="#3E4A59"/><circle cx="482" cy="120" r="9" fill="#C9D3DE"/></g>
+        <g class="gone"><rect x="200" y="214" width="320" height="26" fill="#1E3A6E"/>
+          <rect x="212" y="224" width="70" height="6" rx="2" fill="#9DB4DA"/><rect x="470" y="221" width="38" height="12" rx="2" fill="#F2C230"/></g>
+        <g class="xray">
+          <rect x="200" y="60" width="320" height="180" rx="3" fill="#0B1A2E" opacity=".92"/>
+          <g fill="none" stroke="var(--cyan)" stroke-width="2.5">
+            <rect x="214" y="74" width="150" height="12"/><rect x="214" y="104" width="126" height="48" stroke-dasharray="4 4"/>
+            <rect x="360" y="98" width="146" height="100"/><rect x="200" y="214" width="320" height="26"/>
+          </g>
+        </g>
+        <rect class="scan" x="200" y="60" width="5" height="180" fill="var(--cyan)"/>
+        <!-- found by the program, in the app's own class colours -->
+        <rect class="m1" x="203" y="63" width="314" height="148" fill="none" stroke="var(--magenta)" stroke-width="2.5" stroke-dasharray="6 4"/>
+        <rect class="m2" x="356" y="94" width="154" height="108" fill="none" stroke="var(--sky)" stroke-width="3"/>
+        <rect class="m3" x="198" y="211" width="324" height="32" fill="none" stroke="var(--yellow)" stroke-width="3"/>
+      </g></g>
+
+      <g class="dome">
+        <path d="M222 214 V100 C222 26 498 26 498 100 V214" fill="url(#intro-glass)" stroke="var(--green)" stroke-width="2"/>
+        <ellipse cx="360" cy="214" rx="138" ry="12" fill="none" stroke="var(--green)" stroke-width="2"/>
+        <ellipse cx="360" cy="45" rx="14" ry="5" fill="var(--green)"/>
+        <path d="M240 196 V104 C240 74 262 56 292 48" fill="none" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="6" stroke-linecap="round"/>
+        <path d="M480 150 V112" fill="none" stroke="#FFFFFF" stroke-opacity=".18" stroke-width="4" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(478 196)"><g class="safe">
+        <circle r="16" fill="var(--green)"/>
+        <path d="M-5 -1 v-3 a5 5 0 0 1 10 0 v3 M-7 -1 h14 v10 h-14 z" fill="none" stroke="var(--panel)" stroke-width="2" stroke-linejoin="round"/>
+      </g></g>
+
+      <!-- the one click -->
+      <g class="rmbtn"><rect x="440" y="250" width="84" height="28" rx="6" fill="var(--cyan)"/>
+        <text x="482" y="268.5" text-anchor="middle" font-size="13" font-weight="600" fill="#08202B" id="intro-rmTxt"></text></g>
+      <g id="intro-vapour"></g>
+
+      <!-- 4 · result: two pages; under each, the ink it takes. A drop marks the bar as ink. -->
+      <g class="result">
+        <g class="before">
+          <text x="250" y="52" text-anchor="middle" font-size="15" font-weight="700" fill="var(--muted)" id="intro-lblBefore"></text>
+          <rect x="170" y="66" width="160" height="104" rx="3" fill="#1E2A44"/>
+          <rect x="182" y="78" width="76" height="9" rx="2" fill="#E8EAED"/>
+          <rect x="182" y="98" width="62" height="4" rx="2" fill="#E8EAED"/><rect x="182" y="108" width="56" height="4" rx="2" fill="#E8EAED"/>
+          <rect x="182" y="118" width="60" height="4" rx="2" fill="#E8EAED"/>
+          <rect x="262" y="94" width="58" height="46" fill="#5C6B7E"/><rect x="170" y="152" width="160" height="18" fill="#1E3A6E"/>
+          <path d="M162 190 c-4 6 -6 9 -6 12 a6 6 0 0 0 12 0 c0 -3 -2 -6 -6 -12 z" fill="var(--ink)"/>
+          <rect class="use1" x="174" y="192" width="156" height="12" rx="6" fill="var(--ink)"/>
+        </g>
+        <path d="M350 118 h20 m-8 -8 l8 8 l-8 8" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <g class="nowside">
+          <text x="470" y="52" text-anchor="middle" font-size="15" font-weight="700" fill="var(--green)" id="intro-lblAfter"></text>
+          <rect x="390" y="66" width="160" height="104" rx="3" fill="#FFFFFF"/>
+          <rect x="402" y="78" width="76" height="9" rx="2" fill="#1C1F23"/>
+          <rect x="402" y="98" width="62" height="4" rx="2" fill="#1C1F23"/><rect x="402" y="108" width="56" height="4" rx="2" fill="#1C1F23"/>
+          <rect x="402" y="118" width="60" height="4" rx="2" fill="#1C1F23"/><rect x="402" y="128" width="44" height="4" rx="2" fill="#1C1F23"/>
+          <path d="M382 190 c-4 6 -6 9 -6 12 a6 6 0 0 0 12 0 c0 -3 -2 -6 -6 -12 z" fill="var(--ink)"/>
+          <rect class="spared" x="394" y="192" width="156" height="12" rx="6" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <rect class="use2" x="394" y="192" width="117" height="12" rx="6" fill="var(--ink)"/>
+          <!-- leaf seal stamped on the clean page -->
+          <g transform="translate(528 148)"><g class="seal">
+            <circle r="17" fill="none" stroke="var(--green)" stroke-width="2"/>
+            <circle r="13" fill="var(--green)" fill-opacity=".15"/>
+            <path d="M-2 7 C-9 3 -9 -6 2 -10 C7 -2 5 5 -2 7 Z M-2 7 L4 -4" fill="var(--green)" stroke="var(--green)" stroke-width="1.2" stroke-linecap="round"/>
+          </g></g>
+        </g>
+      </g>
+
+      <g class="file">
+        <rect x="20" y="96" width="70" height="88" rx="6" fill="var(--paper)" stroke="var(--line)"/>
+        <rect x="30" y="108" width="50" height="28" rx="2" fill="#1E2A44"/>
+        <rect x="58" y="112" width="18" height="12" rx="1" fill="#5C6B7E"/><rect x="30" y="130" width="50" height="6" fill="#1E3A6E"/>
+        <rect x="30" y="146" width="40" height="4" rx="2" fill="var(--muted)"/><rect x="30" y="156" width="30" height="4" rx="2" fill="var(--muted)"/>
+        <text x="55" y="176" text-anchor="middle" font-size="11" font-weight="700" fill="#F0679E">PDF</text>
+      </g>
+      <path class="cur1" d="M70 150 l0 22 l6 -6 l4 9 l4 -2 l-4 -9 l8 0 z" fill="var(--ink)" stroke="var(--panel)" stroke-width="1.5"/>
+      <path class="cur2" d="M600 280 l0 22 l6 -6 l4 9 l4 -2 l-4 -9 l8 0 z" fill="var(--ink)" stroke="var(--panel)" stroke-width="1.5"/>
+    </svg>
+    <div class="caps" aria-hidden="true">
+      <div class="cap c0"><b id="intro-h0"></b><span id="intro-t0"></span></div>
+      <div class="cap c1"><b id="intro-h1"></b><span id="intro-t1"></span></div>
+      <div class="cap c2"><b id="intro-h2"></b><span id="intro-t2"></span></div>
+      <div class="cap c3"><b id="intro-h3"></b><span id="intro-t3"></span></div>
+      <div class="cap c4"><b id="intro-h4"></b><span id="intro-t4"></span></div>
+    </div>
+    <nav class="scenes" id="intro-scenes">
+      <button data-at=".07"><i></i></button>
+      <button data-at=".17"><i></i></button>
+      <button data-at=".355"><i></i></button>
+      <button data-at=".555"><i></i></button>
+      <button data-at=".9"><i></i></button>
+    </nav>
+    <span id="intro-capAll" hidden></span>
+  </div>
+    </div>
+      <strong data-i18n="start.drop">Drag your PDF here</strong>
+      <p class="hint" data-i18n="start.original"></p>
+      <label class="btn primary" for="file" data-i18n="empty.choose">Choose PDF</label>
+    </div>
+    <section class="recent" id="recent" hidden>
+      <div class="recenthead"><h2 data-i18n="recent.title"></h2><button class="btn ghost small" id="recentClear" data-i18n="recent.clear"></button></div>
+      <ol class="recentlist" id="recentList"></ol>
+    </section>
   </div>
 </div>
 
@@ -228,6 +390,20 @@
     <span id="loadFile" class="loadfile"></span>
     <div class="progress" id="loadBarWrap"><i id="loadBar"></i></div>
     <span id="loadHint" class="loadhint"></span>
+  </div>
+</div>
+
+<!-- Export reward: the dots that were not printed light up a pointillist globe (saved total kept per user). -->
+<div id="world" class="world" hidden role="dialog" aria-modal="true" aria-labelledby="worldHead">
+  <div class="worldcard">
+    <canvas id="worldCanvas" width="560" height="560" aria-hidden="true"></canvas>
+    <div class="worldtext" aria-live="polite">
+      <strong id="worldHead"></strong>
+      <span id="worldDots"></span>
+      <span id="worldLit"></span>
+      <small id="worldTotal"></small>
+      <button class="btn primary" id="worldClose" hidden data-i18n="world.close">Close</button>
+    </div>
   </div>
 </div>
 

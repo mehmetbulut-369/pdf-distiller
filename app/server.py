@@ -34,7 +34,7 @@ from distill_core.engine import EmptyPdf  # noqa: E402
 STATIC = Path(__file__).resolve().parent / "static"
 BUILTIN_PROFILES = ROOT / "profiles"
 USER_PROFILES = Path.home() / ".pdf-distiller" / "profiles"
-MAX_DOCS = 4
+MAX_DOCS = 8  # one per open window; the oldest is dropped beyond that
 log = logging.getLogger("pdf_distiller")
 
 app = FastAPI(title="PDF Distiller", docs_url=None, redoc_url=None)
@@ -127,11 +127,32 @@ def tiers():
 
 @app.post("/api/open")
 def open_pdf(file: UploadFile = File(...)):  # sync: analysis runs in the threadpool, not on the event loop
-    data = file.file.read()
+    return open_document(file.file.read(), file.filename or "document.pdf")
+
+
+@app.get("/api/doc/{doc_id}")
+def doc_meta(doc_id: str):
+    """For a second window that shows a document the server already holds (opened by id, not re-uploaded)."""
+    return _meta(doc_id, _doc(doc_id))
+
+
+def _meta(doc_id: str, doc: DistillDocument) -> dict:
+    return {
+        "id": doc_id,
+        "name": doc.name,
+        "n_pages": doc.n_pages,
+        "analysis_seconds": round(doc.analysis_seconds, 2),
+        "failed_pages": doc.failed_pages,
+        "pages": [{"w": p.width, "h": p.height, "rot": p.rotate} for p in doc.pages],
+    }
+
+
+def open_document(data: bytes, name: str) -> dict:
+    """Analyse a PDF given as bytes and keep it in memory. The source file is only read, never written."""
     if not data.startswith(b"%PDF") and b"%PDF" not in data[:1024]:
         raise HTTPException(400, "error.not_pdf")
     try:
-        doc = DistillDocument(data, file.filename or "document.pdf")
+        doc = DistillDocument(data, name)
     except pikepdf.PasswordError as e:
         raise HTTPException(400, "error.pdf_encrypted") from e
     except EmptyPdf as e:
@@ -154,14 +175,7 @@ def open_pdf(file: UploadFile = File(...)):  # sync: analysis runs in the thread
         while len(_docs) > MAX_DOCS:
             _, old = _docs.popitem(last=False)
             old.close()
-    return {
-        "id": doc_id,
-        "name": doc.name,
-        "n_pages": doc.n_pages,
-        "analysis_seconds": round(doc.analysis_seconds, 2),
-        "failed_pages": doc.failed_pages,
-        "pages": [{"w": p.width, "h": p.height, "rot": p.rotate} for p in doc.pages],
-    }
+    return _meta(doc_id, doc)
 
 
 @app.get("/api/doc/{doc_id}/original/{page}.png")
