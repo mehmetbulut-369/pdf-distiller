@@ -35,6 +35,13 @@ log = logging.getLogger("distill")
 PDFIUM_LOCK = threading.RLock()
 
 
+def _close(*objs):
+    """Free pdfium objects now, while the caller holds PDFIUM_LOCK. Left to the garbage collector they are
+    freed later on whichever thread drops them, racing other pdfium calls (heap corruption, app crash)."""
+    for o in objs:
+        o.close()
+
+
 FEATURE_MIN_AREA = 0.02  # content analysis only for images larger than this (logos/icons are skipped)
 INK_HEAVY_PAGE = 0.15    # a printed page above this ink coverage gets a warning (a text page is ~3-6 %)
 MAX_RENDER_SIDE = 6000   # px; longest side of any rendered page image
@@ -174,6 +181,7 @@ class DistillDocument:
         self.sig_pages: dict = {}
         self._decisions: dict = {}
         self._pdfium = None
+        self._ink_orig: dict = {}               # (page, width) -> ink coverage of the untouched page
         self.analysis_seconds = 0.0
         self.failed_pages: list[int] = []        # pages whose content could not be analysed (kept unchanged)
         self._page_text: dict[int, str] = {}     # page text extracted with pdfium
@@ -326,11 +334,12 @@ class DistillDocument:
         if t is None:
             x0, y0, x1, y1 = e.bbox
             with PDFIUM_LOCK:
-                tp = self._pdfium_doc()[e.page].get_textpage()
+                page = self._pdfium_doc()[e.page]
+                tp = page.get_textpage()
                 # query slightly inside the edges so letters from neighbouring lines don't leak in
                 h = y1 - y0
                 t = tp.get_text_bounded(x0, y0 + h * 0.2, x1, y1 - h * 0.2)
-                tp.close()
+                _close(tp, page)
             t = " ".join(t.split())
             self._el_text[e.id] = t
         return t
@@ -347,9 +356,10 @@ class DistillDocument:
         t = self._page_text.get(i)
         if t is None:
             with PDFIUM_LOCK:
-                tp = self._pdfium_doc()[i].get_textpage()
+                page = self._pdfium_doc()[i]
+                tp = page.get_textpage()
                 t = tp.get_text_range()
-                tp.close()
+                _close(tp, page)
             self._page_text[i] = t
         return t
 
@@ -399,8 +409,12 @@ class DistillDocument:
         # cap the long side: a page of 595 x 2^31 pt (seen in the wild) would otherwise exhaust memory
         scale = max(min(width / max(w, 1.0), MAX_RENDER_SIDE / max(h, 1.0)), 0.0001)
         try:
-            return page.render(scale=scale).to_pil()
+            bitmap = page.render(scale=scale)
+            img = bitmap.to_pil().copy()  # own the pixels so the bitmap can be freed now, under the lock
+            _close(bitmap, page)
+            return img
         except ValueError:  # invalid page box (pdfium: "Crop exceeds page dimensions"): show a blank sheet
+            page.close()
             from PIL import Image
             tall = min(int(width * abs(h) / max(abs(w), 1.0)), MAX_RENDER_SIDE)
             return Image.new("RGB", (max(int(width), 1), max(tall, 1)), "white")
@@ -430,11 +444,12 @@ class DistillDocument:
         return _png(img)
 
     # -------------------------------------------------------------- ink estimate
-    def ink_estimate(self, s: Settings, ov: Overrides, samples: int = 24, width: int = 160) -> dict:
+    def ink_estimate(self, s: Settings, ov: Overrides, samples: int | None = None, width: int = 160) -> dict:
+        """Measured on every page by default: a 24-page sample read 49 % where all 160 pages give 28 %."""
         n = self.n_pages
         if n == 0:
             return {"original": 0, "processed": 0, "saving": 0, "pages": 0}
-        k = min(samples, n)
+        k = n if samples is None else min(samples, n)
         idx = sorted({round(j * (n - 1) / max(k - 1, 1)) for j in range(k)})
         drops, _, clips = self.decide_full(s, ov)
         with self.lock:
@@ -450,7 +465,9 @@ class DistillDocument:
             od = self._pdfium_doc()
             pd = pdfium.PdfDocument(buf.getvalue())
             for j, i in enumerate(idx):
-                o_sum += ink_coverage(self._render(od, i, width))
+                if (i, width) not in self._ink_orig:  # the original never changes: render it once
+                    self._ink_orig[i, width] = ink_coverage(self._render(od, i, width))
+                o_sum += self._ink_orig[i, width]
                 p_sum += ink_coverage(self._render(pd, j, width))
             pd.close()
         o, p = o_sum / len(idx), p_sum / len(idx)
