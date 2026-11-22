@@ -387,7 +387,7 @@
 <!-- Opening progress: upload (measured) → reading pages (server, indeterminate) → first preview. -->
 <div id="loader" class="loader" hidden role="status" aria-live="polite">
   <div class="loadcard">
-    <div class="spinner" aria-hidden="true"></div>
+    <canvas id="loadGlobe" width="560" height="560" aria-hidden="true"></canvas>
     <strong id="loadTitle"></strong>
     <span id="loadFile" class="loadfile"></span>
     <div class="progress" id="loadBarWrap"><i id="loadBar"></i></div>

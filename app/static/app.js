@@ -206,7 +206,7 @@ const mb = (bytes) => new Intl.NumberFormat(i18n.lang, { maximumFractionDigits: 
 
 // The user must always see that the file arrived and that the app is working on it,
 // otherwise a 3-second analysis looks like a frozen app.
-const loader = { timer: null, started: 0 };
+const loader = { timer: null, started: 0, frac: null };
 function showLoader(stage, file, frac = null) {
   const el = $("#loader");
   el.hidden = false;
@@ -215,13 +215,26 @@ function showLoader(stage, file, frac = null) {
   if (file) $("#loadFile").textContent = `${file.name} · ${mb(file.size)}`;
   $("#loadBarWrap").classList.toggle("indet", frac === null);
   $("#loadBar").style.width = frac === null ? "" : `${Math.round(frac * 100)}%`;
+  loader.frac = frac;
   if (!loader.timer) {
     loader.started = performance.now();
     loader.timer = setInterval(() => {
       const s = Math.round((performance.now() - loader.started) / 1000);
       $("#loadHint").textContent = s >= 3 ? t("load.slow", { s }) : ""; // reassure only when it actually takes long
     }, 500);
+    loaderGlobe();
   }
+}
+// The export's dot globe fills while a file opens: with the upload share when known, else on a 2.5 s loop.
+function loaderGlobe() {
+  const ctx = $("#loadGlobe").getContext("2d"), still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const frame = (now) => {
+    if (!loader.timer) return; // hidden
+    const u = loader.frac ?? (still ? 0.6 : ((now - loader.started) / 2500) % 1);
+    drawGlobe(ctx, u * WORLD_GOAL, { s: 1, x: 280, y: 280 });
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
 }
 function hideLoader() {
   clearInterval(loader.timer); loader.timer = null;
