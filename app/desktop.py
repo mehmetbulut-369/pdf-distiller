@@ -89,12 +89,41 @@ def open_window(url: str, title: str = "PDF Distiller"):
     return w
 
 
+def _follow_system_theme() -> None:
+    """macOS: the Dock icon follows the system's light/dark setting while the app runs.
+
+    A Finder icon cannot switch on its own without Xcode's asset compiler; the bundle's .icns is the light one.
+    """
+    try:
+        from AppKit import NSApplication, NSDistributedNotificationCenter, NSImage, NSUserDefaults
+        from PyObjCTools.AppHelper import callAfter
+    except ImportError:
+        return
+    icons = Path(__file__).resolve().parent / "static" / "icons"
+
+    def apply(_note=None):
+        dark = NSUserDefaults.standardUserDefaults().stringForKey_("AppleInterfaceStyle") == "Dark"
+        img = NSImage.alloc().initWithContentsOfFile_(str(icons / f"app-{'dark' if dark else 'light'}.png"))
+        if img is not None:
+            NSApplication.sharedApplication().setApplicationIconImage_(img)
+
+    def install():
+        apply()
+        NSDistributedNotificationCenter.defaultCenter().addObserverForName_object_queue_usingBlock_(
+            "AppleInterfaceThemeChangedNotification", None, None, lambda n: callAfter(apply, n))
+
+    callAfter(install)  # AppKit calls belong on the main thread, where pywebview runs its loop
+
+
 def start(url: str) -> None:
     """Blocks until the last window is closed."""
     global _api
+    import sys
+
     import webview
     _api = Api(url)
     open_window(url)
     # pywebview defaults to private mode: localStorage (language, theme, panel widths, saved dots) would be
     # wiped on every start
-    webview.start(private_mode=False, storage_path=str(RECENT.parent / "webview"))
+    webview.start(_follow_system_theme if sys.platform == "darwin" else None,
+                  private_mode=False, storage_path=str(RECENT.parent / "webview"))
