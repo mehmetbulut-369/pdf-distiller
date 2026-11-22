@@ -7,6 +7,8 @@
   "view.after": "Sonuç",
   "undo": "Geri al",
   "undo.title": "Geri al (Ctrl/Cmd+Z)",
+  "redo": "Yinele",
+  "redo.title": "Yinele (Ctrl+Y / Cmd+Shift+Z)",
   "export": "Baskı PDF'ini indir",
   "export.busy": "Hazırlanıyor…",
   "export.done": "İndirildi: {name}",

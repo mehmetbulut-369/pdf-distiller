@@ -7,6 +7,8 @@
   "view.after": "Ergebnis",
   "undo": "Rückgängig",
   "undo.title": "Rückgängig (Strg/Cmd+Z)",
+  "redo": "Wiederholen",
+  "redo.title": "Wiederholen (Strg+Y / Cmd+Umschalt+Z)",
   "export": "Druck-PDF herunterladen",
   "export.busy": "Wird erstellt…",
   "export.done": "Heruntergeladen: {name}",

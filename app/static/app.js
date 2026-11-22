@@ -49,7 +49,7 @@ async function setLang(lang) {
   try { localStorage.setItem("lang", lang); } catch (_) {}
   applyDom();
   // redraw everything that renders dynamic text
-  buildTiers(); syncControls(); setTool(state.tool); renderThumbs(); renderWords(); renderSummary(); renderDocName(); renderRecent(); introText();
+  buildTiers(); syncControls(); setTool(state.tool); renderThumbs(); renderWords(); renderSummary(); renderRecent(); introText();
   if (state.doc) refreshPage();
   loadProfiles().catch(() => {});
 }
@@ -70,6 +70,7 @@ const state = {
   pos: 0,           // position within ops
   view: "split",
   history: [],
+  future: [], // redo
   elements: [],
   reqSeq: 0,
   afterUrl: null,
@@ -107,19 +108,34 @@ const pct = (v) => new Intl.NumberFormat(i18n.lang, { style: "percent", maximumF
 const curSrc = () => (state.ops[state.pos] ? state.ops[state.pos].src : null);
 
 // ------------------------------------------------------------------ history (undo)
+const current = () => JSON.stringify({ s: state.settings, o: state.overrides, p: state.ops });
+function syncHistory() {
+  $("#undo").disabled = state.history.length === 0;
+  $("#redo").disabled = state.future.length === 0;
+}
 function snapshot() {
-  state.history.push(JSON.stringify({ s: state.settings, o: state.overrides, p: state.ops }));
+  state.history.push(current());
   if (state.history.length > 100) state.history.shift();
-  $("#undo").disabled = false;
+  state.future = []; // a new change after undo drops the undone steps, as in every editor
+  syncHistory();
+}
+function restore(h) {
+  const v = JSON.parse(h);
+  state.settings = v.s; state.overrides = { ...emptyOverrides(), ...v.o }; state.ops = v.p;
+  state.pos = Math.min(state.pos, Math.max(0, state.ops.length - 1));
+  syncHistory(); syncControls(); renderThumbs(); refreshAll();
 }
 function undo() {
   const h = state.history.pop();
   if (!h) return;
-  const v = JSON.parse(h);
-  state.settings = v.s; state.overrides = { ...emptyOverrides(), ...v.o }; state.ops = v.p;
-  state.pos = Math.min(state.pos, Math.max(0, state.ops.length - 1));
-  $("#undo").disabled = state.history.length === 0;
-  syncControls(); renderThumbs(); refreshAll();
+  state.future.push(current());
+  restore(h);
+}
+function redo() {
+  const h = state.future.pop();
+  if (!h) return;
+  state.history.push(current());
+  restore(h);
 }
 
 // ------------------------------------------------------------------ tiers and settings
@@ -276,8 +292,7 @@ async function loadDoc(d) {
   state.pos = 0;
   state.overrides = emptyOverrides();
   state.words = null;
-  state.history = []; $("#undo").disabled = true;
-  renderDocName();
+  state.history = []; state.future = []; syncHistory();
   document.title = `${d.name} · PDF Distiller`;
   document.body.classList.remove("nodoc");
   $("#empty").classList.add("hidden");
@@ -414,13 +429,6 @@ function bindGutters() {
   }
 }
 
-function renderDocName() {
-  const d = state.doc;
-  if (!d) return;
-  const f = (v) => v.toLocaleString(i18n.lang, { maximumFractionDigits: 1 });
-  const secs = d.analysis_seconds < 0.1 ? `<${f(0.1)}` : f(d.analysis_seconds);
-  $("#docname").textContent = t("doc.info", { name: d.name, n: d.n_pages, secs });
-}
 
 // ------------------------------------------------------------------ preview
 function imgWidth(el) {
@@ -1198,11 +1206,9 @@ async function init() {
   applyDom();
   state.tiers = await (await api("/api/tiers")).json();
   state.settings = { ...state.tiers[1].settings };
-  // which code is running (compare with `git log -1`): "v0.4.0 · 5a487a5"
-  api("/api/version").then((r) => r.json()).then((v) => {
-    $("#ver").textContent = `v${v.version} · ${v.build.split(" ")[0]}`;
-    $("#ver").title = `${v.version} · ${v.build}`;
-  }).catch(() => {});
+  // which code is running (compare with `git log -1`): hover the name, "v0.4.0 · 5a487a5 · date"
+  api("/api/version").then((r) => r.json()).then((v) => { $("#brand").title = `v${v.version} · ${v.build}`; }).catch(() => {});
+  fetch("/static/logo.svg").then((r) => r.text()).then((svg) => { $("#logo").innerHTML = svg; }).catch(() => {});
   buildTiers(); bindControls(); bindProfiles(); syncControls(); setTool("graphics");
   loadProfiles().catch(() => {});
   syncTheme(); $("#theme").onclick = toggleTheme; darkMq.addEventListener("change", syncTheme);
@@ -1221,7 +1227,7 @@ async function init() {
   bindGutters();
   bindIntro();
   $("#export").onclick = doExport;
-  $("#undo").onclick = undo;
+  $("#undo").onclick = undo; $("#redo").onclick = redo;
   $("#prev").onclick = () => goTo(state.pos - 1);
   $("#next").onclick = () => goTo(state.pos + 1);
   $("#resetPages").onclick = () => { if (!state.doc) return; snapshot(); state.ops = state.doc.pages.map((_, i) => ({ src: i, rotate: 0 })); state.pos = 0; renderThumbs(); refreshPage(); refreshWords(); };
@@ -1278,7 +1284,9 @@ async function init() {
       if (!$("#menu").hidden) closeMenu(); else if (railOpen()) setRail(false);
     }
     if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement?.tagName)) return; // let fields undo their own typing
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); return; }
+    const k = e.key.toLowerCase();
+    if ((e.metaKey || e.ctrlKey) && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); redo(); return; }
+    if ((e.metaKey || e.ctrlKey) && k === "z") { e.preventDefault(); undo(); return; }
     if (e.key === "ArrowRight" || e.key === "PageDown") goTo(state.pos + 1);
     if (e.key === "ArrowLeft" || e.key === "PageUp") goTo(state.pos - 1);
   });

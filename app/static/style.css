@@ -39,6 +39,7 @@
     --cyan: #4CC2F0; --cyan-hover: #7DD3F5; --on-cyan: #08202B;
     --magenta: #F0679E; --yellow: #F2C230; --sky: #6BBEEC; --green: #4CC38A; --other: #9AA3AD;
     --danger: #FF7A9C; --warn-bg: #3A1522; --warn-line: #7A2A44; --warn-ink: #FFC9D7; --drag-bg: rgba(76,194,240,.10);
+    --pdl-paper: #2A2F35; --pdl-fold: #3A4048; --pdl-line: #E8EAED; --pdl-blue: #6FA8E8; --pdl-green: #7DB33A; --pdl-rib: #4E8A17;
   }
 }
 :root[data-theme="dark"] {
@@ -48,6 +49,7 @@
   --cyan: #4CC2F0; --cyan-hover: #7DD3F5; --on-cyan: #08202B;
   --magenta: #F0679E; --yellow: #F2C230; --sky: #6BBEEC; --green: #4CC38A; --other: #9AA3AD;
   --danger: #FF7A9C; --warn-bg: #3A1522; --warn-line: #7A2A44; --warn-ink: #FFC9D7; --drag-bg: rgba(76,194,240,.10);
+  --pdl-paper: #2A2F35; --pdl-fold: #3A4048; --pdl-line: #E8EAED; --pdl-blue: #6FA8E8; --pdl-green: #7DB33A; --pdl-rib: #4E8A17;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--desk); }
@@ -58,9 +60,10 @@ button, input, select { font: inherit; color: inherit; }
 .bar { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px;
   background: var(--paper); border-bottom: 1px solid var(--line); }
 .logo { display: block; width: 39px; height: 39px; flex-shrink: 0; margin-right: -2px; }
+.logo svg { display: block; width: 100%; height: 100%; }
+.histbtns { display: flex; gap: 2px; }
+.histbtns .btn.icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
 .brand { font-size: 26px; font-weight: 700; letter-spacing: -.01em; margin-right: 6px; white-space: nowrap; }
-.ver { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; margin-right: 6px; }
-.docname { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 32ch; min-width: 0; flex-shrink: 1; }
 .bar > :not(.docname):not(.spacer) { flex-shrink: 0; } /* on narrow screens the file name shrinks first */
 /* language flags in an inset pill, the active one raised on a white knob (kariyeraday.de pattern) */
 .langflags { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--inset); border: 1px solid var(--line); }
@@ -305,7 +308,7 @@ button, input, select { font: inherit; color: inherit; }
   .app { grid-template-columns: 1fr; height: auto; }
   .gutter { display: none; }
   .panel { border-right: 0; }
-  .legend, .docname, .ver { display: none; }
+  .legend { display: none; }
   /* the header no longer fits: let it scroll sideways instead of widening the whole page */
   header.bar { overflow-x: auto; scrollbar-width: none; }
 }

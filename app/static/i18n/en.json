@@ -7,6 +7,8 @@
   "view.after": "Result",
   "undo": "Undo",
   "undo.title": "Undo (Ctrl/Cmd+Z)",
+  "redo": "Redo",
+  "redo.title": "Redo (Ctrl+Y / Cmd+Shift+Z)",
   "export": "Download print PDF",
   "export.busy": "Preparing…",
   "export.done": "Downloaded: {name}",

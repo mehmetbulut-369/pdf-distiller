@@ -11,19 +11,21 @@
 </head>
 <body class="nodoc">
 <header class="bar">
-  <img class="logo" src="/static/logo.svg" alt="" width="28" height="28">
-  <strong class="brand">PDF Distiller</strong>
-  <span id="ver" class="ver"></span>
+  <!-- filled in from /static/logo.svg (app.js) so its colours follow the theme; an <img> cannot see the page -->
+  <span class="logo" id="logo" aria-hidden="true"></span>
+  <strong class="brand" id="brand">PDF Distiller</strong>
   <label class="btn" for="file" tabindex="0" role="button" data-i18n="app.open">Open PDF</label>
   <input type="file" id="file" accept="application/pdf,.pdf" hidden>
-  <span id="docname" class="docname"></span>
   <span class="spacer"></span>
   <div class="seg" id="viewmode" role="radiogroup" data-i18n-aria-label="view.label">
     <button data-v="before" role="radio" data-i18n="view.before">Original</button>
     <button data-v="split" role="radio" class="on" data-i18n="view.split">Side by side</button>
     <button data-v="after" role="radio" data-i18n="view.after">Result</button>
   </div>
-  <button id="undo" class="btn ghost" data-i18n="undo" data-i18n-title="undo.title" disabled>Undo</button>
+  <div class="histbtns">
+    <button id="undo" class="btn ghost icon" data-i18n-aria-label="undo" data-i18n-title="undo.title" disabled><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+    <button id="redo" class="btn ghost icon" data-i18n-aria-label="redo" data-i18n-title="redo.title" disabled><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+  </div>
   <button id="export" class="btn primary" data-i18n="export" disabled>Download print PDF</button>
   <!-- Language as flags (as on kariyeraday.de): SVG because emoji flags don't render on Windows;
        each language is named in itself so a lost user still finds theirs. -->

@@ -52,6 +52,8 @@ def main() -> None:
         "--collect-submodules", "uvicorn",
         "--collect-all", "pypdfium2_raw",
         "--osx-bundle-identifier", "io.github.pdf-distiller",
+        # from app/static/logo.svg via packaging/make_icons.py
+        "--icon", str(ROOT / "packaging" / ("icon.ico" if sys.platform == "win32" else "icon.icns")),
     ]
     if sys.platform == "win32":
         args.append("--onefile")
