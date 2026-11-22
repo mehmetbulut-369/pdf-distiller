@@ -2,13 +2,53 @@
 
 [English](README.md) · [Deutsch](README.de.md) · **Türkçe**
 
-Ders slaytlarını yazdırmadan önce koyu zeminleri, tema grafiklerini, logoları ve büyük görselleri
-ayıklar. Metin keskin ve okunur kalır, mürekkebin büyük kısmı tasarruf edilir. Her şey kendi
-bilgisayarınızda çalışır; PDF'leriniz hiçbir yere yüklenmez.
+**Slaytları basın, arka planlarını değil.** PDF Distiller bir PDF'teki koyu arka planları, tekrar eden
+logoları ve büyük fotoğrafları ayıklar, metni keskin bırakır. Kendi bilgisayarınızda çalışır; dosyalarınız
+internete yüklenmez.
 
-![Koyu bir ders slaytı, Orta kademeyle işlenmeden önce ve sonra](docs/before-after.png)
+<p align="center"><img src="docs/story.tr.svg" width="960" alt="Çoğu arka plandan oluşan bir ders slaytı. Olduğu gibi basılınca mürekkebin çoğu arka plana gider. Bu yüzden uygulama önce sayfanın nelerden oluştuğunu sorar. Arka plan, tekrar eden logolar ve büyük fotoğraflar ayıklanır. Yalnız ihtiyacınız olan basılır."></p>
 
-## Neler yapar
+## Neden yaptım
+
+Öğretmen bir ailede büyüdüm. Bana hiçbir zaman önce sorulmadan boş bir kâğıt verilmezdi:
+*Bununla ne yapacaksın?* Üniversitede slaytlarımı hâlâ basıyorum, çünkü elimde kalemle daha iyi
+düşünüyorum. Her koyu slayt da kartuşun çoğunu kimsenin okumadığı arka planlara harcıyordu. PDF Distiller
+basmadan önce bir PDF'e aynı soruyu soruyor. Ben de tablet kullanıyorum; mesele kâğıt mı ekran mı değil.
+Basacaksanız, yalnız ihtiyacınız olanı basın. Her birimiz tek bir noktayız. Bu da benim üstüme düşen.
+
+![Koyu bir ders slaytı, Orta kademeyle önce ve sonra](docs/before-after.png)
+
+## Nasıl yaptım
+
+1. **Önce sorunu ölç.** Uygulama her sayfayı önce ve sonra çizip mürekkebi tahmin ediyor. Koyu örnek
+   slayt setinde tasarruf %91–98 (aşağıda *Sonuçlar* tablosu).
+2. **Sınırları baştan koy.** İnternetsiz çalışsın. Metin gerçek metin olarak kalsın, metnin resmine
+   dönüşmesin. Yalnız serbest lisanslı kütüphaneler. Terminal açmayan biri için tek tıkla açılan bir uygulama.
+3. **Karar ver ve bedelini yaz.**
+
+   | Karar | Neden | Bedeli |
+   |---|---|---|
+   | Sayfayı yeniden çizmek yerine PDF'in çizim komutlarını düzenlemek | Metin keskin ve aranabilir kalır, dosya küçük kalır | Her tuhaf PDF'in okunması gerekir: sağlamlık işi |
+   | PyMuPDF yerine pikepdf + pypdfium2 ([ADR](docs/adr/0001-no-pymupdf.md)) | Serbest lisanslar (PyMuPDF AGPL) | İki kütüphanenin birlikte çalışması gerekir |
+   | Kaldırılan metni silmek yerine gizlemek | Satırın geri kalanı yerinde durur | Gizli metin aramada yine bulunur |
+   | Görsel içindeki yazıyı OCR'sız, kurallarla tanımak | Hızlı, büyük model gerekmez | Renkli şemalar yanlış sınıflanabilir |
+   | Tarayıcı ve masaüstü için tek yerel web arayüzü | Tek kod tabanı, derleme adımı yok | İndirme boyutu yaklaşık 38 MB |
+
+4. **Kanıtla.** 90 otomatik test Linux, macOS ve Windows'ta çalışıyor. pdf.js test arşivindeki 1103 bozuk
+   ve alışılmadık dosyanın 1100'ü açılıyor ([rapor](docs/robustness.md), İngilizce). 500 sayfalık bir
+   slayt seti 2,4 saniyede inceleniyor.
+5. **Kendim için değil, insanlar için yap.** Her eylem karşılık gösteriyor, uygulama hiçbir an donmuş gibi
+   görünmüyor. Mesajlar kusuru hiçbir zaman kullanıcıya yüklemiyor. Arayüz Türkçe, İngilizce ve Almanca;
+   klavye ve ekran okuyucuyla kullanılabiliyor.
+
+İşi devralacak herkes için kurallar: [ARCHITECTURE.md](ARCHITECTURE.md) (İngilizce).
+
+## Ayrıntılar
+
+Açmak için bir başlığa tıklayın.
+
+<details>
+<summary><b>Neler yapar</b></summary>
 
 - **Dört kademe:** *Orijinal*, *Hafif* (zeminler ve tekrar eden tema öğeleri),
   *Orta* (+ büyük görseller ve şekiller), *Maksimum* (sadece metin kalır).
@@ -27,7 +67,10 @@ bilgisayarınızda çalışır; PDF'leriniz hiçbir yere yüklenmez.
 - Tüm slaytlarda **kelime sayacı**, CSV olarak indirilebilir.
 - Arayüz **Türkçe, İngilizce ve Almanca**.
 
-## Sonuçlar
+</details>
+
+<details>
+<summary><b>Sonuçlar</b></summary>
 
 Mürekkep tasarrufu, sayfaları önce ve sonra render ederek tahmin edilir (`python docs/readme_assets.py`).
 Örnek dosyalar sentetiktir ve `tests/make_samples.py` ile üretilir.
@@ -47,7 +90,10 @@ Hız, 500 sayfalık ve ~155.000 vektör öğeli sentetik bir destede (`python be
 10 çekirdek, Python 3.13): analiz 2,4 sn, dışa aktarma 1,6–1,9 sn, tek sayfa önizleme 8 ms.
 Ayrıntılar: [README.md](README.md#results).
 
-## İndir
+</details>
+
+<details>
+<summary><b>İndir</b></summary>
 
 Python gerektirmeyen hazır paketler her [sürümde](../../releases) bulunur:
 
@@ -64,7 +110,10 @@ Paketler imzalı değil, bu yüzden sistem ilk açılışta uyarır. Bu yalnızc
 
 Uygulama kendi penceresinde açılır; pencereyi kapatınca uygulama da kapanır.
 
-## Kaynak koddan çalıştırma
+</details>
+
+<details>
+<summary><b>Kaynak koddan çalıştırma</b></summary>
 
 Gerekli: Python 3.10 veya üstü.
 
@@ -82,7 +131,10 @@ python run.py --window     # ayrı pencerede (önce: pip install pywebview)
 
 İlk çalıştırmada yerel bir ortam kurulur (1–2 dakika).
 
-## Kullanım
+</details>
+
+<details>
+<summary><b>Kullanım</b></summary>
 
 1. **PDF aç** ile veya sürükle-bırak ile dosyayı yükleyin.
 2. Soldan bir **kademe** seçin ve ince ayar yapın: eşikler, metin rengi, gri tonlama, görsel
@@ -95,12 +147,14 @@ python run.py --window     # ayrı pencerede (önce: pip install pywebview)
    siler, yazıyı bırakır.
 6. **En çok mürekkep harcayanlar** (solda): çok mürekkep harcayacak sayfalar kırmızıyla işaretlenir;
    liste en pahalı öğeleri gösterir, tek tıkla kaldırılır.
-7. Sağ şeritte sayfaları silin, döndürün, sıralayın. **Geri al:** Ctrl/Cmd+Z.
+7. Sağ şeritte sayfaları silin, döndürün, sıralayın. **Geri al / yinele:** Ctrl/Cmd+Z, Ctrl+Y ya da Cmd+Shift+Z.
 8. Ayarları **profil** olarak kaydedin (`~/.pdf-distiller/profiles/`).
 9. **Baskı PDF'ini indir.**
 
 Nasıl çalıştığı, geliştirme ve bilinen sınırlar için: [README.md](README.md) (İngilizce) ve
 [ARCHITECTURE.md](ARCHITECTURE.md).
+
+</details>
 
 ## Lisans
 

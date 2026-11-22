@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" width="960" height="400" role="img" aria-label="A lecture slide. Mostly background. Printed as it is, most of the ink goes into the background. So first the app asks: what is this page made of? Background, repeated logos, big photos: lifted off. Only what you need gets printed. Every dot counts.">
+<style>
+svg { font-family: Inter, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+.a { animation-duration: 18s; animation-iteration-count: infinite; animation-fill-mode: both;
+      animation-timing-function: ease-in-out; transform-box: fill-box; }
+.draw { stroke-dasharray: 1; stroke-dashoffset: 0; }
+@keyframes draw { 0%, 2% { stroke-dashoffset: 1; } 9%, 97% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
+.page, .figure { animation-name: draw; }
+@keyframes block { 0%, 8% { opacity: 0; } 11%, 60% { opacity: 1; } 66%, 100% { opacity: 0; } }
+.block { animation-name: block; opacity: 0; }
+@keyframes text { 0%, 8% { fill: #F5F7FA; opacity: 0; } 11% { fill: #0F2C4C; opacity: 1; }
+  62% { fill: #0F2C4C; } 70%, 97% { fill: #F5F7FA; opacity: 1; } 100% { opacity: 0; } }
+.text { animation-name: text; fill: #F5F7FA; }
+@keyframes puddle { 0%, 22% { transform: scaleX(0); } 38%, 58% { transform: scaleX(1); } 70%, 100% { transform: scaleX(0); } }
+.puddle { animation-name: puddle; transform-origin: center; transform: scaleX(0); }
+@keyframes small { 0%, 84% { transform: scaleX(0); } 88%, 96% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+.small { animation-name: small; transform-origin: center; }
+@keyframes lens { 0%, 39% { opacity: 0; transform: translate(0, 0); } 41% { opacity: 1; transform: translate(0, 0); }
+  47% { transform: translate(230px, -105px); } 52% { transform: translate(345px, -60px); }
+  56% { opacity: 1; transform: translate(260px, -25px); } 58%, 100% { opacity: 0; transform: translate(260px, -25px); } }
+.lens { animation-name: lens; opacity: 0; }
+@keyframes lastdrop { 0%, 80% { opacity: 0; transform: translateY(0); } 81% { opacity: 1; }
+  86% { opacity: 1; transform: translateY(80px); } 87%, 100% { opacity: 0; transform: translateY(80px); } }
+.lastdrop { animation-name: lastdrop; opacity: 0; }
+@keyframes c0 { 0%, 8% { opacity: 0; } 9%, 19% { opacity: 1; } 20%, 100% { opacity: 0; } }
+.c0 { animation-name: c0; opacity: 0; }
+@keyframes c1 { 0%, 20% { opacity: 0; } 21%, 38% { opacity: 1; } 39%, 100% { opacity: 0; } }
+.c1 { animation-name: c1; opacity: 0; }
+@keyframes c2 { 0%, 39% { opacity: 0; } 40%, 57% { opacity: 1; } 58%, 100% { opacity: 0; } }
+.c2 { animation-name: c2; opacity: 0; }
+@keyframes c3 { 0%, 58% { opacity: 0; } 59%, 77% { opacity: 1; } 78%, 100% { opacity: 0; } }
+.c3 { animation-name: c3; opacity: 0; }
+@keyframes c4 { 0%, 78% { opacity: 0; } 79%, 97% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.c4 { animation-name: c4; opacity: 1; }
+@keyframes b0 { 0%, 42% { opacity: 0; } 43%, 58% { opacity: 1; } 60%, 100% { opacity: 0; } }
+.b0 { animation-name: b0; opacity: 0; stroke: #F0679E; }
+@keyframes b1 { 0%, 45% { opacity: 0; } 46%, 58% { opacity: 1; } 60%, 100% { opacity: 0; } }
+.b1 { animation-name: b1; opacity: 0; stroke: #F2C230; }
+@keyframes b2 { 0%, 48% { opacity: 0; } 49%, 58% { opacity: 1; } 60%, 100% { opacity: 0; } }
+.b2 { animation-name: b2; opacity: 0; stroke: #6BBEEC; }
+@keyframes b3 { 0%, 51% { opacity: 0; } 52%, 58% { opacity: 1; } 60%, 100% { opacity: 0; } }
+.b3 { animation-name: b3; opacity: 0; stroke: #4CC38A; }
+@keyframes d0 { 0%, 21.0% { opacity: 0; transform: translateY(0); } 21.3% { opacity: 1; } 25.0% { opacity: 1; transform: translateY(80px); } 25.3%, 100% { opacity: 0; transform: translateY(80px); } }
+.d0 { animation-name: d0; opacity: 0; }
+@keyframes d1 { 0%, 22.4% { opacity: 0; transform: translateY(0); } 22.7% { opacity: 1; } 26.4% { opacity: 1; transform: translateY(80px); } 26.7%, 100% { opacity: 0; transform: translateY(80px); } }
+.d1 { animation-name: d1; opacity: 0; }
+@keyframes d2 { 0%, 23.8% { opacity: 0; transform: translateY(0); } 24.1% { opacity: 1; } 27.8% { opacity: 1; transform: translateY(80px); } 28.1%, 100% { opacity: 0; transform: translateY(80px); } }
+.d2 { animation-name: d2; opacity: 0; }
+@keyframes d3 { 0%, 25.2% { opacity: 0; transform: translateY(0); } 25.5% { opacity: 1; } 29.2% { opacity: 1; transform: translateY(80px); } 29.5%, 100% { opacity: 0; transform: translateY(80px); } }
+.d3 { animation-name: d3; opacity: 0; }
+@keyframes d4 { 0%, 26.6% { opacity: 0; transform: translateY(0); } 26.9% { opacity: 1; } 30.6% { opacity: 1; transform: translateY(80px); } 30.9%, 100% { opacity: 0; transform: translateY(80px); } }
+.d4 { animation-name: d4; opacity: 0; }
+@keyframes d5 { 0%, 28.0% { opacity: 0; transform: translateY(0); } 28.3% { opacity: 1; } 32.0% { opacity: 1; transform: translateY(80px); } 32.3%, 100% { opacity: 0; transform: translateY(80px); } }
+.d5 { animation-name: d5; opacity: 0; }
+@keyframes d6 { 0%, 29.4% { opacity: 0; transform: translateY(0); } 29.7% { opacity: 1; } 33.4% { opacity: 1; transform: translateY(80px); } 33.7%, 100% { opacity: 0; transform: translateY(80px); } }
+.d6 { animation-name: d6; opacity: 0; }
+@keyframes d7 { 0%, 30.8% { opacity: 0; transform: translateY(0); } 31.1% { opacity: 1; } 34.8% { opacity: 1; transform: translateY(80px); } 35.1%, 100% { opacity: 0; transform: translateY(80px); } }
+.d7 { animation-name: d7; opacity: 0; }
+@keyframes d8 { 0%, 32.2% { opacity: 0; transform: translateY(0); } 32.5% { opacity: 1; } 36.2% { opacity: 1; transform: translateY(80px); } 36.5%, 100% { opacity: 0; transform: translateY(80px); } }
+.d8 { animation-name: d8; opacity: 0; }
+@keyframes d9 { 0%, 33.6% { opacity: 0; transform: translateY(0); } 33.9% { opacity: 1; } 37.6% { opacity: 1; transform: translateY(80px); } 37.9%, 100% { opacity: 0; transform: translateY(80px); } }
+.d9 { animation-name: d9; opacity: 0; }
+@keyframes v0 { 0%, 61.3% { opacity: 0; transform: translate(0, 0); } 61.8% { opacity: .9; } 70.3%, 100% { opacity: 0; transform: translate(-28px, -98px); } }
+.v0 { animation-name: v0; opacity: 0; }
+@keyframes v1 { 0%, 60.3% { opacity: 0; transform: translate(0, 0); } 60.8% { opacity: .9; } 69.3%, 100% { opacity: 0; transform: translate(3px, -121px); } }
+.v1 { animation-name: v1; opacity: 0; }
+@keyframes v2 { 0%, 60.2% { opacity: 0; transform: translate(0, 0); } 60.7% { opacity: .9; } 69.2%, 100% { opacity: 0; transform: translate(1px, -147px); } }
+.v2 { animation-name: v2; opacity: 0; }
+@keyframes v3 { 0%, 61.7% { opacity: 0; transform: translate(0, 0); } 62.2% { opacity: .9; } 70.7%, 100% { opacity: 0; transform: translate(-34px, -143px); } }
+.v3 { animation-name: v3; opacity: 0; }
+@keyframes v4 { 0%, 61.7% { opacity: 0; transform: translate(0, 0); } 62.2% { opacity: .9; } 70.7%, 100% { opacity: 0; transform: translate(26px, -140px); } }
+.v4 { animation-name: v4; opacity: 0; }
+@keyframes v5 { 0%, 60.9% { opacity: 0; transform: translate(0, 0); } 61.4% { opacity: .9; } 69.9%, 100% { opacity: 0; transform: translate(10px, -74px); } }
+.v5 { animation-name: v5; opacity: 0; }
+@keyframes v6 { 0%, 62.3% { opacity: 0; transform: translate(0, 0); } 62.8% { opacity: .9; } 71.3%, 100% { opacity: 0; transform: translate(-8px, -72px); } }
+.v6 { animation-name: v6; opacity: 0; }
+@keyframes v7 { 0%, 60.2% { opacity: 0; transform: translate(0, 0); } 60.7% { opacity: .9; } 69.2%, 100% { opacity: 0; transform: translate(29px, -127px); } }
+.v7 { animation-name: v7; opacity: 0; }
+@keyframes v8 { 0%, 60.6% { opacity: 0; transform: translate(0, 0); } 61.1% { opacity: .9; } 69.6%, 100% { opacity: 0; transform: translate(-31px, -125px); } }
+.v8 { animation-name: v8; opacity: 0; }
+@keyframes v9 { 0%, 63.3% { opacity: 0; transform: translate(0, 0); } 63.8% { opacity: .9; } 72.3%, 100% { opacity: 0; transform: translate(-26px, -103px); } }
+.v9 { animation-name: v9; opacity: 0; }
+@keyframes v10 { 0%, 62.6% { opacity: 0; transform: translate(0, 0); } 63.1% { opacity: .9; } 71.6%, 100% { opacity: 0; transform: translate(-10px, -106px); } }
+.v10 { animation-name: v10; opacity: 0; }
+@keyframes v11 { 0%, 60.3% { opacity: 0; transform: translate(0, 0); } 60.8% { opacity: .9; } 69.3%, 100% { opacity: 0; transform: translate(-35px, -134px); } }
+.v11 { animation-name: v11; opacity: 0; }
+@keyframes v12 { 0%, 62.7% { opacity: 0; transform: translate(0, 0); } 63.2% { opacity: .9; } 71.7%, 100% { opacity: 0; transform: translate(-6px, -125px); } }
+.v12 { animation-name: v12; opacity: 0; }
+@keyframes v13 { 0%, 62.3% { opacity: 0; transform: translate(0, 0); } 62.8% { opacity: .9; } 71.3%, 100% { opacity: 0; transform: translate(-4px, -126px); } }
+.v13 { animation-name: v13; opacity: 0; }
+@keyframes v14 { 0%, 63.2% { opacity: 0; transform: translate(0, 0); } 63.7% { opacity: .9; } 72.2%, 100% { opacity: 0; transform: translate(16px, -130px); } }
+.v14 { animation-name: v14; opacity: 0; }
+@keyframes v15 { 0%, 62.3% { opacity: 0; transform: translate(0, 0); } 62.8% { opacity: .9; } 71.3%, 100% { opacity: 0; transform: translate(2px, -80px); } }
+.v15 { animation-name: v15; opacity: 0; }
+@keyframes v16 { 0%, 62.9% { opacity: 0; transform: translate(0, 0); } 63.4% { opacity: .9; } 71.9%, 100% { opacity: 0; transform: translate(-17px, -72px); } }
+.v16 { animation-name: v16; opacity: 0; }
+@keyframes v17 { 0%, 60.5% { opacity: 0; transform: translate(0, 0); } 61.0% { opacity: .9; } 69.5%, 100% { opacity: 0; transform: translate(-7px, -89px); } }
+.v17 { animation-name: v17; opacity: 0; }
+@keyframes v18 { 0%, 60.6% { opacity: 0; transform: translate(0, 0); } 61.1% { opacity: .9; } 69.6%, 100% { opacity: 0; transform: translate(-1px, -147px); } }
+.v18 { animation-name: v18; opacity: 0; }
+@keyframes v19 { 0%, 62.7% { opacity: 0; transform: translate(0, 0); } 63.2% { opacity: .9; } 71.7%, 100% { opacity: 0; transform: translate(21px, -104px); } }
+.v19 { animation-name: v19; opacity: 0; }
+@keyframes v20 { 0%, 63.5% { opacity: 0; transform: translate(0, 0); } 64.0% { opacity: .9; } 72.5%, 100% { opacity: 0; transform: translate(-15px, -94px); } }
+.v20 { animation-name: v20; opacity: 0; }
+@keyframes v21 { 0%, 62.4% { opacity: 0; transform: translate(0, 0); } 62.9% { opacity: .9; } 71.4%, 100% { opacity: 0; transform: translate(6px, -114px); } }
+.v21 { animation-name: v21; opacity: 0; }
+@keyframes v22 { 0%, 63.4% { opacity: 0; transform: translate(0, 0); } 63.9% { opacity: .9; } 72.4%, 100% { opacity: 0; transform: translate(36px, -112px); } }
+.v22 { animation-name: v22; opacity: 0; }
+@keyframes v23 { 0%, 62.7% { opacity: 0; transform: translate(0, 0); } 63.2% { opacity: .9; } 71.7%, 100% { opacity: 0; transform: translate(-35px, -94px); } }
+.v23 { animation-name: v23; opacity: 0; }
+@keyframes v24 { 0%, 62.6% { opacity: 0; transform: translate(0, 0); } 63.1% { opacity: .9; } 71.6%, 100% { opacity: 0; transform: translate(39px, -84px); } }
+.v24 { animation-name: v24; opacity: 0; }
+@keyframes v25 { 0%, 61.1% { opacity: 0; transform: translate(0, 0); } 61.6% { opacity: .9; } 70.1%, 100% { opacity: 0; transform: translate(-9px, -97px); } }
+.v25 { animation-name: v25; opacity: 0; }
+@keyframes v26 { 0%, 60.1% { opacity: 0; transform: translate(0, 0); } 60.6% { opacity: .9; } 69.1%, 100% { opacity: 0; transform: translate(-3px, -137px); } }
+.v26 { animation-name: v26; opacity: 0; }
+@keyframes v27 { 0%, 60.5% { opacity: 0; transform: translate(0, 0); } 61.0% { opacity: .9; } 69.5%, 100% { opacity: 0; transform: translate(-35px, -89px); } }
+.v27 { animation-name: v27; opacity: 0; }
+@keyframes v28 { 0%, 60.5% { opacity: 0; transform: translate(0, 0); } 61.0% { opacity: .9; } 69.5%, 100% { opacity: 0; transform: translate(-20px, -119px); } }
+.v28 { animation-name: v28; opacity: 0; }
+@keyframes v29 { 0%, 63.5% { opacity: 0; transform: translate(0, 0); } 64.0% { opacity: .9; } 72.5%, 100% { opacity: 0; transform: translate(-34px, -114px); } }
+.v29 { animation-name: v29; opacity: 0; }
+@keyframes v30 { 0%, 62.2% { opacity: 0; transform: translate(0, 0); } 62.7% { opacity: .9; } 71.2%, 100% { opacity: 0; transform: translate(31px, -84px); } }
+.v30 { animation-name: v30; opacity: 0; }
+@keyframes v31 { 0%, 63.5% { opacity: 0; transform: translate(0, 0); } 64.0% { opacity: .9; } 72.5%, 100% { opacity: 0; transform: translate(-18px, -117px); } }
+.v31 { animation-name: v31; opacity: 0; }
+@keyframes v32 { 0%, 61.4% { opacity: 0; transform: translate(0, 0); } 61.9% { opacity: .9; } 70.4%, 100% { opacity: 0; transform: translate(31px, -73px); } }
+.v32 { animation-name: v32; opacity: 0; }
+@keyframes v33 { 0%, 60.6% { opacity: 0; transform: translate(0, 0); } 61.1% { opacity: .9; } 69.6%, 100% { opacity: 0; transform: translate(-26px, -131px); } }
+.v33 { animation-name: v33; opacity: 0; }
+@keyframes v34 { 0%, 60.9% { opacity: 0; transform: translate(0, 0); } 61.4% { opacity: .9; } 69.9%, 100% { opacity: 0; transform: translate(-1px, -103px); } }
+.v34 { animation-name: v34; opacity: 0; }
+@keyframes v35 { 0%, 61.1% { opacity: 0; transform: translate(0, 0); } 61.6% { opacity: .9; } 70.1%, 100% { opacity: 0; transform: translate(-40px, -116px); } }
+.v35 { animation-name: v35; opacity: 0; }
+@keyframes v36 { 0%, 61.5% { opacity: 0; transform: translate(0, 0); } 62.0% { opacity: .9; } 70.5%, 100% { opacity: 0; transform: translate(5px, -74px); } }
+.v36 { animation-name: v36; opacity: 0; }
+@keyframes v37 { 0%, 62.8% { opacity: 0; transform: translate(0, 0); } 63.3% { opacity: .9; } 71.8%, 100% { opacity: 0; transform: translate(1px, -101px); } }
+.v37 { animation-name: v37; opacity: 0; }
+@keyframes v38 { 0%, 62.7% { opacity: 0; transform: translate(0, 0); } 63.2% { opacity: .9; } 71.7%, 100% { opacity: 0; transform: translate(-36px, -78px); } }
+.v38 { animation-name: v38; opacity: 0; }
+@keyframes v39 { 0%, 63.1% { opacity: 0; transform: translate(0, 0); } 63.6% { opacity: .9; } 72.1%, 100% { opacity: 0; transform: translate(30px, -86px); } }
+.v39 { animation-name: v39; opacity: 0; }
+@keyframes v40 { 0%, 61.6% { opacity: 0; transform: translate(0, 0); } 62.1% { opacity: .9; } 70.6%, 100% { opacity: 0; transform: translate(-8px, -142px); } }
+.v40 { animation-name: v40; opacity: 0; }
+@keyframes v41 { 0%, 62.5% { opacity: 0; transform: translate(0, 0); } 63.0% { opacity: .9; } 71.5%, 100% { opacity: 0; transform: translate(-35px, -145px); } }
+.v41 { animation-name: v41; opacity: 0; }
+@keyframes v42 { 0%, 60.8% { opacity: 0; transform: translate(0, 0); } 61.3% { opacity: .9; } 69.8%, 100% { opacity: 0; transform: translate(-27px, -123px); } }
+.v42 { animation-name: v42; opacity: 0; }
+@keyframes v43 { 0%, 60.2% { opacity: 0; transform: translate(0, 0); } 60.7% { opacity: .9; } 69.2%, 100% { opacity: 0; transform: translate(-40px, -138px); } }
+.v43 { animation-name: v43; opacity: 0; }
+@keyframes v44 { 0%, 60.4% { opacity: 0; transform: translate(0, 0); } 60.9% { opacity: .9; } 69.4%, 100% { opacity: 0; transform: translate(-11px, -148px); } }
+.v44 { animation-name: v44; opacity: 0; }
+@keyframes v45 { 0%, 63.5% { opacity: 0; transform: translate(0, 0); } 64.0% { opacity: .9; } 72.5%, 100% { opacity: 0; transform: translate(9px, -138px); } }
+.v45 { animation-name: v45; opacity: 0; }
+@keyframes v46 { 0%, 61.0% { opacity: 0; transform: translate(0, 0); } 61.5% { opacity: .9; } 70.0%, 100% { opacity: 0; transform: translate(-12px, -121px); } }
+.v46 { animation-name: v46; opacity: 0; }
+@keyframes v47 { 0%, 60.5% { opacity: 0; transform: translate(0, 0); } 61.0% { opacity: .9; } 69.5%, 100% { opacity: 0; transform: translate(28px, -71px); } }
+.v47 { animation-name: v47; opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .a { animation: none; } }
+</style>
+<rect width="960" height="400" rx="16" fill="#0F2C4C"/>
+<text class="a c0" x="480" y="62" text-anchor="middle" font-size="25" font-weight="600" fill="#F5F7FA">A lecture slide. Mostly background.</text><text class="a c1" x="480" y="62" text-anchor="middle" font-size="25" font-weight="600" fill="#F5F7FA">Printed as it is, most of the ink goes into the background.</text><text class="a c2" x="480" y="62" text-anchor="middle" font-size="25" font-weight="600" fill="#F5F7FA">So first the app asks: what is this page made of?</text><text class="a c3" x="480" y="62" text-anchor="middle" font-size="25" font-weight="600" fill="#F5F7FA">Background, repeated logos, big photos: lifted off.</text><text class="a c4" x="480" y="62" text-anchor="middle" font-size="25" font-weight="600" fill="#F5F7FA">Only what you need gets printed. Every dot counts.</text>
+<g fill="none" stroke="#F5F7FA" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M40,362 H920"/>
+  <path class="a draw figure" pathLength="1" d="M190,362 V262 M190,262 a22,22 0 1 1 0.01,0 M190,290 L232,268"/>
+  <path class="a draw page" pathLength="1" d="M300,362 C340,362 360,330 370,300 L380,120 H590 V280 H380"/>
+</g>
+<g class="a block">
+  <rect x="388" y="128" width="194" height="144" rx="3" fill="#F5F7FA"/>
+  <circle cx="563" cy="146" r="9" fill="#0F2C4C"/>
+  <rect x="520" y="200" width="48" height="56" rx="3" fill="#0F2C4C"/>
+  <path d="M522,250 L536,228 L546,240 L554,230 L566,250 Z" fill="#F5F7FA"/>
+</g>
+<g class="a text"><rect x="400" y="150" width="104" height="9" rx="4"/><rect x="400" y="174" width="96" height="9" rx="4"/>
+  <rect x="400" y="198" width="80" height="9" rx="4"/><rect x="400" y="222" width="100" height="9" rx="4"/></g>
+<g fill="none" stroke-width="3" stroke-dasharray="7 6">
+  <rect class="a b0" x="384" y="124" width="202" height="152" rx="5"/>
+  <rect class="a b1" x="549" y="132" width="28" height="28" rx="4"/>
+  <rect class="a b2" x="514" y="194" width="60" height="68" rx="4"/>
+  <rect class="a b3" x="394" y="144" width="116" height="94" rx="4"/>
+</g>
+<g class="a lens" fill="none" stroke="#F5F7FA" stroke-width="4" stroke-linecap="round">
+  <circle cx="250" cy="250" r="22"/><path d="M234,266 L218,282"/>
+</g>
+<g transform="translate(398,282)"><path class="a d0" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g><g transform="translate(416,282)"><path class="a d1" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g><g transform="translate(434,282)"><path class="a d2" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g><g transform="translate(452,282)"><path class="a d3" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g><g transform="translate(470,282)"><path class="a d4" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g><g transform="translate(488,282)"><path class="a d5" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g><g transform="translate(506,282)"><path class="a d6" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g><g transform="translate(524,282)"><path class="a d7" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g><g transform="translate(542,282)"><path class="a d8" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g><g transform="translate(560,282)"><path class="a d9" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g>
+<circle class="a v0" cx="472" cy="200" r="4.8" fill="#F5F7FA"/><circle class="a v1" cx="474" cy="193" r="4.0" fill="#F5F7FA"/><circle class="a v2" cx="426" cy="194" r="4.1" fill="#F5F7FA"/><circle class="a v3" cx="530" cy="142" r="3.3" fill="#F5F7FA"/><circle class="a v4" cx="410" cy="231" r="4.2" fill="#F5F7FA"/><circle class="a v5" cx="402" cy="253" r="4.9" fill="#F5F7FA"/><circle class="a v6" cx="506" cy="207" r="2.9" fill="#F5F7FA"/><circle class="a v7" cx="398" cy="196" r="2.6" fill="#F5F7FA"/><circle class="a v8" cx="427" cy="160" r="2.6" fill="#F5F7FA"/><circle class="a v9" cx="474" cy="185" r="4.6" fill="#F5F7FA"/><circle class="a v10" cx="483" cy="210" r="3.7" fill="#F5F7FA"/><circle class="a v11" cx="508" cy="187" r="3.2" fill="#F5F7FA"/><circle class="a v12" cx="565" cy="254" r="4.6" fill="#F5F7FA"/><circle class="a v13" cx="515" cy="169" r="3.1" fill="#F5F7FA"/><circle class="a v14" cx="444" cy="139" r="4.4" fill="#F5F7FA"/><circle class="a v15" cx="463" cy="236" r="3.5" fill="#F5F7FA"/><circle class="a v16" cx="558" cy="236" r="2.5" fill="#F5F7FA"/><circle class="a v17" cx="431" cy="244" r="3.7" fill="#F5F7FA"/><circle class="a v18" cx="562" cy="180" r="2.7" fill="#F5F7FA"/><circle class="a v19" cx="502" cy="227" r="3.2" fill="#F5F7FA"/><circle class="a v20" cx="410" cy="172" r="4.9" fill="#F5F7FA"/><circle class="a v21" cx="524" cy="145" r="3.1" fill="#F5F7FA"/><circle class="a v22" cx="412" cy="137" r="4.5" fill="#F5F7FA"/><circle class="a v23" cx="425" cy="200" r="3.6" fill="#F5F7FA"/><circle class="a v24" cx="427" cy="221" r="2.8" fill="#F5F7FA"/><circle class="a v25" cx="504" cy="145" r="3.6" fill="#F5F7FA"/><circle class="a v26" cx="431" cy="164" r="4.9" fill="#F5F7FA"/><circle class="a v27" cx="532" cy="168" r="4.7" fill="#F5F7FA"/><circle class="a v28" cx="431" cy="179" r="4.6" fill="#F5F7FA"/><circle class="a v29" cx="504" cy="143" r="5.0" fill="#F5F7FA"/><circle class="a v30" cx="431" cy="162" r="4.4" fill="#F5F7FA"/><circle class="a v31" cx="451" cy="167" r="2.7" fill="#F5F7FA"/><circle class="a v32" cx="410" cy="203" r="3.1" fill="#F5F7FA"/><circle class="a v33" cx="497" cy="176" r="3.6" fill="#F5F7FA"/><circle class="a v34" cx="558" cy="190" r="3.9" fill="#F5F7FA"/><circle class="a v35" cx="542" cy="153" r="2.9" fill="#F5F7FA"/><circle class="a v36" cx="549" cy="232" r="3.1" fill="#F5F7FA"/><circle class="a v37" cx="427" cy="222" r="4.9" fill="#F5F7FA"/><circle class="a v38" cx="428" cy="249" r="4.7" fill="#F5F7FA"/><circle class="a v39" cx="498" cy="183" r="2.8" fill="#F5F7FA"/><circle class="a v40" cx="402" cy="250" r="3.1" fill="#F5F7FA"/><circle class="a v41" cx="515" cy="162" r="4.6" fill="#F5F7FA"/><circle class="a v42" cx="496" cy="167" r="2.9" fill="#F5F7FA"/><circle class="a v43" cx="517" cy="139" r="3.1" fill="#F5F7FA"/><circle class="a v44" cx="490" cy="237" r="4.0" fill="#F5F7FA"/><circle class="a v45" cx="443" cy="245" r="3.0" fill="#F5F7FA"/><circle class="a v46" cx="398" cy="164" r="3.6" fill="#F5F7FA"/><circle class="a v47" cx="405" cy="152" r="3.4" fill="#F5F7FA"/>
+<ellipse class="a puddle" cx="485" cy="358" rx="120" ry="7" fill="#F5F7FA"/>
+<g transform="translate(485,282)"><path class="a lastdrop" d="M0,-9 C4,-3 6,1 6,4 A6,6 0 0 1 -6,4 C-6,1 -4,-3 0,-9 Z" fill="#F5F7FA"/></g>
+<ellipse class="a small" cx="485" cy="359" rx="14" ry="5" fill="#F5F7FA"/>
+</svg>

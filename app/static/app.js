@@ -1219,7 +1219,7 @@ async function init() {
   applyDom();
   state.tiers = await (await api("/api/tiers")).json();
   state.settings = { ...state.tiers[1].settings };
-  // which code is running (compare with `git log -1`): hover the name, "v0.4.0 · 5a487a5 · date"
+  // which code is running (compare with `git log -1`): hover the name, "v0.5.0 · 5a487a5 · date"
   api("/api/version").then((r) => r.json()).then((v) => { $("#brand").title = `v${v.version} · ${v.build}`; }).catch(() => {});
   fetch("/static/logo.svg").then((r) => r.text()).then((svg) => { $("#logo").innerHTML = svg; }).catch(() => {});
   buildTiers(); bindControls(); bindProfiles(); syncControls(); setTool("graphics");

@@ -4,4 +4,4 @@ from .model import TIERS, Element, Overrides, PageInfo, PageOp, Settings, tier_s
 
 __all__ = ["DistillDocument", "Settings", "Overrides", "PageOp", "PageInfo", "Element",
            "tier_settings", "TIERS"]
-__version__ = "0.4.0"
+__version__ = "0.5.0"
