@@ -31,12 +31,13 @@ Basacaksanız, yalnız ihtiyacınız olanı basın. Her birimiz tek bir noktayı
    | Sayfayı yeniden çizmek yerine PDF'in çizim komutlarını düzenlemek | Metin keskin ve aranabilir kalır, dosya küçük kalır | Her tuhaf PDF'in okunması gerekir: sağlamlık işi |
    | PyMuPDF yerine pikepdf + pypdfium2 ([ADR](adr/0001-no-pymupdf.md)) | Serbest lisanslar (PyMuPDF AGPL) | İki kütüphanenin birlikte çalışması gerekir |
    | Kaldırılan metni silmek yerine gizlemek | Satırın geri kalanı yerinde durur | Gizli metin aramada yine bulunur |
+   | Mürekkebi örnekten değil, her sayfada ölçmek | 24 sayfalık örnek %49 mürekkep gösterdi, 160 sayfanın tamamı %28 harcıyor | 500 sayfada her değişiklikte yaklaşık 3,5 sn (60 sayfada 0,4 sn) |
    | Görsel içindeki yazıyı OCR'sız, kurallarla tanımak | Hızlı, büyük model gerekmez | Renkli şemalar yanlış sınıflanabilir |
    | Tarayıcı ve masaüstü için tek yerel web arayüzü | Tek kod tabanı, derleme adımı yok | İndirme boyutu yaklaşık 38 MB |
 
 4. **Kanıtla.** 90 otomatik test Linux, macOS ve Windows'ta çalışıyor. pdf.js test arşivindeki 1103 bozuk
    ve alışılmadık dosyanın 1100'ü açılıyor ([rapor](robustness.md), İngilizce). 500 sayfalık bir
-   slayt seti 2,4 saniyede inceleniyor.
+   slayt seti 2,0 saniyede inceleniyor.
 5. **Kendim için değil, insanlar için yap.** Her eylem karşılık gösteriyor, uygulama hiçbir an donmuş gibi
    görünmüyor. Mesajlar kusuru hiçbir zaman kullanıcıya yüklemiyor. Arayüz Türkçe, İngilizce ve Almanca;
    klavye ve ekran okuyucuyla kullanılabiliyor.
@@ -87,7 +88,8 @@ Mürekkep tasarrufu, sayfaları önce ve sonra render ederek tahmin edilir (`pyt
 `mixed_images.pdf` bilerek az tasarruf eder: görsellerinde yazı var, korunurlar.
 
 Hız, 500 sayfalık ve ~155.000 vektör öğeli sentetik bir destede (`python tools/bench.py`; Apple Silicon,
-10 çekirdek, Python 3.13): analiz 2,4 sn, dışa aktarma 1,6–1,9 sn, tek sayfa önizleme 8 ms.
+10 çekirdek, Python 3.13): analiz 2,0 sn, dışa aktarma 3,2–3,8 sn,
+tüm sayfalarda mürekkep tahmini 3,7 sn (60 sayfada 0,4 sn), tek sayfa önizleme 16 ms.
 Ayrıntılar: [README.md](../README.md).
 
 </details>

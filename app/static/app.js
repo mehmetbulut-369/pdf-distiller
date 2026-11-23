@@ -797,12 +797,20 @@ function setTool(tool) {
 }
 
 // ------------------------------------------------------------------ summary and ink
+// The ink gauge measures every page: ~0.4 s on 60 pages, ~3.5 s on 500. Answers can arrive out of order
+// and a slow one must not overwrite a newer one; while it runs the gauge dims (CSS delay: no flicker).
+let summarySeq = 0;
 const refreshSummary = debounce(async () => {
   if (!state.doc) return;
+  const seq = ++summarySeq, gauge = $(".gauge");
+  gauge.classList.add("busy"); gauge.setAttribute("aria-busy", "true");
   try {
-    state.summary = await (await post(`/api/doc/${state.doc.id}/summary`, job())).json();
+    const r = await (await post(`/api/doc/${state.doc.id}/summary`, job())).json();
+    if (seq !== summarySeq) return; // a newer request is on its way
+    state.summary = r;
     renderSummary();
-  } catch (e) { toast(e.message, true); }
+  } catch (e) { if (seq === summarySeq) toast(e.message, true); }
+  finally { if (seq === summarySeq) { gauge.classList.remove("busy"); gauge.removeAttribute("aria-busy"); } }
 }, 350);
 function renderSummary() {
   const d = state.summary;

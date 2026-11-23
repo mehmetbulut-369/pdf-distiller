@@ -31,12 +31,13 @@ screens. If you print, print only what you need. Each of us is a single dot. Thi
    | Edit the PDF's drawing instructions instead of re-drawing the page | Text stays sharp and searchable, files stay small | Every odd PDF has to be parsed: robustness work |
    | pikepdf + pypdfium2, not PyMuPDF ([ADR](docs/adr/0001-no-pymupdf.md)) | Permissive licences (PyMuPDF is AGPL) | Two libraries to glue together |
    | Hide removed text instead of deleting it | The rest of the line keeps its place | Hidden text is still searchable |
+   | Measure ink on every page, not on a sample | A 24-page sample read 49 % ink where the whole 160-page deck uses 28 % | About 3.5 s per change on a 500-page deck (0.4 s on 60 pages) |
    | Spot text inside images by heuristics, no OCR | Fast, no large model to ship | Colourful diagrams can be misjudged |
    | One local web interface for browser and desktop | One code base, no build step | The download is about 38 MB |
 
 4. **Prove it.** 90 automated tests run on Linux, macOS and Windows. 1100 of the 1103 damaged and unusual
    files in the pdf.js test corpus open ([report](docs/robustness.md)). A 500-page deck is analysed in
-   2.4 s.
+   2.0 s.
 5. **Build for people, not for myself.** Every action shows feedback, so the app never looks frozen.
    Messages never blame the user. The interface speaks English, German and Turkish, and works with a
    keyboard and a screen reader.
@@ -90,11 +91,11 @@ Apple Silicon, 10 cores, Python 3.13):
 
 | Step | Time |
 |---|---:|
-| Analysis (incl. image content analysis) | 2.4 s |
-| Export, Light / Medium / Maximum | 1.6 / 1.6 / 1.7 s |
-| Export, Light + grayscale + 4 pages per sheet | 1.9 s |
-| Ink estimate | 0.13 s |
-| Single-page preview | 8 ms |
+| Analysis (incl. image content analysis) | 2.0 s |
+| Export, Light / Medium / Maximum | 3.2 / 3.2 / 3.4 s |
+| Export, Light + grayscale + 4 pages per sheet | 3.8 s |
+| Ink estimate, every page (0.4 s on 60 pages) | 3.7 s |
+| Single-page preview | 16 ms |
 
 </details>
 

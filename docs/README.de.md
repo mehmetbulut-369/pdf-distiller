@@ -33,12 +33,13 @@ ein einzelner Punkt. Das hier ist mein Beitrag.
    | Die Zeichenbefehle des PDFs bearbeiten statt die Seite neu zu zeichnen | Text bleibt scharf und durchsuchbar, Dateien bleiben klein | Jedes ungewöhnliche PDF muss gelesen werden: Robustheitsarbeit |
    | pikepdf + pypdfium2 statt PyMuPDF ([ADR](adr/0001-no-pymupdf.md)) | Freizügige Lizenzen (PyMuPDF steht unter AGPL) | Zwei Bibliotheken müssen zusammenspielen |
    | Entfernten Text ausblenden statt löschen | Der Rest der Zeile bleibt an seinem Platz | Ausgeblendeter Text bleibt durchsuchbar |
+   | Tinte auf jeder Seite messen, nicht an einer Stichprobe | Eine Stichprobe von 24 Seiten ergab 49 % Tinte, der ganze Foliensatz mit 160 Seiten braucht 28 % | Etwa 3,5 s pro Änderung bei 500 Seiten (0,4 s bei 60 Seiten) |
    | Text in Bildern per Heuristik erkennen, ohne OCR | Schnell, kein großes Modell nötig | Bunte Diagramme können falsch eingeordnet werden |
    | Eine lokale Weboberfläche für Browser und Desktop | Eine Codebasis, kein Build-Schritt | Der Download ist etwa 38 MB groß |
 
 4. **Es belegen.** 90 automatische Tests laufen unter Linux, macOS und Windows. 1100 der 1103 beschädigten
    und ungewöhnlichen Dateien aus dem Testkorpus von pdf.js lassen sich öffnen
-   ([Bericht](robustness.md), Englisch). Ein Foliensatz mit 500 Seiten ist in 2,4 s analysiert.
+   ([Bericht](robustness.md), Englisch). Ein Foliensatz mit 500 Seiten ist in 2,0 s analysiert.
 5. **Für Menschen bauen, nicht für mich.** Jede Aktion gibt Rückmeldung, damit die App nie eingefroren
    wirkt. Meldungen geben nie dem Nutzer die Schuld. Die Oberfläche spricht Deutsch, Englisch und
    Türkisch und lässt sich mit Tastatur und Screenreader bedienen.
@@ -89,8 +90,8 @@ Die Beispieldateien sind synthetisch und werden von `tests/make_samples.py` erze
 `mixed_images.pdf` spart bewusst wenig: Die Bilder enthalten Text und werden behalten.
 
 Geschwindigkeit mit einem synthetischen Foliensatz aus 500 Seiten und ~155.000 Vektorelementen
-(`python tools/bench.py`; Apple Silicon, 10 Kerne, Python 3.13): Analyse 2,4 s, Export 1,6–1,9 s,
-Vorschau einer Seite 8 ms. Details: [README.md](../README.md).
+(`python tools/bench.py`; Apple Silicon, 10 Kerne, Python 3.13): Analyse 2,0 s, Export 3,2–3,8 s,
+Tintenschätzung über alle Seiten 3,7 s (bei 60 Seiten 0,4 s), Vorschau einer Seite 16 ms. Details: [README.md](../README.md).
 
 </details>
 

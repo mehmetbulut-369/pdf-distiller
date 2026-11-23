@@ -125,7 +125,8 @@ button, input, select { font: inherit; color: inherit; }
 .row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 
 /* ink meter */
-.gauge { display: flex; align-items: flex-end; gap: 18px; padding: 14px; background: var(--paper);
+.gauge.busy { opacity: .55; transition: opacity .2s .3s; }
+.gauge { transition: opacity .15s; display: flex; align-items: flex-end; gap: 18px; padding: 14px; background: var(--paper);
   border: 1px solid var(--line); border-radius: 10px; }
 .cartridges { display: flex; gap: 10px; }
 .cart { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
