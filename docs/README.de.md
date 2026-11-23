@@ -23,7 +23,7 @@ ein einzelner Punkt. Das hier ist mein Beitrag.
 
 Kein KI-Modell, kein Internet: ein paar lesbare Regeln, Schritt für Schritt.
 
-<p align="center"><img src="inside.de.svg" width="960" alt="Ihre Datei verlässt nie Ihren Rechner. Alles passiert genau hier. Hier steckt keine KI drin. Die App folgt klaren Regeln, jedes Mal gleich. pikepdf liest Ihr PDF wie ein Rezept: eine Liste von Zeichenschritten. Unsere eigene Analyse prüft jeden Schritt: wie groß, wie dunkel, wiederholt er sich? Manches sieht nach Dekoration aus, ist Ihnen aber wichtig, wie dieses Diagramm. Anklicken und Behalten wählen. Ihre Wahl schlägt immer die Regeln. pikepdf schreibt das Rezept neu, ohne die entfernten Schritte. Text bleibt Text. pypdfium2, die PDF-Engine aus Google Chrome, zeichnet jede Seite und misst die Tinte. Das Fenster ist eine kleine Webseite, die nur auf Ihrem Rechner läuft. Weniger Tinte, weniger Patronen, weniger Rohstoffe: gut für Ihr Budget und die Natur. PDF Distiller. Folien drucken. Tinte sparen.."></p>
+<p align="center"><img src="inside.de.svg" width="960" alt="So arbeitet PDF Distiller lokal und ohne KI: Ihre Datei bleibt auf Ihrem Rechner, pikepdf liest ihr Zeichenrezept, klare Regeln messen Dunkelheit und Wiederholung, ein wichtiges Diagramm behalten Sie mit einem Klick, verschwendete Tinte zerfällt in Punkte, und Vektortext bleibt scharf."></p>
 
 ## Wie ich es gebaut habe
 

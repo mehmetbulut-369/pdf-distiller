@@ -22,7 +22,7 @@ Basacaksanız, yalnız ihtiyacınız olanı basın. Her birimiz tek bir noktayı
 
 Yapay zekâ modeli yok, internet yok: adım adım, okunabilir birkaç kural.
 
-<p align="center"><img src="inside.tr.svg" width="960" alt="Dosyanız bilgisayarınızdan hiç çıkmaz. Her şey burada, bilgisayarınızda olur. İçinde yapay zekâ yok. Uygulama açık kurallara uyar, her seferinde aynı şekilde. pikepdf PDF'inizi bir yemek tarifi gibi okur: adım adım çizim talimatları. Kendi analizimiz her adımı inceler: ne kadar büyük, ne kadar koyu, tekrar ediyor mu? Bazı şeyler süs gibi görünür ama sizin için önemlidir, bu grafik gibi. Üzerine tıklayıp korumayı seçin. Sizin seçiminiz her zaman kuraldan önce gelir. pikepdf tarifi yeniden yazar, çıkardığınız adımlar olmadan. Metin metin kalır. pypdfium2, Google Chrome'daki PDF motoru, her sayfayı çizip mürekkebi ölçer. Pencere, yalnız bilgisayarınızda çalışan küçük bir web sayfasıdır. Daha az mürekkep, daha az kartuş, daha az ham madde: bütçenize de doğaya da iyi. PDF Distiller. Slaytları yazdırın, mürekkebi değil."></p>
+<p align="center"><img src="inside.tr.svg" width="960" alt="PDF Distiller yapay zekâ olmadan, bilgisayarınızda nasıl çalışır: dosyanız bilgisayarınızda kalır, pikepdf çizim tarifini okur, açık kurallar koyuluğu ve tekrarı ölçer, önemli bir grafiği tek tıkla korursunuz, boşa giden mürekkep noktalara ayrılır ve vektör metin keskin kalır."></p>
 
 ## Nasıl yaptım
 

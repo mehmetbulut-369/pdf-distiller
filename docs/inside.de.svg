@@ -1,215 +1,986 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" width="960" height="400" role="img" aria-label="Ihre Datei verlässt nie Ihren Rechner. Alles passiert genau hier. Hier steckt keine KI drin. Die App folgt klaren Regeln, jedes Mal gleich. pikepdf liest Ihr PDF wie ein Rezept: eine Liste von Zeichenschritten. Unsere eigene Analyse prüft jeden Schritt: wie groß, wie dunkel, wiederholt er sich? Manches sieht nach Dekoration aus, ist Ihnen aber wichtig, wie dieses Diagramm. Anklicken und Behalten wählen. Ihre Wahl schlägt immer die Regeln. pikepdf schreibt das Rezept neu, ohne die entfernten Schritte. Text bleibt Text. pypdfium2, die PDF-Engine aus Google Chrome, zeichnet jede Seite und misst die Tinte. Das Fenster ist eine kleine Webseite, die nur auf Ihrem Rechner läuft. Weniger Tinte, weniger Patronen, weniger Rohstoffe: gut für Ihr Budget und die Natur. PDF Distiller. Folien drucken. Tinte sparen..">
-<style>
-svg { font-family: Inter, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
-.a { animation-duration: 90s; animation-iteration-count: infinite; animation-fill-mode: both;
-      animation-timing-function: cubic-bezier(.45,0,.25,1); transform-box: fill-box; }
-.draw { stroke-dasharray: 1; }
-@keyframes k0 { 0.000% { opacity: 0 } 0.000% { opacity: 0 } 0.444% { opacity: 1 } 9.556% { opacity: 1 } 10.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.k0 { animation-name: k0; opacity: 0; }
-@keyframes k0file { 0.000% { transform: translate(0, -120px); opacity: 0 } 0.889% { transform: translate(0, -120px); opacity: 0 } 1.222% { opacity: 1 } 2.444% { transform: translate(0, 0); opacity: 1 } 100.000% { transform: translate(0, 0); opacity: 1 } }
-.k0file { animation-name: k0file; transform: translate(0, -120px); }
-@keyframes k0zone { 0.000% { opacity: 0 } 3.111% { opacity: 0 } 3.556% { opacity: 1 } 9.556% { opacity: 1 } 10.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.k0zone { animation-name: k0zone; opacity: 0; }
-@keyframes k0try { 0.000% { stroke-dashoffset: 1 } 4.444% { stroke-dashoffset: 1 } 6.222% { stroke-dashoffset: 0 } 100.000% { stroke-dashoffset: 0 } }
-.k0try { animation-name: k0try; stroke-dashoffset: 1; }
-@keyframes k0stays { 0.000% { opacity: 0 } 6.444% { opacity: 0 } 6.889% { opacity: 1 } 9.556% { opacity: 1 } 10.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.k0stays { animation-name: k0stays; opacity: 0; }
-@keyframes k1 { 0.000% { opacity: 0 } 10.000% { opacity: 0 } 10.444% { opacity: 1 } 19.556% { opacity: 1 } 20.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.k1 { animation-name: k1; opacity: 0; }
-@keyframes k1r0 { 0.000% { opacity: 0 } 11.556% { opacity: 0 } 12.000% { opacity: 1 } 19.556% { opacity: 1 } 20.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.k1r0 { animation-name: k1r0; opacity: 0; }
-@keyframes k1r1 { 0.000% { opacity: 0 } 13.222% { opacity: 0 } 13.667% { opacity: 1 } 19.556% { opacity: 1 } 20.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.k1r1 { animation-name: k1r1; opacity: 0; }
-@keyframes k1r2 { 0.000% { opacity: 0 } 14.889% { opacity: 0 } 15.333% { opacity: 1 } 19.556% { opacity: 1 } 20.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.k1r2 { animation-name: k1r2; opacity: 0; }
-@keyframes k1r3 { 0.000% { opacity: 0 } 16.556% { opacity: 0 } 17.000% { opacity: 1 } 19.556% { opacity: 1 } 20.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.k1r3 { animation-name: k1r3; opacity: 0; }
-@keyframes k2 { 0.000% { opacity: 0 } 20.000% { opacity: 0 } 20.444% { opacity: 1 } 30.667% { opacity: 1 } 31.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k2 { animation-name: k2; opacity: 0; }
-@keyframes k2r0 { 0.000% { opacity: 0 } 21.333% { opacity: 0 } 21.778% { opacity: 1 } 30.667% { opacity: 1 } 31.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k2r0 { animation-name: k2r0; opacity: 0; }
-@keyframes k2r1 { 0.000% { opacity: 0 } 23.333% { opacity: 0 } 23.778% { opacity: 1 } 30.667% { opacity: 1 } 31.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k2r1 { animation-name: k2r1; opacity: 0; }
-@keyframes k2r2 { 0.000% { opacity: 0 } 25.333% { opacity: 0 } 25.778% { opacity: 1 } 30.667% { opacity: 1 } 31.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k2r2 { animation-name: k2r2; opacity: 0; }
-@keyframes k2r3 { 0.000% { opacity: 0 } 27.333% { opacity: 0 } 27.778% { opacity: 1 } 30.667% { opacity: 1 } 31.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k2r3 { animation-name: k2r3; opacity: 0; }
-@keyframes k2chip { 0.000% { opacity: 0 } 28.889% { opacity: 0 } 29.333% { opacity: 1 } 30.667% { opacity: 1 } 31.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k2chip { animation-name: k2chip; opacity: 0; }
-@keyframes k3 { 0.000% { opacity: 0 } 31.111% { opacity: 0 } 31.556% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3 { animation-name: k3; opacity: 0; }
-@keyframes k3t0 { 0.000% { opacity: 0 } 32.000% { opacity: 0 } 32.444% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3t0 { animation-name: k3t0; opacity: 0; }
-@keyframes k3t1 { 0.000% { opacity: 0 } 32.444% { opacity: 0 } 32.889% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3t1 { animation-name: k3t1; opacity: 0; }
-@keyframes k3t2 { 0.000% { opacity: 0 } 32.889% { opacity: 0 } 33.333% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3t2 { animation-name: k3t2; opacity: 0; }
-@keyframes k3t3 { 0.000% { opacity: 0 } 33.333% { opacity: 0 } 33.778% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3t3 { animation-name: k3t3; opacity: 0; }
-@keyframes k3t4 { 0.000% { opacity: 0 } 33.778% { opacity: 0 } 34.222% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3t4 { animation-name: k3t4; opacity: 0; }
-@keyframes k3t5 { 0.000% { opacity: 0 } 34.222% { opacity: 0 } 34.667% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3t5 { animation-name: k3t5; opacity: 0; }
-@keyframes k3m0 { 0.000% { opacity: 0 } 34.889% { opacity: 0 } 35.333% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3m0 { animation-name: k3m0; opacity: 0; }
-@keyframes k3m1 { 0.000% { opacity: 0 } 36.111% { opacity: 0 } 36.556% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3m1 { animation-name: k3m1; opacity: 0; }
-@keyframes k3m2 { 0.000% { opacity: 0 } 37.333% { opacity: 0 } 37.778% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3m2 { animation-name: k3m2; opacity: 0; }
-@keyframes k3m3 { 0.000% { opacity: 0 } 38.556% { opacity: 0 } 39.000% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3m3 { animation-name: k3m3; opacity: 0; }
-@keyframes k3chip { 0.000% { opacity: 0 } 39.556% { opacity: 0 } 40.000% { opacity: 1 } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k3chip { animation-name: k3chip; opacity: 0; }
-@keyframes k4 { 0.000% { opacity: 0 } 41.111% { opacity: 0 } 41.556% { opacity: 1 } 52.889% { opacity: 1 } 53.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k4 { animation-name: k4; opacity: 0; }
-@keyframes k4mark { 0.000% { opacity: 0 } 42.222% { opacity: 0 } 42.667% { opacity: 1 } 49.556% { opacity: 1 } 49.889% { opacity: 0 } 100.000% { opacity: 0 } }
-.k4mark { animation-name: k4mark; opacity: 0; }
-@keyframes k4logomark { 0.000% { opacity: 0 } 42.222% { opacity: 0 } 42.667% { opacity: 1 } 50.667% { opacity: 1 } 51.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.k4logomark { animation-name: k4logomark; opacity: 0; }
-@keyframes k4logo { 0.000% { opacity: 1 } 51.111% { opacity: 1 } 51.667% { opacity: 0 } 100.000% { opacity: 0 } }
-.k4logo { animation-name: k4logo;  }
-@keyframes k4pulse { 0.000% { stroke-opacity: 0 } 43.778% { stroke-opacity: 0 } 44.444% { stroke-opacity: 1 } 45.111% { stroke-opacity: .2 } 45.778% { stroke-opacity: 1 } 46.444% { stroke-opacity: 0 } 100.000% { stroke-opacity: 0 } }
-.k4pulse { animation-name: k4pulse; stroke-opacity: 0; }
-@keyframes k4cur { 0.000% { transform: translate(700px, 360px); opacity: 0 } 46.222% { transform: translate(700px, 360px); opacity: 0 } 46.556% { opacity: 1 } 47.111% { transform: translate(370px, 220px) } 47.333% { transform: translate(368px, 223px) } 47.667% { transform: translate(370px, 220px) } 48.444% { transform: translate(370px, 220px) } 49.333% { transform: translate(470px, 244px) } 49.556% { transform: translate(468px, 247px) } 49.889% { transform: translate(470px, 244px); opacity: 1 } 52.778% { opacity: 1 } 53.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k4cur { animation-name: k4cur; opacity: 0; }
-@keyframes k4menu { 0.000% { opacity: 0 } 47.778% { opacity: 0 } 48.000% { opacity: 1 } 49.667% { opacity: 1 } 49.889% { opacity: 0 } 100.000% { opacity: 0 } }
-.k4menu { animation-name: k4menu; opacity: 0; }
-@keyframes k4hover { 0.000% { fill-opacity: 0 } 48.889% { fill-opacity: 0 } 49.222% { fill-opacity: .35 } 100.000% { fill-opacity: .35 } }
-.k4hover { animation-name: k4hover; fill-opacity: 0; }
-@keyframes k4kept { 0.000% { opacity: 0 } 49.889% { opacity: 0 } 50.333% { opacity: 1 } 52.889% { opacity: 1 } 53.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k4kept { animation-name: k4kept; opacity: 0; }
-@keyframes k5 { 0.000% { opacity: 0 } 53.333% { opacity: 0 } 53.778% { opacity: 1 } 62.889% { opacity: 1 } 63.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k5 { animation-name: k5; opacity: 0; }
-@keyframes k5s0 { 0.000% { stroke-dashoffset: 1 } 55.000% { stroke-dashoffset: 1 } 55.889% { stroke-dashoffset: 0 } 100.000% { stroke-dashoffset: 0 } }
-.k5s0 { animation-name: k5s0; stroke-dashoffset: 1; }
-@keyframes k5l0 { 0.000% { opacity: 1 } 57.667% { opacity: 1 } 58.222% { opacity: 0 } 100.000% { opacity: 0 } }
-.k5l0 { animation-name: k5l0;  }
-@keyframes k5s2 { 0.000% { stroke-dashoffset: 1 } 55.000% { stroke-dashoffset: 1 } 55.889% { stroke-dashoffset: 0 } 100.000% { stroke-dashoffset: 0 } }
-.k5s2 { animation-name: k5s2; stroke-dashoffset: 1; }
-@keyframes k5l2 { 0.000% { opacity: 1 } 57.667% { opacity: 1 } 58.222% { opacity: 0 } 100.000% { opacity: 0 } }
-.k5l2 { animation-name: k5l2;  }
-@keyframes k5black { 0.000% { opacity: 0 } 58.222% { opacity: 0 } 58.667% { opacity: 1 } 62.889% { opacity: 1 } 63.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k5black { animation-name: k5black; opacity: 0; }
-@keyframes k5lens { 0.000% { opacity: 0 } 59.556% { opacity: 0 } 60.000% { opacity: 1 } 62.889% { opacity: 1 } 63.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k5lens { animation-name: k5lens; opacity: 0; }
-@keyframes k6 { 0.000% { opacity: 0 } 63.333% { opacity: 0 } 63.778% { opacity: 1 } 72.889% { opacity: 1 } 73.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k6 { animation-name: k6; opacity: 0; }
-@keyframes k6pix { 0.000% { opacity: 0 } 65.111% { opacity: 0 } 65.556% { opacity: 1 } 72.889% { opacity: 1 } 73.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k6pix { animation-name: k6pix; opacity: 0; }
-@keyframes k6bo { 0.000% { transform: scaleY(0) } 66.889% { transform: scaleY(0) } 68.000% { transform: scaleY(1) } 100.000% { transform: scaleY(1) } }
-.k6bo { animation-name: k6bo; transform: scaleY(0); transform-origin: bottom; }
-@keyframes k6ba { 0.000% { transform: scaleY(0) } 68.000% { transform: scaleY(0) } 69.111% { transform: scaleY(1) } 100.000% { transform: scaleY(1) } }
-.k6ba { animation-name: k6ba; transform: scaleY(0); transform-origin: bottom; }
-@keyframes k6note { 0.000% { opacity: 0 } 69.778% { opacity: 0 } 70.222% { opacity: 1 } 72.889% { opacity: 1 } 73.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k6note { animation-name: k6note; opacity: 0; }
-.k6x { opacity: 0; }
-@keyframes k7 { 0.000% { opacity: 0 } 73.333% { opacity: 0 } 73.778% { opacity: 1 } 81.778% { opacity: 1 } 82.222% { opacity: 0 } 100.000% { opacity: 0 } }
-.k7 { animation-name: k7; opacity: 0; }
-@keyframes k7a { 0.000% { opacity: 0 } 75.111% { opacity: 0 } 75.556% { opacity: 1 } 81.778% { opacity: 1 } 82.222% { opacity: 0 } 100.000% { opacity: 0 } }
-.k7a { animation-name: k7a; opacity: 0; }
-@keyframes k7b { 0.000% { opacity: 0 } 77.111% { opacity: 0 } 77.556% { opacity: 1 } 81.778% { opacity: 1 } 82.222% { opacity: 0 } 100.000% { opacity: 0 } }
-.k7b { animation-name: k7b; opacity: 0; }
-@keyframes k8 { 0.000% { opacity: 0 } 82.222% { opacity: 0 } 82.667% { opacity: 1 } 92.889% { opacity: 1 } 93.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k8 { animation-name: k8; opacity: 0; }
-@keyframes k8i0 { 0.000% { opacity: 0; transform: translateY(14px) } 83.333% { opacity: 0; transform: translateY(14px) } 84.000% { opacity: 1; transform: translateY(0) } 92.889% { opacity: 1 } 93.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k8i0 { animation-name: k8i0; opacity: 0; }
-@keyframes k8i1 { 0.000% { opacity: 0; transform: translateY(14px) } 85.111% { opacity: 0; transform: translateY(14px) } 85.778% { opacity: 1; transform: translateY(0) } 92.889% { opacity: 1 } 93.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k8i1 { animation-name: k8i1; opacity: 0; }
-@keyframes k8i2 { 0.000% { opacity: 0; transform: translateY(14px) } 86.889% { opacity: 0; transform: translateY(14px) } 87.556% { opacity: 1; transform: translateY(0) } 92.889% { opacity: 1 } 93.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.k8i2 { animation-name: k8i2; opacity: 0; }
-@keyframes kend { 0.000% { opacity: 0; transform: translateY(10px) } 93.333% { opacity: 0; transform: translateY(10px) } 94.000% { opacity: 1; transform: translateY(0) } 99.556% { opacity: 1 } 100.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.kend { animation-name: kend; opacity: 1; }
-@keyframes c0 { 0.000% { opacity: 0; transform: translateY(8px) } 0.000% { opacity: 0; transform: translateY(8px) } 0.556% { opacity: 1; transform: translateY(0) } 9.556% { opacity: 1 } 10.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.c0 { animation-name: c0; opacity: 0; }
-@keyframes c1 { 0.000% { opacity: 0; transform: translateY(8px) } 10.000% { opacity: 0; transform: translateY(8px) } 10.556% { opacity: 1; transform: translateY(0) } 19.556% { opacity: 1 } 20.000% { opacity: 0 } 100.000% { opacity: 0 } }
-.c1 { animation-name: c1; opacity: 0; }
-@keyframes c2 { 0.000% { opacity: 0; transform: translateY(8px) } 20.000% { opacity: 0; transform: translateY(8px) } 20.556% { opacity: 1; transform: translateY(0) } 30.667% { opacity: 1 } 31.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.c2 { animation-name: c2; opacity: 0; }
-@keyframes c3 { 0.000% { opacity: 0; transform: translateY(8px) } 31.111% { opacity: 0; transform: translateY(8px) } 31.667% { opacity: 1; transform: translateY(0) } 40.667% { opacity: 1 } 41.111% { opacity: 0 } 100.000% { opacity: 0 } }
-.c3 { animation-name: c3; opacity: 0; }
-@keyframes c4 { 0.000% { opacity: 0; transform: translateY(8px) } 41.111% { opacity: 0; transform: translateY(8px) } 41.667% { opacity: 1; transform: translateY(0) } 46.222% { opacity: 1 } 46.667% { opacity: 0 } 100.000% { opacity: 0 } }
-.c4 { animation-name: c4; opacity: 0; }
-@keyframes c5 { 0.000% { opacity: 0; transform: translateY(8px) } 46.667% { opacity: 0; transform: translateY(8px) } 47.222% { opacity: 1; transform: translateY(0) } 52.889% { opacity: 1 } 53.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.c5 { animation-name: c5; opacity: 0; }
-@keyframes c6 { 0.000% { opacity: 0; transform: translateY(8px) } 53.333% { opacity: 0; transform: translateY(8px) } 53.889% { opacity: 1; transform: translateY(0) } 62.889% { opacity: 1 } 63.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.c6 { animation-name: c6; opacity: 0; }
-@keyframes c7 { 0.000% { opacity: 0; transform: translateY(8px) } 63.333% { opacity: 0; transform: translateY(8px) } 63.889% { opacity: 1; transform: translateY(0) } 72.889% { opacity: 1 } 73.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.c7 { animation-name: c7; opacity: 0; }
-@keyframes c8 { 0.000% { opacity: 0; transform: translateY(8px) } 73.333% { opacity: 0; transform: translateY(8px) } 73.889% { opacity: 1; transform: translateY(0) } 81.778% { opacity: 1 } 82.222% { opacity: 0 } 100.000% { opacity: 0 } }
-.c8 { animation-name: c8; opacity: 0; }
-@keyframes c9 { 0.000% { opacity: 0; transform: translateY(8px) } 82.222% { opacity: 0; transform: translateY(8px) } 82.778% { opacity: 1; transform: translateY(0) } 92.889% { opacity: 1 } 93.333% { opacity: 0 } 100.000% { opacity: 0 } }
-.c9 { animation-name: c9; opacity: 0; }
-@media (prefers-reduced-motion: reduce) { .a { animation: none; } .kend { opacity: 1; } }
-</style>
-<rect width="960" height="400" rx="16" fill="#0F2C4C"/>
-<g class="a k0">
-  <path d="M370,280 V150 Q370,140 380,140 H580 Q590,140 590,150 V280 M340,280 H620 L600,300 H360 Z" fill="none" stroke="#F5F7FA" stroke-width="4" stroke-linejoin="round"/>
-  <g transform="translate(456,170)"><g class="a k0file">
-    <path d="M0,0 H34 L48,14 V70 H0 Z" fill="#F5F7FA"/><path d="M34,0 V14 H48" fill="none" stroke="#5C6B7E" stroke-width="2"/>
-    <text x="24" y="52" font-size="13" font-weight="700" fill="#F0679E" text-anchor="middle">PDF</text></g></g>
-  <g class="a k0zone"><rect x="250" y="100" width="460" height="232" rx="40" fill="none" stroke="#4CC38A" stroke-width="3" stroke-dasharray="10 8"/>
-    <text class="a " x="480" y="124" font-size="16" font-weight="600" fill="#4CC38A" text-anchor="middle">Ihr Rechner</text></g>
-  <path class="a k0try draw" pathLength="1" d="M520,200 C600,190 660,190 700,205 C716,212 716,226 700,232 C660,246 600,236 560,222"
-        fill="none" stroke="#F5F7FA" stroke-width="3" stroke-linecap="round"/>
-  <g class="a k0stays"><text class="a " x="480" y="360" font-size="19" font-weight="600" fill="#4CC38A" text-anchor="middle">bleibt hier · wird hier bearbeitet</text></g>
-</g><g class="a k1">
-  <g transform="translate(150,206)">
-    <rect x="-40" y="-40" width="80" height="80" rx="12" fill="none" stroke="#F5F7FA" stroke-opacity=".5" stroke-width="4"/>
-    <text x="0" y="10" font-size="28" font-weight="700" fill="#F5F7FA" fill-opacity=".5" text-anchor="middle">AI</text>
-    <path d="M-48,36 L48,-36" stroke="#F0679E" stroke-width="5" stroke-linecap="round"/></g>
-  <rect x="270" y="102" width="640" height="220" rx="12" fill="#0A2038" stroke="#F5F7FA" stroke-opacity=".3" stroke-width="2"/>
-  <g class="a k1r0"><circle cx="300" cy="134" r="8" fill="#F0679E"/><text class="a " x="320" y="140" font-size="17" font-weight="400" fill="#F5F7FA" text-anchor="start">füllt die Seite und ist dunkel</text><text class="a " x="757.6" y="140" font-size="18" font-weight="400" fill="#6FA8E8" text-anchor="middle">→</text><text class="a " x="779.6" y="140" font-size="17" font-weight="700" fill="#F0679E" text-anchor="start">Hintergrund</text></g><g class="a k1r1"><circle cx="300" cy="186" r="8" fill="#F2C230"/><text class="a " x="320" y="192" font-size="17" font-weight="400" fill="#F5F7FA" text-anchor="start">gleiches Bild, gleiche Stelle auf vielen Seiten</text><text class="a " x="757.6" y="192" font-size="18" font-weight="400" fill="#6FA8E8" text-anchor="middle">→</text><text class="a " x="779.6" y="192" font-size="17" font-weight="700" fill="#F2C230" text-anchor="start">wiederholt</text></g><g class="a k1r2"><circle cx="300" cy="238" r="8" fill="#6BBEEC"/><text class="a " x="320" y="244" font-size="17" font-weight="400" fill="#F5F7FA" text-anchor="start">großes Bild ohne Text darin</text><text class="a " x="757.6" y="244" font-size="18" font-weight="400" fill="#6FA8E8" text-anchor="middle">→</text><text class="a " x="779.6" y="244" font-size="17" font-weight="700" fill="#6BBEEC" text-anchor="start">großes Bild</text></g><g class="a k1r3"><circle cx="300" cy="290" r="8" fill="#4CC38A"/><text class="a " x="320" y="296" font-size="17" font-weight="400" fill="#F5F7FA" text-anchor="start">Buchstaben und Wörter</text><text class="a " x="757.6" y="296" font-size="18" font-weight="400" fill="#6FA8E8" text-anchor="middle">→</text><text class="a " x="779.6" y="296" font-size="17" font-weight="700" fill="#4CC38A" text-anchor="start">bleiben immer</text></g>
-</g><g class="a k2">
-  <g><rect x="80.0" y="110.0" width="360.0" height="203.0" fill="#F5F7FA" rx="4"/><g class="a "><rect x="80.0" y="110.0" width="360.0" height="203.0" fill="#1E2733" rx="4"/></g><g class="a "><rect x="280.0" y="170.0" width="136.0" height="92.0" fill="#5C6B7E" rx="3"/><path d="M286.0,256.0 l30.0,-40.0 l22.0,24.0 l18.0,-16.0 l40.0,32.0 z" fill="#1E2733"/></g><g class="a "><rect x="380.0" y="280.0" width="48.0" height="22.0" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#F5F7FA"><rect x="104.0" y="136.0" width="170.0" height="11.0" rx="5"/><rect x="104.0" y="180.0" width="150.0" height="11.0" rx="5"/><rect x="104.0" y="208.0" width="130.0" height="11.0" rx="5"/><rect x="104.0" y="236.0" width="140.0" height="11.0" rx="5"/></g></g>
-  <rect class="a k2r0" x="76" y="106" width="368" height="211" rx="5" fill="none" stroke="#F0679E" stroke-width="3" stroke-dasharray="7 6"/><rect class="a k2r1" x="278" y="167" width="146" height="102" rx="5" fill="none" stroke="#6BBEEC" stroke-width="3" stroke-dasharray="7 6"/><rect class="a k2r2" x="376" y="278" width="60" height="32" rx="5" fill="none" stroke="#F2C230" stroke-width="3" stroke-dasharray="7 6"/><rect class="a k2r3" x="98" y="128" width="186" height="28" rx="5" fill="none" stroke="#4CC38A" stroke-width="3" stroke-dasharray="7 6"/>
-  <rect x="470" y="100" width="450" height="222" rx="10" fill="#0A2038" stroke="#F5F7FA" stroke-opacity=".3" stroke-width="2"/><g class="a k2r0"><rect x="484" y="122" width="5" height="40" rx="2" fill="#F0679E"/><text class="a " x="500" y="140" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="start">1. Ganze Seite dunkel füllen</text><text class="a " x="500" y="159" font-size="12.5" font-weight="400" fill="#5C6B7E" text-anchor="start" font-family="ui-monospace, Menlo, Consolas, monospace">0.12 0.15 0.20 rg 0 0 720 405 re f</text></g><g class="a k2r1"><rect x="484" y="172" width="5" height="40" rx="2" fill="#6BBEEC"/><text class="a " x="500" y="190" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="start">2. Foto platzieren</text><text class="a " x="500" y="209" font-size="12.5" font-weight="400" fill="#5C6B7E" text-anchor="start" font-family="ui-monospace, Menlo, Consolas, monospace">q 300 0 0 200 380 80 cm /Im1 Do Q</text></g><g class="a k2r2"><rect x="484" y="222" width="5" height="40" rx="2" fill="#F2C230"/><text class="a " x="500" y="240" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="start">3. Logo unten rechts platzieren</text><text class="a " x="500" y="259" font-size="12.5" font-weight="400" fill="#5C6B7E" text-anchor="start" font-family="ui-monospace, Menlo, Consolas, monospace">q 96 0 0 44 600 18 cm /Logo Do Q</text></g><g class="a k2r3"><rect x="484" y="272" width="5" height="40" rx="2" fill="#4CC38A"/><text class="a " x="500" y="290" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="start">4. Titel in Weiß schreiben</text><text class="a " x="500" y="309" font-size="12.5" font-weight="400" fill="#5C6B7E" text-anchor="start" font-family="ui-monospace, Menlo, Consolas, monospace">BT /F1 22 Tf 1 1 1 rg (Kapitel 1) Tj ET</text></g>
-  <g class="a k2chip"><rect x="273" y="340" width="414" height="32" rx="16" fill="#0A2038" stroke="#6FA8E8" stroke-width="2"/><text class="a " x="480" y="361" font-size="15" font-weight="400" fill="#F5F7FA" text-anchor="middle">pikepdf öffnet, liest und schreibt PDF-Dateien</text></g>
-</g><g class="a k3"><g><rect x="60.0" y="96.0" width="120.0" height="68.0" fill="#F5F7FA" rx="4"/><g class="a "><rect x="60.0" y="96.0" width="120.0" height="68.0" fill="#1E2733" rx="4"/></g><g class="a "><rect x="126.7" y="116.1" width="45.3" height="30.8" fill="#5C6B7E" rx="3"/><path d="M128.7,144.9 l10.0,-13.4 l7.3,8.0 l6.0,-5.4 l13.3,10.7 z" fill="#1E2733"/></g><g class="a "><rect x="160.0" y="152.9" width="16.0" height="7.4" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#F5F7FA"><rect x="68.0" y="104.7" width="56.7" height="3.7" rx="5"/><rect x="68.0" y="119.4" width="50.0" height="3.7" rx="5"/><rect x="68.0" y="128.8" width="43.3" height="3.7" rx="5"/><rect x="68.0" y="138.2" width="46.7" height="3.7" rx="5"/></g></g><rect class="a k3t0" x="156" y="150" width="22" height="13" rx="5" fill="none" stroke="#F2C230" stroke-width="3" stroke-dasharray="7 6"/><g><rect x="202.0" y="96.0" width="120.0" height="68.0" fill="#F5F7FA" rx="4"/><g class="a "><rect x="202.0" y="96.0" width="120.0" height="68.0" fill="#1E2733" rx="4"/></g><g class="a "><rect x="268.7" y="116.1" width="45.3" height="30.8" fill="#5C6B7E" rx="3"/><path d="M270.7,144.9 l10.0,-13.4 l7.3,8.0 l6.0,-5.4 l13.3,10.7 z" fill="#1E2733"/></g><g class="a "><rect x="302.0" y="152.9" width="16.0" height="7.4" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#F5F7FA"><rect x="210.0" y="104.7" width="56.7" height="3.7" rx="5"/><rect x="210.0" y="119.4" width="50.0" height="3.7" rx="5"/><rect x="210.0" y="128.8" width="43.3" height="3.7" rx="5"/><rect x="210.0" y="138.2" width="46.7" height="3.7" rx="5"/></g></g><rect class="a k3t1" x="298" y="150" width="22" height="13" rx="5" fill="none" stroke="#F2C230" stroke-width="3" stroke-dasharray="7 6"/><g><rect x="344.0" y="96.0" width="120.0" height="68.0" fill="#F5F7FA" rx="4"/><g class="a "><rect x="344.0" y="96.0" width="120.0" height="68.0" fill="#1E2733" rx="4"/></g><g class="a "><rect x="410.7" y="116.1" width="45.3" height="30.8" fill="#5C6B7E" rx="3"/><path d="M412.7,144.9 l10.0,-13.4 l7.3,8.0 l6.0,-5.4 l13.3,10.7 z" fill="#1E2733"/></g><g class="a "><rect x="444.0" y="152.9" width="16.0" height="7.4" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#F5F7FA"><rect x="352.0" y="104.7" width="56.7" height="3.7" rx="5"/><rect x="352.0" y="119.4" width="50.0" height="3.7" rx="5"/><rect x="352.0" y="128.8" width="43.3" height="3.7" rx="5"/><rect x="352.0" y="138.2" width="46.7" height="3.7" rx="5"/></g></g><rect class="a k3t2" x="440" y="150" width="22" height="13" rx="5" fill="none" stroke="#F2C230" stroke-width="3" stroke-dasharray="7 6"/><g><rect x="486.0" y="96.0" width="120.0" height="68.0" fill="#F5F7FA" rx="4"/><g class="a "><rect x="486.0" y="96.0" width="120.0" height="68.0" fill="#1E2733" rx="4"/></g><g class="a "><rect x="552.7" y="116.1" width="45.3" height="30.8" fill="#5C6B7E" rx="3"/><path d="M554.7,144.9 l10.0,-13.4 l7.3,8.0 l6.0,-5.4 l13.3,10.7 z" fill="#1E2733"/></g><g class="a "><rect x="586.0" y="152.9" width="16.0" height="7.4" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#F5F7FA"><rect x="494.0" y="104.7" width="56.7" height="3.7" rx="5"/><rect x="494.0" y="119.4" width="50.0" height="3.7" rx="5"/><rect x="494.0" y="128.8" width="43.3" height="3.7" rx="5"/><rect x="494.0" y="138.2" width="46.7" height="3.7" rx="5"/></g></g><rect class="a k3t3" x="582" y="150" width="22" height="13" rx="5" fill="none" stroke="#F2C230" stroke-width="3" stroke-dasharray="7 6"/><g><rect x="628.0" y="96.0" width="120.0" height="68.0" fill="#F5F7FA" rx="4"/><g class="a "><rect x="628.0" y="96.0" width="120.0" height="68.0" fill="#1E2733" rx="4"/></g><g class="a "><rect x="694.7" y="116.1" width="45.3" height="30.8" fill="#5C6B7E" rx="3"/><path d="M696.7,144.9 l10.0,-13.4 l7.3,8.0 l6.0,-5.4 l13.3,10.7 z" fill="#1E2733"/></g><g class="a "><rect x="728.0" y="152.9" width="16.0" height="7.4" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#F5F7FA"><rect x="636.0" y="104.7" width="56.7" height="3.7" rx="5"/><rect x="636.0" y="119.4" width="50.0" height="3.7" rx="5"/><rect x="636.0" y="128.8" width="43.3" height="3.7" rx="5"/><rect x="636.0" y="138.2" width="46.7" height="3.7" rx="5"/></g></g><rect class="a k3t4" x="724" y="150" width="22" height="13" rx="5" fill="none" stroke="#F2C230" stroke-width="3" stroke-dasharray="7 6"/><g><rect x="770.0" y="96.0" width="120.0" height="68.0" fill="#F5F7FA" rx="4"/><g class="a "><rect x="770.0" y="96.0" width="120.0" height="68.0" fill="#1E2733" rx="4"/></g><g class="a "><rect x="836.7" y="116.1" width="45.3" height="30.8" fill="#5C6B7E" rx="3"/><path d="M838.7,144.9 l10.0,-13.4 l7.3,8.0 l6.0,-5.4 l13.3,10.7 z" fill="#1E2733"/></g><g class="a "><rect x="870.0" y="152.9" width="16.0" height="7.4" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#F5F7FA"><rect x="778.0" y="104.7" width="56.7" height="3.7" rx="5"/><rect x="778.0" y="119.4" width="50.0" height="3.7" rx="5"/><rect x="778.0" y="128.8" width="43.3" height="3.7" rx="5"/><rect x="778.0" y="138.2" width="46.7" height="3.7" rx="5"/></g></g><rect class="a k3t5" x="866" y="150" width="22" height="13" rx="5" fill="none" stroke="#F2C230" stroke-width="3" stroke-dasharray="7 6"/><g class="a k3m0"><circle cx="78" cy="198" r="7" fill="#F2C230"/><text class="a " x="96" y="204" font-size="18" font-weight="400" fill="#F5F7FA" text-anchor="start">das Logo: gleiche Stelle auf 6 von 6 Seiten → wiederholt</text></g><g class="a k3m1"><circle cx="78" cy="232" r="7" fill="#F0679E"/><text class="a " x="96" y="238" font-size="18" font-weight="400" fill="#F5F7FA" text-anchor="start">der Hintergrund: bedeckt die ganze Seite, dunkel</text></g><g class="a k3m2"><circle cx="78" cy="266" r="7" fill="#6BBEEC"/><text class="a " x="96" y="272" font-size="18" font-weight="400" fill="#F5F7FA" text-anchor="start">das Foto: groß, ohne Text darin</text></g><g class="a k3m3"><circle cx="78" cy="300" r="7" fill="#4CC38A"/><text class="a " x="96" y="306" font-size="18" font-weight="400" fill="#F5F7FA" text-anchor="start">der Text: bleibt immer</text></g><g class="a k3chip"><rect x="168" y="340" width="624" height="32" rx="16" fill="#0A2038" stroke="#6FA8E8" stroke-width="2"/><text class="a " x="480" y="361" font-size="15" font-weight="400" fill="#F5F7FA" text-anchor="middle">unsere Analyse (Python, NumPy, Pillow): Größe, Helligkeit, Wiederholung</text></g></g><g class="a k4">
-  <g><rect x="80.0" y="104.0" width="440.0" height="248.0" fill="#F5F7FA" rx="4"/><g class="a "><rect x="80.0" y="104.0" width="440.0" height="248.0" fill="#1E2733" rx="4"/></g><g class="a "><rect x="331.8" y="287.3" width="158.9" height="3.7" fill="#F5F7FA"/><rect x="331.8" y="177.3" width="3.7" height="113.6" fill="#F5F7FA"/><rect x="348.9" y="238.4" width="22.0" height="48.9" fill="#6BBEEC"/><rect x="383.1" y="201.7" width="22.0" height="85.5" fill="#F2C230"/><rect x="417.3" y="220.1" width="22.0" height="67.2" fill="#4CC38A"/><rect x="451.6" y="183.4" width="22.0" height="103.8" fill="#F0679E"/></g><g class="a k4logo"><rect x="446.7" y="311.7" width="58.7" height="26.9" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#F5F7FA"><rect x="109.3" y="135.8" width="207.8" height="13.4" rx="5"/><rect x="109.3" y="189.5" width="183.3" height="13.4" rx="5"/><rect x="109.3" y="223.7" width="158.9" height="13.4" rx="5"/><rect x="109.3" y="257.9" width="171.1" height="13.4" rx="5"/></g></g>
-  <rect class="a k4pulse" x="324" y="168" width="184" height="128" rx="6" fill="none" stroke="#F2C230" stroke-width="5"/>
-  <g class="a k4mark"><rect class="a " x="324" y="168" width="184" height="128" rx="5" fill="none" stroke="#F0679E" stroke-width="3" stroke-dasharray="7 6"/><text class="a " x="416" y="158" font-size="15" font-weight="700" fill="#F0679E" text-anchor="middle">wird entfernt</text></g>
-  <g class="a k4logomark"><rect class="a " x="442" y="314" width="66" height="34" rx="5" fill="none" stroke="#F0679E" stroke-width="3" stroke-dasharray="7 6"/></g>
-  <g transform="translate(600,130)"><rect width="250" height="46" rx="23" fill="#6FA8E8" fill-opacity=".35" stroke="#6FA8E8" stroke-width="2"/>
-    <text class="a " x="125" y="30" font-size="18" font-weight="700" fill="#F5F7FA" text-anchor="middle">Mittel</text></g>
-  <g class="a k4kept"><rect class="a " x="324" y="168" width="184" height="128" rx="5" fill="none" stroke="#4CC38A" stroke-width="4" stroke-dasharray="7 6"/>
-    <rect x="346" y="138" width="140" height="26" rx="13" fill="#4CC38A"/><text class="a " x="416" y="156" font-size="14" font-weight="700" fill="#0F2C4C" text-anchor="middle">bleibt erhalten</text></g>
-  <g class="a k4menu"><rect x="376" y="226" width="300" height="112" rx="10" fill="#F5F7FA" stroke="#5C6B7E"/>
-    <rect class="a k4hover" x="380" y="232" width="292" height="30" rx="6" fill="#4CC38A"/><text class="a " x="392" y="252" font-size="15" font-weight="400" fill="#1E2733" text-anchor="start">Auf dieser Seite behalten</text><text class="a " x="392" y="286" font-size="15" font-weight="400" fill="#1E2733" text-anchor="start">Auf allen Seiten behalten (6)</text><text class="a " x="392" y="320" font-size="15" font-weight="400" fill="#1E2733" text-anchor="start">Auf dieser Seite entfernen</text></g>
-  <path class="a k4cur" d="M0,0 l0,24 l6,-6 l5,10 l4,-2 l-5,-10 l9,0 z" fill="#F5F7FA" stroke="#0F2C4C" stroke-width="1.5"/>
-</g><g class="a k5">
-  <rect x="56" y="100" width="450" height="222" rx="10" fill="#0A2038" stroke="#F5F7FA" stroke-opacity=".3" stroke-width="2"/><g class="a k5l0"><rect x="70" y="122" width="5" height="40" rx="2" fill="#F0679E"/><text class="a " x="86" y="140" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="start">1. Ganze Seite dunkel füllen</text><text class="a " x="86" y="159" font-size="12.5" font-weight="400" fill="#5C6B7E" text-anchor="start" font-family="ui-monospace, Menlo, Consolas, monospace">0.12 0.15 0.20 rg 0 0 720 405 re f</text></g><g class="a "><rect x="70" y="172" width="5" height="40" rx="2" fill="#6BBEEC"/><text class="a " x="86" y="190" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="start">2. Foto platzieren</text><text class="a " x="86" y="209" font-size="12.5" font-weight="400" fill="#5C6B7E" text-anchor="start" font-family="ui-monospace, Menlo, Consolas, monospace">q 300 0 0 200 380 80 cm /Im1 Do Q</text></g><g class="a k5l2"><rect x="70" y="222" width="5" height="40" rx="2" fill="#F2C230"/><text class="a " x="86" y="240" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="start">3. Logo unten rechts platzieren</text><text class="a " x="86" y="259" font-size="12.5" font-weight="400" fill="#5C6B7E" text-anchor="start" font-family="ui-monospace, Menlo, Consolas, monospace">q 96 0 0 44 600 18 cm /Logo Do Q</text></g><g class="a "><rect x="70" y="272" width="5" height="40" rx="2" fill="#4CC38A"/><text class="a " x="86" y="290" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="start">4. Titel in Weiß schreiben</text><text class="a " x="86" y="309" font-size="12.5" font-weight="400" fill="#5C6B7E" text-anchor="start" font-family="ui-monospace, Menlo, Consolas, monospace">BT /F1 22 Tf 1 1 1 rg (Kapitel 1) Tj ET</text></g>
-  <path class="a draw k5s0 k5l0" pathLength="1" d="M86,134 H362" stroke="#F0679E" stroke-width="3"/><path class="a draw k5s2 k5l2" pathLength="1" d="M86,234 H394" stroke="#F0679E" stroke-width="3"/>
-  <g class="a k5black"><path d="M96,322 V340" stroke="#4CC38A" stroke-width="2"/>
-    <text class="a " x="70" y="362" font-size="16" font-weight="600" fill="#4CC38A" text-anchor="start">weiße Schrift wird schwarz, damit sie auf Papier sichtbar ist</text></g>
-  <g class="a k5lens">
-    <circle cx="730" cy="196" r="92" fill="#F5F7FA" stroke="#F5F7FA" stroke-width="6"/>
-    <path d="M796,262 L846,312" stroke="#F5F7FA" stroke-width="14" stroke-linecap="round"/>
-    <text x="730" y="232" font-size="104" font-weight="700" fill="#1E2733" text-anchor="middle" font-family="Georgia, serif">Ag</text>
-    <text class="a " x="730" y="326" font-size="16" font-weight="600" fill="#F5F7FA" text-anchor="middle">Text bleibt Text:</text><text class="a " x="730" y="348" font-size="15" font-weight="400" fill="#F5F7FA" text-anchor="middle">scharf bei jedem Zoom,</text><text class="a " x="730" y="368" font-size="15" font-weight="400" fill="#F5F7FA" text-anchor="middle">weiter durchsuchbar.</text>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 960 440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="So arbeitet PDF Distiller lokal und ohne KI: Ihre Datei bleibt auf Ihrem Rechner, pikepdf liest ihr Zeichenrezept, klare Regeln messen Dunkelheit und Wiederholung, ein wichtiges Diagramm behalten Sie mit einem Klick, verschwendete Tinte zerfällt in Punkte, und Vektortext bleibt scharf.">
+  <style>
+    /* Base typography &amp; crisp rendering */
+    svg {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    .t-cap {
+      font-size: 20px;
+      font-weight: 600;
+      fill: #F5F7FA;
+      text-anchor: middle;
+      letter-spacing: -0.01em;
+    }
+    .t-tag {
+      font-size: 11px;
+      font-weight: 700;
+      fill: #A9C0D9;
+      letter-spacing: 0.08em;
+    }
+    .t-badge {
+      font-size: 11px;
+      font-weight: 700;
+      fill: #6FA8E8;
+      letter-spacing: 0.06em;
+    }
+    .t-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .t-ui {
+      font-size: 13px;
+      font-weight: 600;
+      fill: #F5F7FA;
+    }
+    .t-ui-sm {
+      font-size: 11.5px;
+      font-weight: 500;
+      fill: #A9C0D9;
+    }
+    .line-main {
+      fill: none;
+      stroke: #F5F7FA;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .line-soft {
+      fill: none;
+      stroke: #3A5A80;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Progress Bar: 0% to 100% over 32s */
+    .progress-fill {
+      transform-box: fill-box;
+      transform-origin: 0% 50%;
+      animation: progBar 32s linear infinite;
+    }
+    @keyframes progBar {
+      0% { transform: scaleX(0); }
+      100% { transform: scaleX(1); }
+    }
+
+    /* =========================================
+       SCENE VISIBILITY ENVELOPES (32s TOTAL)
+       S1: 0.0s - 4.8s  (0% - 15%)
+       S2: 4.8s - 9.8s  (15% - 30.6%)
+       S3: 9.8s - 15.0s (30.6% - 46.9%)
+       S4: 15.0s - 21.8s (46.9% - 68.1%)
+       S5: 21.8s - 27.4s (68.1% - 85.6%)
+       S6: 27.4s - 32.0s (85.6% - 100%)
+       ========================================= */
+    .sc1 { animation: sc1Vis 32s ease-in-out infinite; }
+    .sc2 { animation: sc2Vis 32s ease-in-out infinite; opacity: 0; }
+    .sc3 { animation: sc3Vis 32s ease-in-out infinite; opacity: 0; }
+    .sc4 { animation: sc4Vis 32s ease-in-out infinite; opacity: 0; }
+    .sc5 { animation: sc5Vis 32s ease-in-out infinite; opacity: 0; }
+    .sc6 { animation: sc6Vis 32s ease-in-out infinite; opacity: 0; }
+
+    @keyframes sc1Vis {
+      0%, 13.5% { opacity: 1; }
+      15.2%, 98.8% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    @keyframes sc2Vis {
+      0%, 14.2% { opacity: 0; }
+      15.8%, 29.2% { opacity: 1; }
+      30.8%, 100% { opacity: 0; }
+    }
+    @keyframes sc3Vis {
+      0%, 29.8% { opacity: 0; }
+      31.4%, 45.4% { opacity: 1; }
+      47.0%, 100% { opacity: 0; }
+    }
+    @keyframes sc4Vis {
+      0%, 46.2% { opacity: 0; }
+      47.8%, 66.6% { opacity: 1; }
+      68.2%, 100% { opacity: 0; }
+    }
+    @keyframes sc5Vis {
+      0%, 67.4% { opacity: 0; }
+      69.0%, 84.2% { opacity: 1; }
+      85.8%, 100% { opacity: 0; }
+    }
+    @keyframes sc6Vis {
+      0%, 85.0% { opacity: 0; }
+      86.8%, 98.4% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Caption gentle slide-up on entry */
+    .cap1 { animation: cap1Anim 32s ease-out infinite; }
+    .cap2 { animation: cap2Anim 32s ease-out infinite; }
+    .cap3 { animation: cap3Anim 32s ease-out infinite; }
+    .cap4 { animation: cap4Anim 32s ease-out infinite; }
+    .cap5 { animation: cap5Anim 32s ease-out infinite; }
+
+    @keyframes cap1Anim {
+      0%, 13.5% { transform: translateY(0); }
+      15.2%, 100% { transform: translateY(6px); }
+    }
+    @keyframes cap2Anim {
+      0%, 14.2% { transform: translateY(8px); }
+      16.2%, 29.2% { transform: translateY(0); }
+      31%, 100% { transform: translateY(6px); }
+    }
+    @keyframes cap3Anim {
+      0%, 29.8% { transform: translateY(8px); }
+      31.8%, 45.4% { transform: translateY(0); }
+      47%, 100% { transform: translateY(6px); }
+    }
+    @keyframes cap4Anim {
+      0%, 46.2% { transform: translateY(8px); }
+      48.2%, 66.6% { transform: translateY(0); }
+      68.2%, 100% { transform: translateY(6px); }
+    }
+    @keyframes cap5Anim {
+      0%, 67.4% { transform: translateY(8px); }
+      69.4%, 84.2% { transform: translateY(0); }
+      85.8%, 100% { transform: translateY(6px); }
+    }
+
+    /* =========================================
+       SCENE 1 ANIMATIONS (0% - 15%)
+       ========================================= */
+    .s1-ring {
+      stroke-dasharray: 820;
+      stroke-dashoffset: 0;
+      animation: s1RingDraw 32s ease-in-out infinite;
+    }
+    @keyframes s1RingDraw {
+      0% { stroke-dashoffset: 380; }
+      4.5%, 15% { stroke-dashoffset: 0; }
+      100% { stroke-dashoffset: 380; }
+    }
+
+    .s1-packet {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: s1PacketBounce 32s ease-in-out infinite;
+    }
+    @keyframes s1PacketBounce {
+      0%, 2.5% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+      3.5% { transform: translate(0, 0) scale(1); opacity: 1; }
+      6.8% { transform: translate(118px, -16px) scale(1.08); opacity: 1; }
+      7.6% { transform: translate(112px, -14px) scale(0.85); opacity: 1; }
+      10.2% { transform: translate(0, 0) scale(0.95); opacity: 1; }
+      11.5%, 100% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+    }
+
+    .s1-shield-flash {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: s1ShieldPulse 32s ease-out infinite;
+      opacity: 0;
+    }
+    @keyframes s1ShieldPulse {
+      0%, 6.4% { opacity: 0; transform: scale(0.6); }
+      7.2% { opacity: 1; transform: scale(1.15); }
+      9.2%, 100% { opacity: 0; transform: scale(1.5); }
+    }
+
+    .s1-check {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: s1CheckPop 32s ease-out infinite;
+      opacity: 0;
+    }
+    @keyframes s1CheckPop {
+      0%, 9.2% { opacity: 0; transform: scale(0.5); }
+      10.6% { opacity: 1; transform: scale(1.12); }
+      11.6%, 14.5% { opacity: 1; transform: scale(1); }
+      15.5%, 100% { opacity: 0; transform: scale(0.8); }
+    }
+
+    /* =========================================
+       SCENE 2 ANIMATIONS (15% - 30.6%)
+       ========================================= */
+    .s2-ov1 { animation: s2Step1 32s ease-out infinite; opacity: 0; }
+    .s2-ov2 { animation: s2Step2 32s ease-out infinite; opacity: 0; }
+    .s2-ov3 { animation: s2Step3 32s ease-out infinite; opacity: 0; }
+    .s2-ov4 { animation: s2Step4 32s ease-out infinite; opacity: 0; }
+
+    @keyframes s2Step1 {
+      0%, 16.5% { opacity: 0; transform: translateX(-8px); }
+      18.0%, 30.2% { opacity: 1; transform: translateX(0); }
+      31%, 100% { opacity: 0; }
+    }
+    @keyframes s2Step2 {
+      0%, 19.0% { opacity: 0; transform: translateX(-8px); }
+      20.5%, 30.2% { opacity: 1; transform: translateX(0); }
+      31%, 100% { opacity: 0; }
+    }
+    @keyframes s2Step3 {
+      0%, 21.5% { opacity: 0; transform: translateX(-8px); }
+      23.0%, 30.2% { opacity: 1; transform: translateX(0); }
+      31%, 100% { opacity: 0; }
+    }
+    @keyframes s2Step4 {
+      0%, 24.0% { opacity: 0; transform: translateX(-8px); }
+      25.5%, 30.2% { opacity: 1; transform: translateX(0); }
+      31%, 100% { opacity: 0; }
+    }
+
+    /* =========================================
+       SCENE 3 ANIMATIONS (30.6% - 46.9%)
+       ========================================= */
+    .s3-laser {
+      animation: s3Scan 32s ease-in-out infinite;
+      opacity: 0;
+    }
+    @keyframes s3Scan {
+      0%, 31.2% { transform: translateY(0); opacity: 0; }
+      32.2% { transform: translateY(0); opacity: 1; }
+      38.5% { transform: translateY(204px); opacity: 1; }
+      40.0%, 100% { transform: translateY(204px); opacity: 0; }
+    }
+
+    .s3-card1 { transform-box: fill-box; transform-origin: left center; animation: s3C1 32s ease-out infinite; opacity: 0; }
+    .s3-card2 { transform-box: fill-box; transform-origin: left center; animation: s3C2 32s ease-out infinite; opacity: 0; }
+    .s3-card3 { transform-box: fill-box; transform-origin: left center; animation: s3C3 32s ease-out infinite; opacity: 0; }
+
+    @keyframes s3C1 {
+      0%, 32.5% { opacity: 0; transform: translateY(10px) scale(0.95); }
+      34.0% { opacity: 1; transform: translateY(-2px) scale(1.02); }
+      34.8%, 46.2% { opacity: 1; transform: translateY(0) scale(1); }
+      47%, 100% { opacity: 0; }
+    }
+    @keyframes s3C2 {
+      0%, 35.0% { opacity: 0; transform: translateY(10px) scale(0.95); }
+      36.5% { opacity: 1; transform: translateY(-2px) scale(1.02); }
+      37.3%, 46.2% { opacity: 1; transform: translateY(0) scale(1); }
+      47%, 100% { opacity: 0; }
+    }
+    @keyframes s3C3 {
+      0%, 37.5% { opacity: 0; transform: translateY(10px) scale(0.95); }
+      39.0% { opacity: 1; transform: translateY(-2px) scale(1.02); }
+      39.8%, 46.2% { opacity: 1; transform: translateY(0) scale(1); }
+      47%, 100% { opacity: 0; }
+    }
+
+    .s3-badges {
+      animation: s3BadgeIn 32s ease-out infinite;
+      opacity: 0;
+    }
+    @keyframes s3BadgeIn {
+      0%, 38.0% { opacity: 0; }
+      39.8%, 46.2% { opacity: 1; }
+      47%, 100% { opacity: 0; }
+    }
+
+    /* =========================================
+       SCENE 4 ANIMATIONS (46.9% - 68.1%) — SLOW &amp; CLEAR
+       ========================================= */
+    .s4-cursor {
+      animation: s4CursorMove 32s ease-in-out infinite;
+      opacity: 0;
+    }
+    @keyframes s4CursorMove {
+      0%, 47.6% { opacity: 0; transform: translate(140px, 90px); }
+      48.6% { opacity: 1; transform: translate(140px, 90px); }
+      52.0% { opacity: 1; transform: translate(0px, 0px); } /* On chart */
+      53.2% { opacity: 1; transform: translate(0px, 0px); } /* Click 1 */
+      55.0% { opacity: 1; transform: translate(0px, 0px); } /* Wait for menu */
+      58.2% { opacity: 1; transform: translate(130px, 24px); } /* On "Keep on this page" */
+      60.2% { opacity: 1; transform: translate(130px, 24px); } /* Click 2 */
+      63.5% { opacity: 1; transform: translate(165px, 60px); } /* Move gently away */
+      66.5%, 100% { opacity: 0; transform: translate(165px, 60px); }
+    }
+
+    .s4-rip1 {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: s4Ripple1 32s ease-out infinite;
+      opacity: 0;
+    }
+    @keyframes s4Ripple1 {
+      0%, 51.9% { opacity: 0; transform: scale(0.3); }
+      52.4% { opacity: 0.9; transform: scale(0.9); }
+      54.0%, 100% { opacity: 0; transform: scale(1.9); }
+    }
+
+    .s4-menu {
+      transform-box: fill-box;
+      transform-origin: 0% 0%;
+      animation: s4MenuAnim 32s ease-out infinite;
+      opacity: 0;
+    }
+    @keyframes s4MenuAnim {
+      0%, 53.0% { opacity: 0; transform: scale(0.92) translateY(-4px); }
+      54.2%, 60.0% { opacity: 1; transform: scale(1) translateY(0); }
+      61.2%, 100% { opacity: 0; transform: scale(0.96) translateY(-2px); }
+    }
+
+    .s4-menu-hi {
+      animation: s4MenuHiAnim 32s ease-in-out infinite;
+      opacity: 0.22;
+    }
+    @keyframes s4MenuHiAnim {
+      0%, 56.5% { opacity: 0.16; }
+      58.0%, 60.0% { opacity: 0.36; }
+      61.0%, 100% { opacity: 0.16; }
+    }
+
+    .s4-rip2 {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: s4Ripple2 32s ease-out infinite;
+      opacity: 0;
+    }
+    @keyframes s4Ripple2 {
+      0%, 58.6% { opacity: 0; transform: scale(0.3); }
+      59.1% { opacity: 0.95; transform: scale(0.9); }
+      60.8%, 100% { opacity: 0; transform: scale(1.9); }
+    }
+
+    .s4-state-rem {
+      animation: s4RemOut 32s ease-in-out infinite;
+    }
+    @keyframes s4RemOut {
+      0%, 59.5% { opacity: 1; }
+      60.6%, 100% { opacity: 0; }
+    }
+
+    .s4-state-kept {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: s4KeptIn 32s ease-out infinite;
+      opacity: 0;
+    }
+    @keyframes s4KeptIn {
+      0%, 59.6% { opacity: 0; transform: scale(0.96); }
+      60.8% { opacity: 1; transform: scale(1.03); }
+      61.8%, 67.5% { opacity: 1; transform: scale(1); }
+      68.2%, 100% { opacity: 0; }
+    }
+
+    /* =========================================
+       SCENE 5 ANIMATIONS (68.1% - 85.6%)
+       ========================================= */
+    .s5-dark-overlay {
+      animation: s5DarkDissolve 32s ease-in-out infinite;
+    }
+    @keyframes s5DarkDissolve {
+      0%, 70.5% { opacity: 1; }
+      74.5%, 100% { opacity: 0; }
+    }
+
+    .s5-white-paper {
+      animation: s5PaperReveal 32s ease-in-out infinite;
+      opacity: 0;
+    }
+    @keyframes s5PaperReveal {
+      0%, 71.0% { opacity: 0; }
+      75.0%, 85.4% { opacity: 1; }
+      86.0%, 100% { opacity: 0; }
+    }
+
+    .s5-dot-a { animation: s5FloatA 32s ease-out infinite; opacity: 0; }
+    .s5-dot-b { animation: s5FloatB 32s ease-out infinite; opacity: 0; }
+    .s5-dot-c { animation: s5FloatC 32s ease-out infinite; opacity: 0; }
+
+    @keyframes s5FloatA {
+      0%, 70.2% { opacity: 0; transform: translate(0, 0); }
+      71.8% { opacity: 0.95; transform: translate(8px, -16px); }
+      77.5% { opacity: 0.7; transform: translate(26px, -68px); }
+      80.5%, 100% { opacity: 0; transform: translate(38px, -96px); }
+    }
+    @keyframes s5FloatB {
+      0%, 71.0% { opacity: 0; transform: translate(0, 0); }
+      72.6% { opacity: 0.95; transform: translate(-10px, -22px); }
+      78.5% { opacity: 0.65; transform: translate(-22px, -78px); }
+      81.5%, 100% { opacity: 0; transform: translate(-30px, -108px); }
+    }
+    @keyframes s5FloatC {
+      0%, 71.8% { opacity: 0; transform: translate(0, 0); }
+      73.4% { opacity: 0.9; transform: translate(16px, -18px); }
+      79.2% { opacity: 0.6; transform: translate(42px, -74px); }
+      82.2%, 100% { opacity: 0; transform: translate(56px, -102px); }
+    }
+
+    .s5-ink-bar {
+      transform-box: fill-box;
+      transform-origin: 0% 50%;
+      animation: s5InkDrop 32s ease-in-out infinite;
+    }
+    @keyframes s5InkDrop {
+      0%, 71.5% { transform: scaleX(1); fill: #F0679E; }
+      76.5%, 85.6% { transform: scaleX(0.18); fill: #4CC38A; }
+      100% { transform: scaleX(1); fill: #F0679E; }
+    }
+
+    .s5-eco-pop {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: s5EcoIn 32s ease-out infinite;
+      opacity: 0;
+    }
+    @keyframes s5EcoIn {
+      0%, 74.5% { opacity: 0; transform: translateY(8px) scale(0.95); }
+      76.5%, 85.0% { opacity: 1; transform: translateY(0) scale(1); }
+      86.0%, 100% { opacity: 0; }
+    }
+
+    /* =========================================
+       SCENE 6 ANIMATIONS (85.6% - 100%)
+       ========================================= */
+    .s6-logo-pop {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: s6LogoIn 32s ease-out infinite;
+    }
+    @keyframes s6LogoIn {
+      0%, 85.4% { transform: scale(0.78); opacity: 0; }
+      87.8% { transform: scale(1.04); opacity: 1; }
+      89.0%, 98.5% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.96); opacity: 0; }
+    }
+
+    .s6-conv-l { animation: s6DotL 32s ease-in-out infinite; opacity: 0; }
+    .s6-conv-r { animation: s6DotR 32s ease-in-out infinite; opacity: 0; }
+
+    @keyframes s6DotL {
+      0%, 85.2% { opacity: 0; transform: translate(-70px, 28px); }
+      86.5% { opacity: 0.9; transform: translate(-36px, 14px); }
+      88.2%, 100% { opacity: 0; transform: translate(0, 0); }
+    }
+    @keyframes s6DotR {
+      0%, 85.2% { opacity: 0; transform: translate(70px, -24px); }
+      86.5% { opacity: 0.9; transform: translate(36px, -12px); }
+      88.2%, 100% { opacity: 0; transform: translate(0, 0); }
+    }
+
+    /* =========================================
+       REDUCED MOTION: SHOW CLEAN END CARD
+       ========================================= */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+      .sc1, .sc2, .sc3, .sc4, .sc5 { opacity: 0 !important; }
+      .sc6, .s6-logo-pop { opacity: 1 !important; transform: none !important; }
+      .progress-fill { transform: scaleX(1) !important; }
+    }
+  </style>
+
+  <!-- Canvas Background -->
+  <rect x="0" y="0" width="960" height="440" rx="16" fill="#0F2C4C"/>
+  <!-- Subtle Top/Bottom Frame Guides -->
+  <line x1="36" y1="54" x2="924" y2="54" stroke="#1E4168" stroke-width="1"/>
+  <line x1="36" y1="362" x2="924" y2="362" stroke="#1E4168" stroke-width="1"/>
+
+  <!-- =====================================================================
+       SCENE 1 (0.0s – 4.8s): LOCAL & PRIVATE
+       ===================================================================== -->
+  <g class="sc1">
+    <!-- Top Bar -->
+    <text x="40" y="36" class="t-badge">01 / 06</text>
+    <text x="104" y="36" class="t-tag">AUF IHREM RECHNER · OHNE INTERNET</text>
+
+    <!-- Desk Horizon Line (La Linea minimal continuous feel) -->
+    <line x1="120" y1="296" x2="840" y2="296" stroke="#2B4E75" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- Protective Dashed Green Boundary Ring around Laptop -->
+    <g transform="translate(360, 210)">
+      <ellipse class="s1-ring" cx="0" cy="0" rx="156" ry="112" fill="rgba(76,195,138,0.04)" stroke="#4CC38A" stroke-width="2.2" stroke-dasharray="8 6"/>
+    </g>
+
+    <!-- Minimal Single-Line Laptop Silhouette -->
+    <g transform="translate(260, 140)">
+      <!-- Screen outer -->
+      <rect x="24" y="8" width="152" height="106" rx="8" class="line-main" fill="#13355B"/>
+      <!-- Base -->
+      <path d="M6 114 H194 L204 130 C205 133 203 136 199 136 H1 C-3 136 -5 133 -4 130 L6 114 Z" class="line-main" fill="#13355B"/>
+      <line x1="82" y1="122" x2="118" y2="122" stroke="#6FA8E8" stroke-width="2" stroke-linecap="round"/>
+      <!-- Dark Lecture Slide Thumbnail inside Laptop -->
+      <rect x="38" y="22" width="124" height="78" rx="4" fill="#091C33" stroke="#2D527C" stroke-width="1.2"/>
+      <rect x="46" y="30" width="54" height="6" rx="2" fill="#F2C230" opacity="0.85"/>
+      <rect x="46" y="44" width="66" height="4" rx="2" fill="#F5F7FA" opacity="0.8"/>
+      <rect x="46" y="54" width="56" height="4" rx="2" fill="#A9C0D9" opacity="0.7"/>
+      <rect x="46" y="64" width="60" height="4" rx="2" fill="#A9C0D9" opacity="0.7"/>
+      <rect x="118" y="44" width="36" height="44" rx="3" fill="#1A426E" stroke="#6BBEEC" stroke-width="1.2"/>
+      <!-- Green Checkmark Pulse inside Laptop -->
+      <g transform="translate(100, 61)">
+        <g class="s1-check">
+          <circle cx="0" cy="0" r="18" fill="#4CC38A"/>
+          <path d="M-7 0 L-2 5 L8 -6" fill="none" stroke="#0F2C4C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </g>
+    </g>
+
+    <!-- Local label under laptop -->
+    <text x="360" y="330" text-anchor="middle" class="t-ui-sm" fill="#4CC38A">Bleibt auf dem Gerät</text>
+
+    <!-- Data packet trying to leave and bouncing back -->
+    <g transform="translate(400, 198)">
+      <g class="s1-packet">
+        <rect x="-10" y="-12" width="20" height="24" rx="3" fill="#6FA8E8" stroke="#F5F7FA" stroke-width="1.5"/>
+        <line x1="-5" y1="-4" x2="5" y2="-4" stroke="#0F2C4C" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="-5" y1="2" x2="3" y2="2" stroke="#0F2C4C" stroke-width="1.6" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- Shield bounce flash on right edge of boundary -->
+    <g transform="translate(516, 184)">
+      <circle class="s1-shield-flash" cx="0" cy="0" r="16" fill="none" stroke="#4CC38A" stroke-width="2.5"/>
+    </g>
+
+    <!-- Muted Cloud Icon on Right -->
+    <g transform="translate(650, 148)">
+      <path d="M36 68 H108 C121 68 131 58 131 46 C131 35 123 26 112 25 C108 11 95 2 80 2 C63 2 50 14 48 30 C46 29 43 29 40 29 C26 29 15 40 15 53 C15 62 24 68 36 68 Z" fill="none" stroke="#4A6B91" stroke-width="2.2" stroke-dasharray="5 5" stroke-linejoin="round"/>
+      <line x1="28" y1="10" x2="116" y2="74" stroke="#F0679E" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+      <text x="72" y="98" text-anchor="middle" class="t-ui-sm" fill="#6C89AD">Kein Internet</text>
+    </g>
+
+    <!-- Caption -->
+    <g transform="translate(480, 404)">
+      <text class="t-cap cap1" x="0" y="0">Ihre Datei verlässt nie Ihren Rechner. Alles läuft hier.</text>
+    </g>
   </g>
-</g><g class="a k6">
-  <g><rect x="70.0" y="98.0" width="200.0" height="113.0" fill="#F5F7FA" rx="4"/><g class="a "><rect x="70.0" y="98.0" width="200.0" height="113.0" fill="#1E2733" rx="4"/></g><g class="a "><rect x="181.1" y="131.4" width="75.6" height="51.2" fill="#5C6B7E" rx="3"/><path d="M184.4,179.3 l16.7,-22.3 l12.2,13.4 l10.0,-8.9 l22.2,17.8 z" fill="#1E2733"/></g><g class="a "><rect x="236.7" y="192.6" width="26.7" height="12.2" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#F5F7FA"><rect x="83.3" y="112.5" width="94.4" height="6.1" rx="5"/><rect x="83.3" y="137.0" width="83.3" height="6.1" rx="5"/><rect x="83.3" y="152.6" width="72.2" height="6.1" rx="5"/><rect x="83.3" y="168.1" width="77.8" height="6.1" rx="5"/></g></g><text class="a " x="170" y="232" font-size="15" font-weight="400" fill="#F5F7FA" text-anchor="middle">vorher</text>
-  <g><rect x="70.0" y="248.0" width="200.0" height="113.0" fill="#F5F7FA" rx="4"/><g class="a k6x"><rect x="70.0" y="248.0" width="200.0" height="113.0" fill="#1E2733" rx="4"/></g><g class="a k6x"><rect x="181.1" y="281.4" width="75.6" height="51.2" fill="#5C6B7E" rx="3"/><path d="M184.4,329.3 l16.7,-22.3 l12.2,13.4 l10.0,-8.9 l22.2,17.8 z" fill="#1E2733"/></g><g class="a k6x"><rect x="236.7" y="342.6" width="26.7" height="12.2" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#1E2733"><rect x="83.3" y="262.5" width="94.4" height="6.1" rx="5"/><rect x="83.3" y="287.0" width="83.3" height="6.1" rx="5"/><rect x="83.3" y="302.6" width="72.2" height="6.1" rx="5"/><rect x="83.3" y="318.1" width="77.8" height="6.1" rx="5"/></g></g>
-  <g class="a k6pix">
-    <path d="M286,154 H330 M286,304 H330" stroke="#6FA8E8" stroke-width="3" stroke-linecap="round"/>
-    <rect x="344" y="112" width="13" height="13" fill="#1E2733"/><rect x="359" y="112" width="13" height="13" fill="#1E2733"/><rect x="374" y="112" width="13" height="13" fill="#1E2733"/><rect x="389" y="112" width="13" height="13" fill="#1E2733"/><rect x="404" y="112" width="13" height="13" fill="#1E2733"/><rect x="419" y="112" width="13" height="13" fill="#1E2733"/><rect x="434" y="112" width="13" height="13" fill="#1E2733"/><rect x="449" y="112" width="13" height="13" fill="#1E2733"/><rect x="464" y="112" width="13" height="13" fill="#1E2733"/><rect x="479" y="112" width="13" height="13" fill="#1E2733"/><rect x="344" y="127" width="13" height="13" fill="#1E2733"/><rect x="359" y="127" width="13" height="13" fill="#F5F7FA"/><rect x="374" y="127" width="13" height="13" fill="#F5F7FA"/><rect x="389" y="127" width="13" height="13" fill="#F5F7FA"/><rect x="404" y="127" width="13" height="13" fill="#F5F7FA"/><rect x="419" y="127" width="13" height="13" fill="#F5F7FA"/><rect x="434" y="127" width="13" height="13" fill="#1E2733"/><rect x="449" y="127" width="13" height="13" fill="#1E2733"/><rect x="464" y="127" width="13" height="13" fill="#1E2733"/><rect x="479" y="127" width="13" height="13" fill="#1E2733"/><rect x="344" y="142" width="13" height="13" fill="#1E2733"/><rect x="359" y="142" width="13" height="13" fill="#1E2733"/><rect x="374" y="142" width="13" height="13" fill="#1E2733"/><rect x="389" y="142" width="13" height="13" fill="#1E2733"/><rect x="404" y="142" width="13" height="13" fill="#1E2733"/><rect x="419" y="142" width="13" height="13" fill="#1E2733"/><rect x="434" y="142" width="13" height="13" fill="#1E2733"/><rect x="449" y="142" width="13" height="13" fill="#1E2733"/><rect x="464" y="142" width="13" height="13" fill="#1E2733"/><rect x="479" y="142" width="13" height="13" fill="#1E2733"/><rect x="344" y="157" width="13" height="13" fill="#1E2733"/><rect x="359" y="157" width="13" height="13" fill="#F5F7FA"/><rect x="374" y="157" width="13" height="13" fill="#F5F7FA"/><rect x="389" y="157" width="13" height="13" fill="#F5F7FA"/><rect x="404" y="157" width="13" height="13" fill="#F5F7FA"/><rect x="419" y="157" width="13" height="13" fill="#F5F7FA"/><rect x="434" y="157" width="13" height="13" fill="#1E2733"/><rect x="449" y="157" width="13" height="13" fill="#1E2733"/><rect x="464" y="157" width="13" height="13" fill="#1E2733"/><rect x="479" y="157" width="13" height="13" fill="#1E2733"/><rect x="344" y="172" width="13" height="13" fill="#1E2733"/><rect x="359" y="172" width="13" height="13" fill="#F5F7FA"/><rect x="374" y="172" width="13" height="13" fill="#F5F7FA"/><rect x="389" y="172" width="13" height="13" fill="#F5F7FA"/><rect x="404" y="172" width="13" height="13" fill="#F5F7FA"/><rect x="419" y="172" width="13" height="13" fill="#F5F7FA"/><rect x="434" y="172" width="13" height="13" fill="#1E2733"/><rect x="449" y="172" width="13" height="13" fill="#1E2733"/><rect x="464" y="172" width="13" height="13" fill="#1E2733"/><rect x="479" y="172" width="13" height="13" fill="#1E2733"/><rect x="344" y="187" width="13" height="13" fill="#1E2733"/><rect x="359" y="187" width="13" height="13" fill="#1E2733"/><rect x="374" y="187" width="13" height="13" fill="#1E2733"/><rect x="389" y="187" width="13" height="13" fill="#1E2733"/><rect x="404" y="187" width="13" height="13" fill="#1E2733"/><rect x="419" y="187" width="13" height="13" fill="#1E2733"/><rect x="434" y="187" width="13" height="13" fill="#1E2733"/><rect x="449" y="187" width="13" height="13" fill="#1E2733"/><rect x="464" y="187" width="13" height="13" fill="#1E2733"/><rect x="479" y="187" width="13" height="13" fill="#1E2733"/><rect x="344" y="262" width="13" height="13" fill="#F5F7FA"/><rect x="359" y="262" width="13" height="13" fill="#F5F7FA"/><rect x="374" y="262" width="13" height="13" fill="#F5F7FA"/><rect x="389" y="262" width="13" height="13" fill="#F5F7FA"/><rect x="404" y="262" width="13" height="13" fill="#F5F7FA"/><rect x="419" y="262" width="13" height="13" fill="#F5F7FA"/><rect x="434" y="262" width="13" height="13" fill="#F5F7FA"/><rect x="449" y="262" width="13" height="13" fill="#F5F7FA"/><rect x="464" y="262" width="13" height="13" fill="#F5F7FA"/><rect x="479" y="262" width="13" height="13" fill="#F5F7FA"/><rect x="344" y="277" width="13" height="13" fill="#F5F7FA"/><rect x="359" y="277" width="13" height="13" fill="#1E2733"/><rect x="374" y="277" width="13" height="13" fill="#1E2733"/><rect x="389" y="277" width="13" height="13" fill="#1E2733"/><rect x="404" y="277" width="13" height="13" fill="#1E2733"/><rect x="419" y="277" width="13" height="13" fill="#1E2733"/><rect x="434" y="277" width="13" height="13" fill="#F5F7FA"/><rect x="449" y="277" width="13" height="13" fill="#F5F7FA"/><rect x="464" y="277" width="13" height="13" fill="#F5F7FA"/><rect x="479" y="277" width="13" height="13" fill="#F5F7FA"/><rect x="344" y="292" width="13" height="13" fill="#F5F7FA"/><rect x="359" y="292" width="13" height="13" fill="#F5F7FA"/><rect x="374" y="292" width="13" height="13" fill="#F5F7FA"/><rect x="389" y="292" width="13" height="13" fill="#F5F7FA"/><rect x="404" y="292" width="13" height="13" fill="#F5F7FA"/><rect x="419" y="292" width="13" height="13" fill="#F5F7FA"/><rect x="434" y="292" width="13" height="13" fill="#F5F7FA"/><rect x="449" y="292" width="13" height="13" fill="#F5F7FA"/><rect x="464" y="292" width="13" height="13" fill="#F5F7FA"/><rect x="479" y="292" width="13" height="13" fill="#F5F7FA"/><rect x="344" y="307" width="13" height="13" fill="#F5F7FA"/><rect x="359" y="307" width="13" height="13" fill="#1E2733"/><rect x="374" y="307" width="13" height="13" fill="#1E2733"/><rect x="389" y="307" width="13" height="13" fill="#1E2733"/><rect x="404" y="307" width="13" height="13" fill="#1E2733"/><rect x="419" y="307" width="13" height="13" fill="#1E2733"/><rect x="434" y="307" width="13" height="13" fill="#F5F7FA"/><rect x="449" y="307" width="13" height="13" fill="#F5F7FA"/><rect x="464" y="307" width="13" height="13" fill="#F5F7FA"/><rect x="479" y="307" width="13" height="13" fill="#F5F7FA"/><rect x="344" y="322" width="13" height="13" fill="#F5F7FA"/><rect x="359" y="322" width="13" height="13" fill="#1E2733"/><rect x="374" y="322" width="13" height="13" fill="#1E2733"/><rect x="389" y="322" width="13" height="13" fill="#1E2733"/><rect x="404" y="322" width="13" height="13" fill="#1E2733"/><rect x="419" y="322" width="13" height="13" fill="#1E2733"/><rect x="434" y="322" width="13" height="13" fill="#F5F7FA"/><rect x="449" y="322" width="13" height="13" fill="#F5F7FA"/><rect x="464" y="322" width="13" height="13" fill="#F5F7FA"/><rect x="479" y="322" width="13" height="13" fill="#F5F7FA"/><rect x="344" y="337" width="13" height="13" fill="#F5F7FA"/><rect x="359" y="337" width="13" height="13" fill="#F5F7FA"/><rect x="374" y="337" width="13" height="13" fill="#F5F7FA"/><rect x="389" y="337" width="13" height="13" fill="#F5F7FA"/><rect x="404" y="337" width="13" height="13" fill="#F5F7FA"/><rect x="419" y="337" width="13" height="13" fill="#F5F7FA"/><rect x="434" y="337" width="13" height="13" fill="#F5F7FA"/><rect x="449" y="337" width="13" height="13" fill="#F5F7FA"/><rect x="464" y="337" width="13" height="13" fill="#F5F7FA"/><rect x="479" y="337" width="13" height="13" fill="#F5F7FA"/></g>
-  <rect x="640" y="130" width="70" height="190" fill="none" stroke="#F5F7FA" stroke-opacity=".3"/>
-  <rect x="740" y="130" width="70" height="190" fill="none" stroke="#F5F7FA" stroke-opacity=".3"/>
-  <rect class="a k6bo" x="640" y="160" width="70" height="160" fill="#F0679E"/>
-  <rect class="a k6ba" x="740" y="290" width="70" height="30" fill="#4CC38A"/>
-  <text class="a " x="675" y="344" font-size="15" font-weight="400" fill="#F5F7FA" text-anchor="middle">vorher</text><text class="a " x="775" y="344" font-size="15" font-weight="400" fill="#F5F7FA" text-anchor="middle">nachher</text>
-  <g class="a "><rect x="536" y="84" width="381" height="32" rx="16" fill="#0A2038" stroke="#6FA8E8" stroke-width="2"/><text class="a " x="726" y="105" font-size="14" font-weight="400" fill="#F5F7FA" text-anchor="middle">pypdfium2 zeichnet die Seite als kleines Bild</text></g>
-  <g class="a k6note"><text class="a " x="480" y="384" font-size="16" font-weight="600" fill="#4CC38A" text-anchor="middle">Dunkle Folien sparen am meisten, schlichte Folien weniger.</text></g>
-</g><g class="a k7">
-  <rect x="250" y="80" width="460" height="214" rx="40" fill="none" stroke="#4CC38A" stroke-width="3" stroke-dasharray="10 8"/>
-  <text class="a " x="480" y="104" font-size="16" font-weight="600" fill="#4CC38A" text-anchor="middle">Ihr Rechner</text>
-  <path d="M380,244 V134 Q380,124 390,124 H570 Q580,124 580,134 V244 M350,244 H610 L590,264 H370 Z" fill="none" stroke="#F5F7FA" stroke-width="4" stroke-linejoin="round"/>
-  <rect x="396" y="138" width="168" height="92" rx="6" fill="#F5F7FA"/>
-  <rect x="396" y="138" width="168" height="16" rx="6" fill="#5C6B7E"/>
-  <g><rect x="410.0" y="166.0" width="64.0" height="36.0" fill="#F5F7FA" rx="4"/><g class="a "><rect x="410.0" y="166.0" width="64.0" height="36.0" fill="#1E2733" rx="4"/></g><g class="a "><rect x="445.6" y="176.6" width="24.2" height="16.3" fill="#5C6B7E" rx="3"/><path d="M446.6,191.9 l5.3,-7.1 l3.9,4.3 l3.2,-2.8 l7.1,5.7 z" fill="#1E2733"/></g><g class="a "><rect x="463.3" y="196.1" width="8.5" height="3.9" fill="#5C6B7E" rx="4"/></g><g class="a " fill="#F5F7FA"><rect x="414.3" y="170.6" width="30.2" height="2.0" rx="5"/><rect x="414.3" y="178.4" width="26.7" height="2.0" rx="5"/><rect x="414.3" y="183.4" width="23.1" height="2.0" rx="5"/><rect x="414.3" y="188.3" width="24.9" height="2.0" rx="5"/></g></g><rect x="484" y="166" width="64" height="36" fill="#F5F7FA" stroke="#5C6B7E"/>
-  <g class="a k7a"><g class="a "><rect x="243" y="306" width="473" height="32" rx="16" fill="#0A2038" stroke="#6FA8E8" stroke-width="2"/><text class="a " x="480" y="327" font-size="15" font-weight="400" fill="#F5F7FA" text-anchor="middle">FastAPI: ein winziger Server, der nur in der App lebt</text></g></g>
-  <g class="a k7b"><g class="a "><rect x="269" y="346" width="423" height="32" rx="16" fill="#0A2038" stroke="#6FA8E8" stroke-width="2"/><text class="a " x="480" y="367" font-size="15" font-weight="400" fill="#F5F7FA" text-anchor="middle">pywebview: zeigt alles als normales App-Fenster</text></g></g>
-</g><g class="a k8"><g class="a k8i0"><g transform="translate(220,200)"><ellipse cx="0" cy="20" rx="40" ry="12" fill="#0A2038" stroke="#F2C230" stroke-width="4"/><ellipse cx="0" cy="6" rx="40" ry="12" fill="#0A2038" stroke="#F2C230" stroke-width="4"/><ellipse cx="0" cy="-8" rx="40" ry="12" fill="#0A2038" stroke="#F2C230" stroke-width="4"/><ellipse cx="0" cy="-22" rx="40" ry="12" fill="#0A2038" stroke="#F2C230" stroke-width="4"/></g><text class="a " x="220" y="318" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">weniger Geld für Tinte</text></g><g class="a k8i1"><g transform="translate(480,200)"><rect x="-34" y="-50" width="68" height="104" rx="10" fill="none" stroke="#F5F7FA" stroke-width="4"/><rect x="-24" y="-20" width="48" height="64" rx="4" fill="#F0679E"/><path d="M0,-86 C6,-76 10,-70 10,-64 A10,10 0 0 1 -10,-64 C-10,-70 -6,-76 0,-86 Z" fill="#F0679E"/></g><text class="a " x="480" y="318" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">weniger leere Patronen</text></g><g class="a k8i2"><g transform="translate(740,200)"><path d="M-46,30 C-46,-30 0,-70 52,-72 C50,-16 16,34 -40,34 Z" fill="#7DB33A"/><path d="M-40,30 C-10,0 14,-26 40,-58" fill="none" stroke="#0F2C4C" stroke-width="4" stroke-linecap="round"/><path d="M-30,46 C-40,58 -48,64 -60,66" fill="none" stroke="#7DB33A" stroke-width="5" stroke-linecap="round"/></g><text class="a " x="740" y="318" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">weniger Rohstoffe, weniger Abfall</text></g></g><g class="a kend"><svg x="432" y="96" width="96" height="96" viewBox="0 0 1024 1024">
+
+  <!-- =====================================================================
+       SCENE 2 (4.8s – 9.8s): READ THE PDF RECIPE (pikepdf)
+       ===================================================================== -->
+  <g class="sc2">
+    <text x="40" y="36" class="t-badge">02 / 06</text>
+    <text x="104" y="36" class="t-tag">KEINE KI · 4 KLARE REGELN</text>
+
+    <!-- Left: X-Ray Blueprint Slide -->
+    <g transform="translate(68, 92)">
+      <!-- Base dark slide -->
+      <rect x="0" y="0" width="360" height="232" rx="10" fill="#0B1F38" stroke="#2D527C" stroke-width="1.5"/>
+
+      <!-- 1. Dark Background dashed overlay (Pink #F0679E) -->
+      <g class="s2-ov1">
+        <rect x="6" y="6" width="348" height="220" rx="7" fill="rgba(240,103,158,0.08)" stroke="#F0679E" stroke-width="2" stroke-dasharray="7 5"/>
+      </g>
+
+      <!-- 2. Repeated Header/Logo dashed overlay (Yellow #F2C230) -->
+      <g class="s2-ov2">
+        <rect x="18" y="18" width="324" height="34" rx="5" fill="rgba(242,194,48,0.12)" stroke="#F2C230" stroke-width="2" stroke-dasharray="6 4"/>
+        <circle cx="36" cy="35" r="8" fill="#F2C230" opacity="0.85"/>
+        <rect x="52" y="30" width="110" height="9" rx="3" fill="#F2C230" opacity="0.65"/>
+      </g>
+
+      <!-- 3. Data Chart dashed overlay (Sky Blue #6BBEEC) -->
+      <g class="s2-ov3">
+        <rect x="204" y="70" width="134" height="134" rx="6" fill="rgba(107,190,236,0.12)" stroke="#6BBEEC" stroke-width="2" stroke-dasharray="6 4"/>
+        <!-- Mini bars -->
+        <rect x="220" y="152" width="16" height="36" rx="2" fill="#6BBEEC" opacity="0.85"/>
+        <rect x="246" y="128" width="16" height="60" rx="2" fill="#6BBEEC" opacity="0.85"/>
+        <rect x="272" y="106" width="16" height="82" rx="2" fill="#6BBEEC" opacity="0.85"/>
+        <rect x="298" y="138" width="16" height="50" rx="2" fill="#6BBEEC" opacity="0.85"/>
+      </g>
+
+      <!-- 4. Vector Text dashed overlay (Mint Green #4CC38A) -->
+      <g class="s2-ov4">
+        <rect x="18" y="70" width="172" height="134" rx="6" fill="rgba(76,195,138,0.10)" stroke="#4CC38A" stroke-width="2" stroke-dasharray="6 4"/>
+        <rect x="30" y="88" width="128" height="8" rx="3" fill="#F5F7FA"/>
+        <rect x="30" y="110" width="144" height="6" rx="3" fill="#A9C0D9"/>
+        <rect x="30" y="126" width="132" height="6" rx="3" fill="#A9C0D9"/>
+        <rect x="30" y="142" width="118" height="6" rx="3" fill="#A9C0D9"/>
+        <rect x="30" y="166" width="140" height="6" rx="3" fill="#A9C0D9"/>
+        <rect x="30" y="182" width="96" height="6" rx="3" fill="#A9C0D9"/>
+      </g>
+    </g>
+
+    <!-- Connector Arrow -->
+    <g transform="translate(446, 208)">
+      <line x1="0" y1="0" x2="34" y2="0" stroke="#6FA8E8" stroke-width="2" stroke-dasharray="4 4"/>
+      <path d="M28 -6 L36 0 L28 6" fill="none" stroke="#6FA8E8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Right: pikepdf Recipe Card -->
+    <g transform="translate(500, 92)">
+      <rect x="0" y="0" width="392" height="232" rx="12" fill="#133459" stroke="#2B4E75" stroke-width="1.5"/>
+      <!-- Header -->
+      <rect x="0" y="0" width="392" height="40" rx="12" fill="#183F6B"/>
+      <rect x="0" y="28" width="392" height="12" fill="#183F6B"/>
+      <text x="18" y="25" class="t-ui">Zeichenrezept des PDFs</text>
+      <rect x="306" y="9" width="70" height="22" rx="6" fill="#0F2C4C" stroke="#6FA8E8" stroke-width="1"/>
+      <text x="341" y="24" text-anchor="middle" class="t-mono" fill="#6FA8E8">pikepdf</text>
+
+      <!-- Row 1: re f -->
+      <g class="s2-ov1">
+        <rect x="16" y="54" width="360" height="36" rx="7" fill="#0F2C4C" stroke="#F0679E" stroke-width="1.2"/>
+        <circle cx="32" cy="72" r="5" fill="#F0679E"/>
+        <text x="48" y="76" class="t-ui">Dunkler Hintergrund</text>
+        <text x="362" y="76" text-anchor="end" class="t-mono" fill="#F0679E">0 0 960 540 re f</text>
+      </g>
+
+      <!-- Row 2: Do logo -->
+      <g class="s2-ov2">
+        <rect x="16" y="98" width="360" height="36" rx="7" fill="#0F2C4C" stroke="#F2C230" stroke-width="1.2"/>
+        <circle cx="32" cy="116" r="5" fill="#F2C230"/>
+        <text x="48" y="120" class="t-ui">Wiederholtes Logo</text>
+        <text x="362" y="120" text-anchor="end" class="t-mono" fill="#F2C230">/ImLogo Do</text>
+      </g>
+
+      <!-- Row 3: Do chart -->
+      <g class="s2-ov3">
+        <rect x="16" y="142" width="360" height="36" rx="7" fill="#0F2C4C" stroke="#6BBEEC" stroke-width="1.2"/>
+        <circle cx="32" cy="160" r="5" fill="#6BBEEC"/>
+        <text x="48" y="164" class="t-ui">Diagramm</text>
+        <text x="362" y="164" text-anchor="end" class="t-mono" fill="#6BBEEC">/ImChart Do</text>
+      </g>
+
+      <!-- Row 4: BT / ET -->
+      <g class="s2-ov4">
+        <rect x="16" y="186" width="360" height="36" rx="7" fill="#0F2C4C" stroke="#4CC38A" stroke-width="1.2"/>
+        <circle cx="32" cy="204" r="5" fill="#4CC38A"/>
+        <text x="48" y="208" class="t-ui">Vektortext</text>
+        <text x="362" y="208" text-anchor="end" class="t-mono" fill="#4CC38A">BT (Text) Tj ET</text>
+      </g>
+    </g>
+
+    <!-- Caption -->
+    <g transform="translate(480, 404)">
+      <text class="t-cap cap2" x="0" y="0">Keine KI. pikepdf liest das PDF wie ein Zeichenrezept.</text>
+    </g>
+  </g>
+
+  <!-- =====================================================================
+       SCENE 3 (9.8s – 15.0s): MEASURE & CLASSIFY (Python · NumPy · Pillow)
+       ===================================================================== -->
+  <g class="sc3">
+    <text x="40" y="36" class="t-badge">03 / 06</text>
+    <text x="104" y="36" class="t-tag">PYTHON · NUMPY · PILLOW</text>
+
+    <!-- Left: Slide being scanned -->
+    <g transform="translate(68, 92)">
+      <rect x="0" y="0" width="360" height="232" rx="10" fill="#0B1F38" stroke="#2D527C" stroke-width="1.5"/>
+      <!-- Slide Elements -->
+      <rect x="18" y="18" width="324" height="34" rx="5" fill="#17385C" stroke="#F2C230" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <circle cx="36" cy="35" r="8" fill="#F2C230" opacity="0.85"/>
+      <rect x="52" y="30" width="106" height="9" rx="3" fill="#F2C230" opacity="0.6"/>
+
+      <!-- Text block -->
+      <rect x="18" y="70" width="172" height="134" rx="6" fill="rgba(76,195,138,0.08)" stroke="#4CC38A" stroke-width="1.5"/>
+      <rect x="30" y="88" width="122" height="8" rx="3" fill="#F5F7FA"/>
+      <rect x="30" y="110" width="138" height="6" rx="3" fill="#A9C0D9"/>
+      <rect x="30" y="126" width="128" height="6" rx="3" fill="#A9C0D9"/>
+      <rect x="30" y="142" width="110" height="6" rx="3" fill="#A9C0D9"/>
+      <rect x="30" y="164" width="134" height="6" rx="3" fill="#A9C0D9"/>
+
+      <!-- Chart block -->
+      <rect x="204" y="70" width="134" height="134" rx="6" fill="rgba(107,190,236,0.10)" stroke="#6BBEEC" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <rect x="220" y="152" width="16" height="36" rx="2" fill="#6BBEEC"/>
+      <rect x="246" y="128" width="16" height="60" rx="2" fill="#6BBEEC"/>
+      <rect x="272" y="106" width="16" height="82" rx="2" fill="#6BBEEC"/>
+      <rect x="298" y="138" width="16" height="50" rx="2" fill="#6BBEEC"/>
+
+      <!-- Sweeping Laser Bar -->
+      <g transform="translate(4, 12)">
+        <g class="s3-laser">
+          <rect x="0" y="-12" width="352" height="14" fill="rgba(76,195,138,0.16)"/>
+          <line x1="0" y1="2" x2="352" y2="2" stroke="#4CC38A" stroke-width="2.5"/>
+        </g>
+      </g>
+
+      <!-- Result Badges appearing after scan -->
+      <g class="s3-badges">
+        <!-- Header Remove badge -->
+        <rect x="258" y="23" width="76" height="22" rx="11" fill="#3B182E" stroke="#F0679E" stroke-width="1.2"/>
+        <text x="296" y="38" text-anchor="middle" font-size="10.5" font-weight="700" fill="#F0679E">Entfernen</text>
+
+        <!-- Background Remove badge (bottom-left corner of slide) -->
+        <rect x="18" y="208" width="76" height="18" rx="9" fill="#3B182E" stroke="#F0679E" stroke-width="1.2"/>
+        <text x="56" y="220" text-anchor="middle" font-size="10" font-weight="700" fill="#F0679E">Entfernen</text>
+
+        <!-- Chart Remove badge -->
+        <rect x="256" y="76" width="76" height="22" rx="11" fill="#3B182E" stroke="#F0679E" stroke-width="1.2"/>
+        <text x="294" y="91" text-anchor="middle" font-size="10.5" font-weight="700" fill="#F0679E">Entfernen</text>
+
+        <!-- Text Keep badge -->
+        <rect x="122" y="176" width="60" height="22" rx="11" fill="#133D32" stroke="#4CC38A" stroke-width="1.2"/>
+        <text x="152" y="191" text-anchor="middle" font-size="10.5" font-weight="700" fill="#4CC38A">Behalten</text>
+      </g>
+    </g>
+
+    <!-- Right: 3 Clean Rule Cards -->
+    <g transform="translate(476, 96)">
+      <!-- Rule 1 -->
+      <g transform="translate(0, 0)">
+        <g class="s3-card1">
+          <rect x="0" y="0" width="416" height="64" rx="10" fill="#133459" stroke="#2B4E75" stroke-width="1.4"/>
+          <circle cx="28" cy="32" r="9" fill="#F0679E"/>
+          <text x="50" y="28" class="t-ui">Dunkelheit &amp; Tinte</text>
+          <text x="50" y="47" class="t-ui-sm">Erkennt große dunkle Flächen</text>
+          <text x="396" y="36" text-anchor="end" class="t-mono" fill="#F0679E">01</text>
+        </g>
+      </g>
+
+      <!-- Rule 2 -->
+      <g transform="translate(0, 80)">
+        <g class="s3-card2">
+          <rect x="0" y="0" width="416" height="64" rx="10" fill="#133459" stroke="#2B4E75" stroke-width="1.4"/>
+          <circle cx="28" cy="32" r="9" fill="#F2C230"/>
+          <text x="50" y="28" class="t-ui">Wiederholung über Seiten</text>
+          <text x="50" y="47" class="t-ui-sm">Findet Kopfzeilen &amp; Logos</text>
+          <text x="396" y="36" text-anchor="end" class="t-mono" fill="#F2C230">02</text>
+        </g>
+      </g>
+
+      <!-- Rule 3 -->
+      <g transform="translate(0, 160)">
+        <g class="s3-card3">
+          <rect x="0" y="0" width="416" height="64" rx="10" fill="#133459" stroke="#2B4E75" stroke-width="1.4"/>
+          <circle cx="28" cy="32" r="9" fill="#6BBEEC"/>
+          <text x="50" y="28" class="t-ui">Größe &amp; Fläche</text>
+          <text x="50" y="47" class="t-ui-sm">Markiert große Bilder</text>
+          <text x="396" y="36" text-anchor="end" class="t-mono" fill="#6BBEEC">03</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- Caption -->
+    <g transform="translate(480, 404)">
+      <text class="t-cap cap3" x="0" y="0">Klare Regeln messen Dunkelheit, Größe und Wiederholung.</text>
+    </g>
+  </g>
+
+  <!-- =====================================================================
+       SCENE 4 (15.0s – 21.8s): YOU DECIDE — KEEP THE CHART (SLOW & CLEAR)
+       ===================================================================== -->
+  <g class="sc4">
+    <text x="40" y="36" class="t-badge">04 / 06</text>
+    <text x="104" y="36" class="t-tag">SIE BEHALTEN DIE KONTROLLE</text>
+
+    <!-- Focused Slide Preview Card -->
+    <g transform="translate(130, 82)">
+      <rect x="0" y="0" width="486" height="256" rx="12" fill="#0B1F38" stroke="#2F5682" stroke-width="1.8"/>
+      <!-- Muted Header (marked remove) -->
+      <rect x="20" y="18" width="446" height="32" rx="6" fill="#143052" opacity="0.55"/>
+      <text x="34" y="39" font-size="12" font-weight="600" fill="#7D9BBE">Vorlesung 04 — Signalanalyse</text>
+
+      <!-- Left Text Column (clean & kept) -->
+      <rect x="22" y="68" width="166" height="10" rx="3" fill="#F5F7FA"/>
+      <rect x="22" y="92" width="184" height="7" rx="3" fill="#A9C0D9"/>
+      <rect x="22" y="110" width="170" height="7" rx="3" fill="#A9C0D9"/>
+      <rect x="22" y="128" width="154" height="7" rx="3" fill="#A9C0D9"/>
+      <rect x="22" y="158" width="178" height="7" rx="3" fill="#A9C0D9"/>
+      <rect x="22" y="176" width="142" height="7" rx="3" fill="#A9C0D9"/>
+      <rect x="22" y="194" width="160" height="7" rx="3" fill="#A9C0D9"/>
+
+      <!-- Highlighted Data Chart Box (x=224..464, y=66..234) -->
+      <g transform="translate(224, 66)">
+        <!-- Chart inner graphics -->
+        <rect x="0" y="0" width="240" height="168" rx="8" fill="#112E4F"/>
+        <text x="14" y="24" font-size="11.5" font-weight="600" fill="#A9C0D9">Gemessene Antwort</text>
+        <!-- Axes -->
+        <line x1="20" y1="142" x2="220" y2="142" stroke="#3B628E" stroke-width="1.5"/>
+        <line x1="20" y1="42" x2="20" y2="142" stroke="#3B628E" stroke-width="1.5"/>
+        <!-- Bars -->
+        <rect x="36" y="102" width="24" height="40" rx="3" fill="#6BBEEC" opacity="0.88"/>
+        <rect x="74" y="80" width="24" height="62" rx="3" fill="#6BBEEC" opacity="0.88"/>
+        <rect x="112" y="56" width="24" height="86" rx="3" fill="#6BBEEC"/>
+        <rect x="150" y="72" width="24" height="70" rx="3" fill="#6BBEEC" opacity="0.88"/>
+        <rect x="188" y="48" width="24" height="94" rx="3" fill="#6BBEEC"/>
+        <!-- Trend line -->
+        <polyline points="48,96 86,74 124,52 162,66 200,42" fill="none" stroke="#F5F7FA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- BEFORE CLICK: Pink Dashed Remove State -->
+        <g class="s4-state-rem">
+          <rect x="0" y="0" width="240" height="168" rx="8" fill="rgba(240,103,158,0.10)" stroke="#F0679E" stroke-width="2.2" stroke-dasharray="7 5"/>
+          <rect x="144" y="8" width="88" height="24" rx="12" fill="#3B182E" stroke="#F0679E" stroke-width="1.3"/>
+          <text x="188" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#F0679E">× Entfernen</text>
+        </g>
+
+        <!-- AFTER CLICK: Solid Glowing Green Kept State -->
+        <g class="s4-state-kept">
+          <rect x="-2" y="-2" width="244" height="172" rx="10" fill="none" stroke="#4CC38A" stroke-width="4" opacity="0.28"/>
+          <rect x="0" y="0" width="240" height="168" rx="8" fill="rgba(76,195,138,0.08)" stroke="#4CC38A" stroke-width="2.6"/>
+          <rect x="144" y="8" width="88" height="24" rx="12" fill="#134234" stroke="#4CC38A" stroke-width="1.4"/>
+          <text x="188" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#4CC38A">✓ Behalten</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- Authentic Dark UI Context Menu (opens right next to chart) -->
+    <g transform="translate(556, 178)">
+      <g class="s4-menu">
+        <rect x="0" y="0" width="244" height="114" rx="10" fill="#0D192B" stroke="#36577D" stroke-width="1.5"/>
+        <!-- Item 1 -->
+        <text x="16" y="27" font-size="12.5" font-weight="500" fill="#9BB3CF">Auf allen Seiten entfernen</text>
+        <!-- Item 2 (Highlighted in Green) -->
+        <rect class="s4-menu-hi" x="6" y="40" width="232" height="34" rx="6" fill="#4CC38A"/>
+        <rect x="6" y="40" width="232" height="34" rx="6" fill="none" stroke="#4CC38A" stroke-width="1.2"/>
+        <circle cx="20" cy="57" r="4" fill="#4CC38A"/>
+        <text x="32" y="61" font-size="12.5" font-weight="700" fill="#F5F7FA">Auf dieser Seite behalten</text>
+        <!-- Item 3 -->
+        <text x="16" y="96" font-size="12.5" font-weight="500" fill="#9BB3CF">Auf allen Seiten behalten</text>
+      </g>
+    </g>
+
+    <!-- Click 1 Ripple on Chart -->
+    <g transform="translate(510, 212)">
+      <circle class="s4-rip1" cx="0" cy="0" r="16" fill="none" stroke="#6BBEEC" stroke-width="2.5"/>
+    </g>
+
+    <!-- Click 2 Ripple on "Keep on this page" -->
+    <g transform="translate(640, 236)">
+      <circle class="s4-rip2" cx="0" cy="0" r="16" fill="none" stroke="#4CC38A" stroke-width="2.5"/>
+    </g>
+
+    <!-- Vector Mouse Cursor -->
+    <g transform="translate(510, 212)">
+      <g class="s4-cursor">
+        <path d="M0 0 L0 22 L6 17 L10 25 L14 23 L10 15 L17 15 Z" fill="#F5F7FA" stroke="#0F2C4C" stroke-width="1.6" stroke-linejoin="round"/>
+      </g>
+    </g>
+
+    <!-- Caption -->
+    <g transform="translate(480, 404)">
+      <text class="t-cap cap4" x="0" y="0">Diagramm gebraucht? Mit einem Klick auf der Seite behalten.</text>
+    </g>
+  </g>
+
+  <!-- =====================================================================
+       SCENE 5 (21.8s – 27.4s): DISTILL INTO DOTS & VERIFY (pikepdf + pypdfium2)
+       ===================================================================== -->
+  <g class="sc5">
+    <text x="40" y="36" class="t-badge">05 / 06</text>
+    <text x="104" y="36" class="t-tag">PIKEPDF + PYPDFIUM2 · VEKTORAUSGABE</text>
+
+    <!-- Left: Transforming Sheet (Dark Slide -> White Crisp A4 Sheet) -->
+    <g transform="translate(86, 94)">
+      <!-- Crisp White Paper Underneath -->
+      <g class="s5-white-paper">
+        <rect x="0" y="0" width="380" height="232" rx="10" fill="#FFFFFF" stroke="#D4E0EE" stroke-width="1.5"/>
+        <!-- Sharp Vector Black Text -->
+        <rect x="24" y="30" width="142" height="10" rx="2" fill="#1A222D"/>
+        <rect x="24" y="56" width="160" height="6" rx="2" fill="#2A3545"/>
+        <rect x="24" y="72" width="148" height="6" rx="2" fill="#2A3545"/>
+        <rect x="24" y="88" width="136" height="6" rx="2" fill="#2A3545"/>
+        <rect x="24" y="114" width="154" height="6" rx="2" fill="#2A3545"/>
+        <rect x="24" y="130" width="128" height="6" rx="2" fill="#2A3545"/>
+        <rect x="24" y="146" width="144" height="6" rx="2" fill="#2A3545"/>
+        <!-- Crisp Kept Chart on White -->
+        <rect x="204" y="42" width="152" height="136" rx="6" fill="#F6F9FC" stroke="#4CC38A" stroke-width="1.6"/>
+        <line x1="218" y1="158" x2="342" y2="158" stroke="#8FA5BD" stroke-width="1.2"/>
+        <rect x="228" y="122" width="18" height="36" rx="2" fill="#0C447C"/>
+        <rect x="256" y="102" width="18" height="56" rx="2" fill="#0C447C"/>
+        <rect x="284" y="80" width="18" height="78" rx="2" fill="#0C447C"/>
+        <rect x="312" y="96" width="18" height="62" rx="2" fill="#0C447C"/>
+        <!-- Sharp vector pill -->
+        <rect x="24" y="192" width="156" height="24" rx="12" fill="#E9F7F0" stroke="#4CC38A" stroke-width="1"/>
+        <text x="102" y="208" text-anchor="middle" font-size="11" font-weight="700" fill="#1B6B46">Scharfer Vektortext</text>
+      </g>
+
+      <!-- Dark Background + Yellow Header dissolving -->
+      <g class="s5-dark-overlay">
+        <rect x="0" y="0" width="380" height="232" rx="10" fill="#0B1F38" stroke="#F0679E" stroke-width="1.5"/>
+        <rect x="18" y="16" width="344" height="30" rx="5" fill="#F2C230" opacity="0.28" stroke="#F2C230" stroke-width="1.2"/>
+        <rect x="24" y="64" width="142" height="9" rx="2" fill="#F5F7FA" opacity="0.85"/>
+        <rect x="24" y="86" width="156" height="6" rx="2" fill="#A9C0D9" opacity="0.7"/>
+        <rect x="24" y="102" width="144" height="6" rx="2" fill="#A9C0D9" opacity="0.7"/>
+        <rect x="204" y="62" width="152" height="136" rx="6" fill="#133459" stroke="#6BBEEC" stroke-width="1.4"/>
+      </g>
+
+      <!-- 20 Floating Dots rising as waste dissolves -->
+      <g class="s5-dot-a">
+        <circle cx="32" cy="40" r="4.5" fill="#F2C230"/>
+        <circle cx="94" cy="28" r="3.5" fill="#F2C230"/>
+        <circle cx="176" cy="36" r="4" fill="#F2C230"/>
+        <circle cx="268" cy="26" r="4.5" fill="#F2C230"/>
+        <circle cx="338" cy="34" r="3.5" fill="#F2C230"/>
+        <circle cx="66" cy="116" r="4" fill="#F0679E"/>
+        <circle cx="152" cy="158" r="3.5" fill="#F0679E"/>
+      </g>
+      <g class="s5-dot-b">
+        <circle cx="52" cy="76" r="3.5" fill="#F0679E"/>
+        <circle cx="128" cy="96" r="4.5" fill="#F0679E"/>
+        <circle cx="218" cy="54" r="3.5" fill="#F5F7FA"/>
+        <circle cx="312" cy="72" r="4" fill="#F0679E"/>
+        <circle cx="88" cy="196" r="4.5" fill="#F0679E"/>
+        <circle cx="240" cy="208" r="3.5" fill="#F0679E"/>
+        <circle cx="352" cy="172" r="4" fill="#F0679E"/>
+      </g>
+      <g class="s5-dot-c">
+        <circle cx="24" cy="150" r="3" fill="#F5F7FA"/>
+        <circle cx="188" cy="128" r="4" fill="#F0679E"/>
+        <circle cx="290" cy="198" r="3.5" fill="#F5F7FA"/>
+        <circle cx="136" cy="216" r="3" fill="#F2C230"/>
+        <circle cx="342" cy="112" r="3.5" fill="#F5F7FA"/>
+        <circle cx="72" cy="22" r="3" fill="#F5F7FA"/>
+      </g>
+    </g>
+
+    <!-- Right Panel: pypdfium2 Visual Ink Meter (NO percentages!) + Budget & Nature -->
+    <g transform="translate(504, 94)">
+      <!-- Ink Meter Card -->
+      <rect x="0" y="0" width="370" height="114" rx="12" fill="#133459" stroke="#2B4E75" stroke-width="1.5"/>
+      <text x="18" y="28" class="t-ui">Tintenschätzung</text>
+      <rect x="272" y="10" width="80" height="22" rx="6" fill="#0F2C4C" stroke="#6FA8E8" stroke-width="1"/>
+      <text x="312" y="25" text-anchor="middle" class="t-mono" fill="#6FA8E8">pypdfium2</text>
+
+      <!-- Visual Bar Track -->
+      <rect x="18" y="50" width="334" height="22" rx="11" fill="#0A1E36" stroke="#23456B" stroke-width="1"/>
+      <rect class="s5-ink-bar" x="20" y="52" width="330" height="18" rx="9" fill="#F0679E"/>
+
+      <text x="20" y="94" class="t-ui-sm">Bereinigt</text>
+      <text x="350" y="94" text-anchor="end" class="t-ui-sm">Original</text>
+
+      <!-- Twin Sustainability & Budget Card -->
+      <g transform="translate(0, 130)">
+        <g class="s5-eco-pop">
+          <!-- Budget Tile -->
+          <rect x="0" y="0" width="176" height="102" rx="12" fill="#133459" stroke="#2B4E75" stroke-width="1.4"/>
+          <g transform="translate(88, 38)">
+            <circle cx="0" cy="0" r="18" fill="rgba(242,194,48,0.14)" stroke="#F2C230" stroke-width="2"/>
+            <circle cx="0" cy="0" r="11" fill="none" stroke="#F2C230" stroke-width="1.4" stroke-dasharray="3 2"/>
+            <line x1="0" y1="-6" x2="0" y2="6" stroke="#F2C230" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          <text x="88" y="82" text-anchor="middle" class="t-ui">Budget</text>
+
+          <!-- Nature Tile -->
+          <rect x="194" y="0" width="176" height="102" rx="12" fill="#133459" stroke="#2B4E75" stroke-width="1.4"/>
+          <g transform="translate(282, 38)">
+            <path d="M0 -18 C12 -10 14 6 0 18 C-14 6 -12 -10 0 -18 Z" fill="#639922"/>
+            <path d="M0 -18 C12 -10 14 6 0 18 V-18 Z" fill="#3B6D11"/>
+            <line x1="0" y1="-10" x2="0" y2="14" stroke="#F5F7FA" stroke-width="1.5" stroke-linecap="round" opacity="0.85"/>
+          </g>
+          <text x="282" y="82" text-anchor="middle" class="t-ui">Natur</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- Caption -->
+    <g transform="translate(480, 404)">
+      <text class="t-cap cap5" x="0" y="0">Verschwendete Tinte zerfällt in Punkte. Text bleibt scharf.</text>
+    </g>
+  </g>
+
+  <!-- =====================================================================
+       SCENE 6 (27.4s – 32.0s): END CARD & PHILOSOPHY
+       ===================================================================== -->
+  <g class="sc6">
+    <text x="40" y="36" class="t-badge">06 / 06</text>
+    <text x="104" y="36" class="t-tag">OFFEN &amp; TRANSPARENT</text>
+
+    <!-- Converging Dots into Brand Mark -->
+    <g transform="translate(480, 152)">
+      <g class="s6-conv-l">
+        <circle cx="-18" cy="10" r="4" fill="#639922"/>
+        <circle cx="-38" cy="-12" r="3.5" fill="#6FA8E8"/>
+        <circle cx="-8" cy="-26" r="3" fill="#F5F7FA"/>
+      </g>
+      <g class="s6-conv-r">
+        <circle cx="22" cy="-8" r="4" fill="#4CC38A"/>
+        <circle cx="36" cy="16" r="3.5" fill="#F2C230"/>
+        <circle cx="10" cy="28" r="3" fill="#6FA8E8"/>
+      </g>
+
+      <!-- Brand Mark: Fountain-pen Nib transitioning into Veined Leaf Blade -->
+      <!-- Brand mark: the original PDF Distiller logo (app/static/logo.svg) -->
+      <g class="s6-logo-pop">
+<svg x="-60" y="-60" width="120" height="120" viewBox="0 0 1024 1024">
   <style>
     /* Light colours are the original design. In the app the page sets --pdl-* per theme (style.css);
        opened on its own (favicon, Finder) the system theme picks: svg:root only matches then. */
@@ -367,6 +1138,17 @@ svg { font-family: Inter, -apple-system, "Segoe UI", Helvetica, Arial, sans-seri
         </g>
       
   </g>
-</svg><text class="a " x="480" y="236" font-size="40" font-weight="700" fill="#F5F7FA" text-anchor="middle">PDF Distiller</text><text class="a " x="480" y="272" font-size="20" font-weight="400" fill="#F5F7FA" text-anchor="middle">Folien drucken. Tinte sparen.</text></g>
-<text class="a c0" x="480" y="46" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">Ihre Datei verlässt nie Ihren Rechner. Alles passiert genau hier.</text><text class="a c1" x="480" y="46" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">Hier steckt keine KI drin. Die App folgt klaren Regeln, jedes Mal gleich.</text><text class="a c2" x="480" y="46" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">pikepdf liest Ihr PDF wie ein Rezept: eine Liste von Zeichenschritten.</text><text class="a c3" x="480" y="46" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">Unsere eigene Analyse prüft jeden Schritt: wie groß, wie dunkel, wiederholt er sich?</text><text class="a c4" x="480" y="46" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">Manches sieht nach Dekoration aus, ist Ihnen aber wichtig, wie dieses Diagramm.</text><text class="a c5" x="480" y="46" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">Anklicken und Behalten wählen. Ihre Wahl schlägt immer die Regeln.</text><text class="a c6" x="480" y="46" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">pikepdf schreibt das Rezept neu, ohne die entfernten Schritte. Text bleibt Text.</text><text class="a c7" x="480" y="46" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">pypdfium2, die PDF-Engine aus Google Chrome, zeichnet jede Seite und misst die Tinte.</text><text class="a c8" x="480" y="46" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">Das Fenster ist eine kleine Webseite, die nur auf Ihrem Rechner läuft.</text><text class="a c9" x="480" y="46" font-size="18" font-weight="600" fill="#F5F7FA" text-anchor="middle">Weniger Tinte, weniger Patronen, weniger Rohstoffe: gut für Ihr Budget und die Natur.</text>
+</svg>
+      </g>
+    </g>
+
+    <!-- Title, Tagline, Grounded Subline -->
+    <text x="480" y="256" text-anchor="middle" font-size="34" font-weight="700" fill="#F5F7FA" letter-spacing="-0.02em">PDF Distiller</text>
+    <text x="480" y="294" text-anchor="middle" font-size="20" font-weight="600" fill="#6FA8E8">Folien drucken. Tinte sparen.</text>
+    <text x="480" y="330" text-anchor="middle" font-size="14" font-weight="500" fill="#A9C0D9">Lokale Desktop-App · Weniger Verschwendung für Budget und Natur</text>
+  </g>
+
+  <!-- Bottom Subtle Progress Bar -->
+  <rect x="0" y="434" width="960" height="6" rx="3" fill="#163961"/>
+  <rect class="progress-fill" x="0" y="434" width="960" height="6" rx="3" fill="#4CC38A"/>
 </svg>

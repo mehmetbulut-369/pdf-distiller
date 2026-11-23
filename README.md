@@ -22,7 +22,7 @@ screens. If you print, print only what you need. Each of us is a single dot. Thi
 
 No AI model and no internet: a handful of readable rules, step by step.
 
-<p align="center"><img src="docs/inside.en.svg" width="960" alt="Your file never leaves your computer. Everything happens right here. There is no AI inside. The app follows clear rules, the same way every time. pikepdf reads your PDF like a recipe: a list of drawing steps. Our own analysis checks every step: how big, how dark, and does it repeat? Some things look like decoration but matter to you, like this chart. Click it and choose to keep it. Your choice always beats the rules. pikepdf writes the recipe again, without the steps you removed. Text stays text. pypdfium2, the PDF engine inside Google Chrome, draws each page to measure the ink. The window is a small web page that runs only on your computer. Less ink, fewer cartridges, less raw material: good for your budget and for nature. PDF Distiller. Print the slides, not the ink."></p>
+<p align="center"><img src="docs/inside.en.svg" width="960" alt="How PDF Distiller works locally without AI: your file stays on your computer, pikepdf reads its drawing recipe, clear rules measure darkness and repetition, you keep any important chart with one click, wasted ink dissolves into dots, and vector text stays sharp."></p>
 
 ## How I built it
 
