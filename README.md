@@ -22,12 +22,12 @@ screens. If you print, print only what you need. Each of us is a single dot. Thi
 
 No AI model and no internet: a handful of readable rules, step by step.
 
-<p align="center"><img src="docs/inside.en.svg" width="960" alt="It runs on your computer. Nothing is uploaded, and there is no AI model inside. 1 · Read: pikepdf opens the page's own drawing instructions, one by one. 2 · Measure: size, darkness, and what repeats on every page. 3 · Decide: the level sets the rules, and your click always wins. 4 · Rewrite: the same instructions, minus what you removed. Text stays text. 5 · Check: pypdfium2 draws every page before and after, and counts the ink. I built it for students like me: less ink to buy, fewer empty cartridges. Open source, readable rules, 90 tests. Built with an AI assistant, no AI inside."></p>
+<p align="center"><img src="docs/inside.en.svg" width="960" alt="Your file never leaves your computer. Everything happens right here. There is no AI inside. The app follows clear rules, the same way every time. pikepdf reads your PDF like a recipe: a list of drawing steps. Our own analysis checks every step: how big, how dark, and does it repeat? Some things look like decoration but matter to you, like this chart. Click it and choose to keep it. Your choice always beats the rules. pikepdf writes the recipe again, without the steps you removed. Text stays text. pypdfium2, the PDF engine inside Google Chrome, draws each page to measure the ink. The window is a small web page that runs only on your computer. Less ink, fewer cartridges, less raw material: good for your budget and for nature. PDF Distiller. Print the slides, not the ink."></p>
 
 ## How I built it
 
-1. **Measure the problem.** The app renders every page before and after and estimates the ink. On the
-   dark sample deck it saves 91–98 % (table under *Results* below).
+1. **Measure the problem.** The app draws every page before and after and estimates the ink, so each
+   choice shows what it saves. Dark slides save the most, plain ones less (measurements under *Results*).
 2. **Set the constraints first.** Works offline. Text stays real text, never a picture of text.
    Libraries with permissive licences only. A one-click app for people who never open a terminal.
 3. **Decide, and write down the cost.**
@@ -41,9 +41,9 @@ No AI model and no internet: a handful of readable rules, step by step.
    | Spot text inside images by heuristics, no OCR | Fast, no large model to ship | Colourful diagrams can be misjudged |
    | One local web interface for browser and desktop | One code base, no build step | The download is about 38 MB |
 
-4. **Prove it.** 90 automated tests run on Linux, macOS and Windows. 1100 of the 1103 damaged and unusual
-   files in the pdf.js test corpus open ([report](docs/robustness.md)). A 500-page deck is analysed in
-   2.0 s.
+4. **Check it.** Automated checks run on Linux, macOS and Windows with every change. Damaged and unusual
+   PDFs from the pdf.js test collection were opened one by one ([report](docs/robustness.md)). Even a
+   500-page deck is analysed in about two seconds.
 5. **Build for people, not for myself.** Every action shows feedback, so the app never looks frozen.
    Messages never blame the user. The interface speaks English, German and Turkish, and works with a
    keyboard and a screen reader.

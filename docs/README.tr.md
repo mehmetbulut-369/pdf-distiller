@@ -22,12 +22,12 @@ Basacaksanız, yalnız ihtiyacınız olanı basın. Her birimiz tek bir noktayı
 
 Yapay zekâ modeli yok, internet yok: adım adım, okunabilir birkaç kural.
 
-<p align="center"><img src="inside.tr.svg" width="960" alt="Kendi bilgisayarınızda çalışır. Hiçbir şey yüklenmez, içinde yapay zekâ modeli yok. 1 · Oku: pikepdf sayfanın kendi çizim komutlarını tek tek açar. 2 · Ölç: boyut, koyuluk ve her sayfada tekrar eden ne varsa. 3 · Karar ver: kademe kuralları koyar, son söz her zaman sizin tıklamanızın. 4 · Yeniden yaz: aynı komutlar, çıkardıklarınız hariç. Metin metin olarak kalır. 5 · Kontrol et: pypdfium2 her sayfayı önce ve sonra çizer, mürekkebi sayar. Benim gibi öğrenciler için yaptım: daha az mürekkep, daha az boş kartuş. Açık kaynak, okunabilir kurallar, 90 test. Yapay zekâ yardımıyla yazıldı, içinde yok."></p>
+<p align="center"><img src="inside.tr.svg" width="960" alt="Dosyanız bilgisayarınızdan hiç çıkmaz. Her şey burada, bilgisayarınızda olur. İçinde yapay zekâ yok. Uygulama açık kurallara uyar, her seferinde aynı şekilde. pikepdf PDF'inizi bir yemek tarifi gibi okur: adım adım çizim talimatları. Kendi analizimiz her adımı inceler: ne kadar büyük, ne kadar koyu, tekrar ediyor mu? Bazı şeyler süs gibi görünür ama sizin için önemlidir, bu grafik gibi. Üzerine tıklayıp korumayı seçin. Sizin seçiminiz her zaman kuraldan önce gelir. pikepdf tarifi yeniden yazar, çıkardığınız adımlar olmadan. Metin metin kalır. pypdfium2, Google Chrome'daki PDF motoru, her sayfayı çizip mürekkebi ölçer. Pencere, yalnız bilgisayarınızda çalışan küçük bir web sayfasıdır. Daha az mürekkep, daha az kartuş, daha az ham madde: bütçenize de doğaya da iyi. PDF Distiller. Slaytları yazdırın, mürekkebi değil."></p>
 
 ## Nasıl yaptım
 
-1. **Önce sorunu ölç.** Uygulama her sayfayı önce ve sonra çizip mürekkebi tahmin ediyor. Koyu örnek
-   slayt setinde tasarruf %91–98 (aşağıda *Sonuçlar* tablosu).
+1. **Önce sorunu ölç.** Uygulama her sayfayı önce ve sonra çizip mürekkebi tahmin ediyor; böylece her seçim
+   ne kazandırdığını gösteriyor. Koyu slaytlar en çok, sade slaytlar daha az tasarruf ediyor (ölçümler *Sonuçlar* altında).
 2. **Sınırları baştan koy.** İnternetsiz çalışsın. Metin gerçek metin olarak kalsın, metnin resmine
    dönüşmesin. Yalnız serbest lisanslı kütüphaneler. Terminal açmayan biri için tek tıkla açılan bir uygulama.
 3. **Karar ver ve bedelini yaz.**
@@ -41,9 +41,9 @@ Yapay zekâ modeli yok, internet yok: adım adım, okunabilir birkaç kural.
    | Görsel içindeki yazıyı OCR'sız, kurallarla tanımak | Hızlı, büyük model gerekmez | Renkli şemalar yanlış sınıflanabilir |
    | Tarayıcı ve masaüstü için tek yerel web arayüzü | Tek kod tabanı, derleme adımı yok | İndirme boyutu yaklaşık 38 MB |
 
-4. **Kanıtla.** 90 otomatik test Linux, macOS ve Windows'ta çalışıyor. pdf.js test arşivindeki 1103 bozuk
-   ve alışılmadık dosyanın 1100'ü açılıyor ([rapor](robustness.md), İngilizce). 500 sayfalık bir
-   slayt seti 2,0 saniyede inceleniyor.
+4. **Kontrol et.** Her değişiklikte Linux, macOS ve Windows'ta otomatik kontroller çalışıyor. pdf.js test
+   arşivindeki bozuk ve alışılmadık PDF'ler tek tek açılarak denendi ([rapor](robustness.md), İngilizce).
+   500 sayfalık bir slayt seti bile yaklaşık iki saniyede inceleniyor.
 5. **Kendim için değil, insanlar için yap.** Her eylem karşılık gösteriyor, uygulama hiçbir an donmuş gibi
    görünmüyor. Mesajlar kusuru hiçbir zaman kullanıcıya yüklemiyor. Arayüz Türkçe, İngilizce ve Almanca;
    klavye ve ekran okuyucuyla kullanılabiliyor.

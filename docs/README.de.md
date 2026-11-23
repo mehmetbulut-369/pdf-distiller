@@ -23,12 +23,12 @@ ein einzelner Punkt. Das hier ist mein Beitrag.
 
 Kein KI-Modell, kein Internet: ein paar lesbare Regeln, Schritt für Schritt.
 
-<p align="center"><img src="inside.de.svg" width="960" alt="Läuft auf Ihrem Rechner. Nichts wird hochgeladen, und es steckt kein KI-Modell darin. 1 · Lesen: pikepdf öffnet die Zeichenbefehle der Seite, einen nach dem anderen. 2 · Messen: Größe, Helligkeit und was sich auf jeder Seite wiederholt. 3 · Entscheiden: Die Stufe setzt die Regeln, Ihr Klick hat immer Vorrang. 4 · Neu schreiben: dieselben Befehle, ohne das Entfernte. Text bleibt Text. 5 · Prüfen: pypdfium2 zeichnet jede Seite vorher und nachher und zählt die Tinte. Gebaut für Studierende wie mich: weniger Tinte kaufen, weniger leere Patronen. Open Source, lesbare Regeln, 90 Tests. Mit KI-Assistenz gebaut, ohne KI darin."></p>
+<p align="center"><img src="inside.de.svg" width="960" alt="Ihre Datei verlässt nie Ihren Rechner. Alles passiert genau hier. Hier steckt keine KI drin. Die App folgt klaren Regeln, jedes Mal gleich. pikepdf liest Ihr PDF wie ein Rezept: eine Liste von Zeichenschritten. Unsere eigene Analyse prüft jeden Schritt: wie groß, wie dunkel, wiederholt er sich? Manches sieht nach Dekoration aus, ist Ihnen aber wichtig, wie dieses Diagramm. Anklicken und Behalten wählen. Ihre Wahl schlägt immer die Regeln. pikepdf schreibt das Rezept neu, ohne die entfernten Schritte. Text bleibt Text. pypdfium2, die PDF-Engine aus Google Chrome, zeichnet jede Seite und misst die Tinte. Das Fenster ist eine kleine Webseite, die nur auf Ihrem Rechner läuft. Weniger Tinte, weniger Patronen, weniger Rohstoffe: gut für Ihr Budget und die Natur. PDF Distiller. Folien drucken. Tinte sparen.."></p>
 
 ## Wie ich es gebaut habe
 
-1. **Das Problem messen.** Die App rendert jede Seite vorher und nachher und schätzt die Tinte. Beim
-   dunklen Beispielfoliensatz spart sie 91–98 % (Tabelle unter *Ergebnisse* weiter unten).
+1. **Das Problem messen.** Die App zeichnet jede Seite vorher und nachher und schätzt die Tinte, damit jede
+   Entscheidung zeigt, was sie spart. Dunkle Folien sparen am meisten, schlichte weniger (Messungen unter *Ergebnisse*).
 2. **Zuerst die Rahmenbedingungen.** Funktioniert offline. Text bleibt echter Text, nie ein Bild von Text.
    Nur Bibliotheken mit freizügigen Lizenzen. Eine App mit einem Klick für Menschen, die nie ein Terminal
    öffnen.
@@ -43,9 +43,9 @@ Kein KI-Modell, kein Internet: ein paar lesbare Regeln, Schritt für Schritt.
    | Text in Bildern per Heuristik erkennen, ohne OCR | Schnell, kein großes Modell nötig | Bunte Diagramme können falsch eingeordnet werden |
    | Eine lokale Weboberfläche für Browser und Desktop | Eine Codebasis, kein Build-Schritt | Der Download ist etwa 38 MB groß |
 
-4. **Es belegen.** 90 automatische Tests laufen unter Linux, macOS und Windows. 1100 der 1103 beschädigten
-   und ungewöhnlichen Dateien aus dem Testkorpus von pdf.js lassen sich öffnen
-   ([Bericht](robustness.md), Englisch). Ein Foliensatz mit 500 Seiten ist in 2,0 s analysiert.
+4. **Prüfen.** Automatische Prüfungen laufen bei jeder Änderung unter Linux, macOS und Windows. Beschädigte
+   und ungewöhnliche PDFs aus der Testsammlung von pdf.js wurden einzeln geöffnet ([Bericht](robustness.md),
+   Englisch). Selbst ein Foliensatz mit 500 Seiten ist in etwa zwei Sekunden analysiert.
 5. **Für Menschen bauen, nicht für mich.** Jede Aktion gibt Rückmeldung, damit die App nie eingefroren
    wirkt. Meldungen geben nie dem Nutzer die Schuld. Die Oberfläche spricht Deutsch, Englisch und
    Türkisch und lässt sich mit Tastatur und Screenreader bedienen.
