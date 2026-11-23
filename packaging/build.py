@@ -61,8 +61,8 @@ def main() -> None:
 
     # license texts of bundled libraries must ship with the binary (THIRD_PARTY_NOTICES.md)
     target = ROOT / "dist" / (f"{NAME}.app/Contents/Resources" if sys.platform == "darwin" else "")
-    for f in ("LICENSE", "THIRD_PARTY_NOTICES.md"):
-        shutil.copy(ROOT / f, target / f)
+    for f in (ROOT / "LICENSE", ROOT / "docs" / "THIRD_PARTY_NOTICES.md"):
+        shutil.copy(f, target / f.name)
     for dist in DEPS:
         for f in metadata.files(dist) or []:
             if any(k in str(f).lower() for k in ("licen", "copying", "notice")) and not str(f).endswith(".py"):

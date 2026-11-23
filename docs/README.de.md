@@ -1,12 +1,12 @@
 # PDF Distiller
 
-[English](README.md) · **Deutsch** · [Türkçe](README.tr.md)
+[English](../README.md) · **Deutsch** · [Türkçe](README.tr.md)
 
 **Folien drucken, nicht ihre Hintergründe.** PDF Distiller entfernt dunkle Hintergründe, wiederholte
 Logos und große Fotos aus einem PDF und lässt den Text scharf. Es läuft auf Ihrem eigenen Rechner; Ihre
 Dateien werden nirgendwohin hochgeladen.
 
-<p align="center"><img src="docs/story.de.svg" width="960" alt="Eine Vorlesungsfolie, vor allem Hintergrund. So gedruckt, landet die meiste Tinte im Hintergrund. Deshalb fragt die App zuerst, woraus die Seite besteht. Hintergrund, wiederholte Logos und große Fotos werden entfernt. Gedruckt wird nur, was Sie brauchen."></p>
+<p align="center"><img src="story.de.svg" width="960" alt="Eine Vorlesungsfolie, vor allem Hintergrund. So gedruckt, landet die meiste Tinte im Hintergrund. Deshalb fragt die App zuerst, woraus die Seite besteht. Hintergrund, wiederholte Logos und große Fotos werden entfernt. Gedruckt wird nur, was Sie brauchen."></p>
 
 ## Warum ich es gebaut habe
 
@@ -17,7 +17,7 @@ die niemand liest. PDF Distiller stellt einem PDF vor dem Druck dieselbe Frage. 
 es geht nicht um Papier gegen Bildschirm. Wenn Sie drucken, dann nur, was Sie brauchen. Jeder von uns ist
 ein einzelner Punkt. Das hier ist mein Beitrag.
 
-![Eine dunkle Vorlesungsfolie vorher und nachher, Stufe „Mittel“](docs/before-after.png)
+![Eine dunkle Vorlesungsfolie vorher und nachher, Stufe „Mittel“](before-after.png)
 
 ## Wie ich es gebaut habe
 
@@ -31,14 +31,14 @@ ein einzelner Punkt. Das hier ist mein Beitrag.
    | Entscheidung | Warum | Was sie kostet |
    |---|---|---|
    | Die Zeichenbefehle des PDFs bearbeiten statt die Seite neu zu zeichnen | Text bleibt scharf und durchsuchbar, Dateien bleiben klein | Jedes ungewöhnliche PDF muss gelesen werden: Robustheitsarbeit |
-   | pikepdf + pypdfium2 statt PyMuPDF ([ADR](docs/adr/0001-no-pymupdf.md)) | Freizügige Lizenzen (PyMuPDF steht unter AGPL) | Zwei Bibliotheken müssen zusammenspielen |
+   | pikepdf + pypdfium2 statt PyMuPDF ([ADR](adr/0001-no-pymupdf.md)) | Freizügige Lizenzen (PyMuPDF steht unter AGPL) | Zwei Bibliotheken müssen zusammenspielen |
    | Entfernten Text ausblenden statt löschen | Der Rest der Zeile bleibt an seinem Platz | Ausgeblendeter Text bleibt durchsuchbar |
    | Text in Bildern per Heuristik erkennen, ohne OCR | Schnell, kein großes Modell nötig | Bunte Diagramme können falsch eingeordnet werden |
    | Eine lokale Weboberfläche für Browser und Desktop | Eine Codebasis, kein Build-Schritt | Der Download ist etwa 38 MB groß |
 
 4. **Es belegen.** 90 automatische Tests laufen unter Linux, macOS und Windows. 1100 der 1103 beschädigten
    und ungewöhnlichen Dateien aus dem Testkorpus von pdf.js lassen sich öffnen
-   ([Bericht](docs/robustness.md), Englisch). Ein Foliensatz mit 500 Seiten ist in 2,4 s analysiert.
+   ([Bericht](robustness.md), Englisch). Ein Foliensatz mit 500 Seiten ist in 2,4 s analysiert.
 5. **Für Menschen bauen, nicht für mich.** Jede Aktion gibt Rückmeldung, damit die App nie eingefroren
    wirkt. Meldungen geben nie dem Nutzer die Schuld. Die Oberfläche spricht Deutsch, Englisch und
    Türkisch und lässt sich mit Tastatur und Screenreader bedienen.
@@ -89,15 +89,15 @@ Die Beispieldateien sind synthetisch und werden von `tests/make_samples.py` erze
 `mixed_images.pdf` spart bewusst wenig: Die Bilder enthalten Text und werden behalten.
 
 Geschwindigkeit mit einem synthetischen Foliensatz aus 500 Seiten und ~155.000 Vektorelementen
-(`python bench.py`; Apple Silicon, 10 Kerne, Python 3.13): Analyse 2,4 s, Export 1,6–1,9 s,
-Vorschau einer Seite 8 ms. Details: [README.md](README.md#results).
+(`python tools/bench.py`; Apple Silicon, 10 Kerne, Python 3.13): Analyse 2,4 s, Export 1,6–1,9 s,
+Vorschau einer Seite 8 ms. Details: [README.md](../README.md).
 
 </details>
 
 <details>
 <summary><b>Download</b></summary>
 
-Fertige Pakete (ohne Python) liegen jedem [Release](../../releases) bei:
+Fertige Pakete (ohne Python) liegen jedem [Release](../../../releases) bei:
 
 - **macOS (Apple Silicon):** `PDF-Distiller-macOS.dmg` öffnen und *PDF Distiller* in *Programme* ziehen.
 - **Windows:** `PDF-Distiller-Windows.zip` entpacken und `PDF Distiller.exe` starten.
@@ -120,9 +120,9 @@ Die App öffnet sich in einem eigenen Fenster; Schließen des Fensters beendet s
 
 Voraussetzung: Python 3.10 oder neuer.
 
-- **macOS:** `start_mac.command` doppelklicken. Bei einer Warnung wegen eines nicht verifizierten
+- **macOS:** `tools/start_mac.command` doppelklicken. Bei einer Warnung wegen eines nicht verifizierten
   Entwicklers: Rechtsklick › *Öffnen*.
-- **Windows:** `start_windows.bat` doppelklicken.
+- **Windows:** `tools/start_windows.bat` doppelklicken.
 - **Manuell:**
 
 ```bash
@@ -155,11 +155,11 @@ Beim ersten Start wird eine lokale Umgebung eingerichtet (1–2 Minuten).
 8. Einstellungen als **Profil** speichern (`~/.pdf-distiller/profiles/`).
 9. **Druck-PDF herunterladen.**
 
-Funktionsweise, Entwicklung und bekannte Grenzen: siehe [README.md](README.md) (Englisch) und
+Funktionsweise, Entwicklung und bekannte Grenzen: siehe [README.md](../README.md) (Englisch) und
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
 </details>
 
 ## Lizenz
 
-[MIT](LICENSE). Lizenzen von Drittanbietern: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+[MIT](../LICENSE). Lizenzen von Drittanbietern: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

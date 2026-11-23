@@ -9,7 +9,7 @@ PDF Distiller has to do three things with a PDF:
 
 1. **Walk and rewrite page content streams** at the operator level: find each image, fill, stroke and
    shading, decide whether to drop it, and write a new stream without it. The same walk must assign the
-   same element ids in analysis and in rewriting (see `ARCHITECTURE.md`).
+   same element ids in analysis and in rewriting (see `docs/ARCHITECTURE.md`).
 2. **Render pages** fast for the live preview (~10 ms per page) and for the ink estimate.
 3. **Extract text** with correct font decoding for the word counter.
 
@@ -48,6 +48,6 @@ MIT for our code, and only file-level copyleft (MPL-2.0) for pikepdf, used unmod
 - PDFium is not thread-safe, so every render goes through one lock (`PDFIUM_LOCK`).
 - Commercial use, a hosted version and packaged binaries are all possible without changing the
   license or buying one. Packaged builds must ship the bundled libraries' license texts
-  (see `THIRD_PARTY_NOTICES.md`).
+  (see `docs/THIRD_PARTY_NOTICES.md`).
 - Revisit only if a capability is needed that neither qpdf nor PDFium provides and the project's
   license goals have changed.

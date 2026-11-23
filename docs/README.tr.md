@@ -1,12 +1,12 @@
 # PDF Distiller
 
-[English](README.md) · [Deutsch](README.de.md) · **Türkçe**
+[English](../README.md) · [Deutsch](README.de.md) · **Türkçe**
 
 **Slaytları basın, arka planlarını değil.** PDF Distiller bir PDF'teki koyu arka planları, tekrar eden
 logoları ve büyük fotoğrafları ayıklar, metni keskin bırakır. Kendi bilgisayarınızda çalışır; dosyalarınız
 internete yüklenmez.
 
-<p align="center"><img src="docs/story.tr.svg" width="960" alt="Çoğu arka plandan oluşan bir ders slaytı. Olduğu gibi basılınca mürekkebin çoğu arka plana gider. Bu yüzden uygulama önce sayfanın nelerden oluştuğunu sorar. Arka plan, tekrar eden logolar ve büyük fotoğraflar ayıklanır. Yalnız ihtiyacınız olan basılır."></p>
+<p align="center"><img src="story.tr.svg" width="960" alt="Çoğu arka plandan oluşan bir ders slaytı. Olduğu gibi basılınca mürekkebin çoğu arka plana gider. Bu yüzden uygulama önce sayfanın nelerden oluştuğunu sorar. Arka plan, tekrar eden logolar ve büyük fotoğraflar ayıklanır. Yalnız ihtiyacınız olan basılır."></p>
 
 ## Neden yaptım
 
@@ -16,7 +16,7 @@ düşünüyorum. Her koyu slayt da kartuşun çoğunu kimsenin okumadığı arka
 basmadan önce bir PDF'e aynı soruyu soruyor. Ben de tablet kullanıyorum; mesele kâğıt mı ekran mı değil.
 Basacaksanız, yalnız ihtiyacınız olanı basın. Her birimiz tek bir noktayız. Bu da benim üstüme düşen.
 
-![Koyu bir ders slaytı, Orta kademeyle önce ve sonra](docs/before-after.png)
+![Koyu bir ders slaytı, Orta kademeyle önce ve sonra](before-after.png)
 
 ## Nasıl yaptım
 
@@ -29,13 +29,13 @@ Basacaksanız, yalnız ihtiyacınız olanı basın. Her birimiz tek bir noktayı
    | Karar | Neden | Bedeli |
    |---|---|---|
    | Sayfayı yeniden çizmek yerine PDF'in çizim komutlarını düzenlemek | Metin keskin ve aranabilir kalır, dosya küçük kalır | Her tuhaf PDF'in okunması gerekir: sağlamlık işi |
-   | PyMuPDF yerine pikepdf + pypdfium2 ([ADR](docs/adr/0001-no-pymupdf.md)) | Serbest lisanslar (PyMuPDF AGPL) | İki kütüphanenin birlikte çalışması gerekir |
+   | PyMuPDF yerine pikepdf + pypdfium2 ([ADR](adr/0001-no-pymupdf.md)) | Serbest lisanslar (PyMuPDF AGPL) | İki kütüphanenin birlikte çalışması gerekir |
    | Kaldırılan metni silmek yerine gizlemek | Satırın geri kalanı yerinde durur | Gizli metin aramada yine bulunur |
    | Görsel içindeki yazıyı OCR'sız, kurallarla tanımak | Hızlı, büyük model gerekmez | Renkli şemalar yanlış sınıflanabilir |
    | Tarayıcı ve masaüstü için tek yerel web arayüzü | Tek kod tabanı, derleme adımı yok | İndirme boyutu yaklaşık 38 MB |
 
 4. **Kanıtla.** 90 otomatik test Linux, macOS ve Windows'ta çalışıyor. pdf.js test arşivindeki 1103 bozuk
-   ve alışılmadık dosyanın 1100'ü açılıyor ([rapor](docs/robustness.md), İngilizce). 500 sayfalık bir
+   ve alışılmadık dosyanın 1100'ü açılıyor ([rapor](robustness.md), İngilizce). 500 sayfalık bir
    slayt seti 2,4 saniyede inceleniyor.
 5. **Kendim için değil, insanlar için yap.** Her eylem karşılık gösteriyor, uygulama hiçbir an donmuş gibi
    görünmüyor. Mesajlar kusuru hiçbir zaman kullanıcıya yüklemiyor. Arayüz Türkçe, İngilizce ve Almanca;
@@ -86,16 +86,16 @@ Mürekkep tasarrufu, sayfaları önce ve sonra render ederek tahmin edilir (`pyt
 *Maksimum* bazen *Orta*'dan biraz az tasarruf eder, çünkü tüm metni de siyaha çevirir.
 `mixed_images.pdf` bilerek az tasarruf eder: görsellerinde yazı var, korunurlar.
 
-Hız, 500 sayfalık ve ~155.000 vektör öğeli sentetik bir destede (`python bench.py`; Apple Silicon,
+Hız, 500 sayfalık ve ~155.000 vektör öğeli sentetik bir destede (`python tools/bench.py`; Apple Silicon,
 10 çekirdek, Python 3.13): analiz 2,4 sn, dışa aktarma 1,6–1,9 sn, tek sayfa önizleme 8 ms.
-Ayrıntılar: [README.md](README.md#results).
+Ayrıntılar: [README.md](../README.md).
 
 </details>
 
 <details>
 <summary><b>İndir</b></summary>
 
-Python gerektirmeyen hazır paketler her [sürümde](../../releases) bulunur:
+Python gerektirmeyen hazır paketler her [sürümde](../../../releases) bulunur:
 
 - **macOS (Apple Silicon):** `PDF-Distiller-macOS.dmg` dosyasını açın, *PDF Distiller*'ı *Uygulamalar*'a sürükleyin.
 - **Windows:** `PDF-Distiller-Windows.zip` dosyasını açın, `PDF Distiller.exe`'yi çalıştırın.
@@ -117,9 +117,9 @@ Uygulama kendi penceresinde açılır; pencereyi kapatınca uygulama da kapanır
 
 Gerekli: Python 3.10 veya üstü.
 
-- **macOS:** `start_mac.command` dosyasına çift tıklayın. "Tanımlanmamış geliştirici" uyarısı
+- **macOS:** `tools/start_mac.command` dosyasına çift tıklayın. "Tanımlanmamış geliştirici" uyarısı
   çıkarsa: sağ tık › *Aç*.
-- **Windows:** `start_windows.bat` dosyasına çift tıklayın.
+- **Windows:** `tools/start_windows.bat` dosyasına çift tıklayın.
 - **Elle:**
 
 ```bash
@@ -151,11 +151,11 @@ python run.py --window     # ayrı pencerede (önce: pip install pywebview)
 8. Ayarları **profil** olarak kaydedin (`~/.pdf-distiller/profiles/`).
 9. **Baskı PDF'ini indir.**
 
-Nasıl çalıştığı, geliştirme ve bilinen sınırlar için: [README.md](README.md) (İngilizce) ve
+Nasıl çalıştığı, geliştirme ve bilinen sınırlar için: [README.md](../README.md) (İngilizce) ve
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
 </details>
 
 ## Lisans
 
-[MIT](LICENSE). Üçüncü taraf lisansları: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+[MIT](../LICENSE). Üçüncü taraf lisansları: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

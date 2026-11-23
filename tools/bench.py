@@ -1,4 +1,4 @@
-"""Speed benchmark.   python bench.py [file.pdf]
+"""Speed benchmark.   python tools/bench.py [file.pdf]
 
 Without a file, a synthetic 500-page lecture deck is generated (a unique content
 stream per page, a unique photo every 3rd page, and a ~300-element vector chart
@@ -11,7 +11,7 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 

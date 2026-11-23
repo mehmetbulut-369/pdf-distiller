@@ -1,6 +1,6 @@
 # Third-party notices
 
-PDF Distiller's own code is MIT-licensed (see [LICENSE](LICENSE)). It depends on the packages below,
+PDF Distiller's own code is MIT-licensed (see [LICENSE](../LICENSE)). It depends on the packages below,
 installed from PyPI. All are compatible with MIT distribution.
 
 | Package | License | Notes |
@@ -21,4 +21,4 @@ source must be published.
 **Packaged builds (.app / .exe):** binaries bundle the libraries above. Each release must ship their
 license texts (the `licenses/` folders inside each package's `.dist-info`).
 
-PyMuPDF (AGPL-3.0) is deliberately not used; see [docs/adr/0001-no-pymupdf.md](docs/adr/0001-no-pymupdf.md).
+PyMuPDF (AGPL-3.0) is deliberately not used; see [docs/adr/0001-no-pymupdf.md](adr/0001-no-pymupdf.md).

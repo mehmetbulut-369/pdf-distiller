@@ -81,7 +81,7 @@ Do not make the engine depend on a UI.
 
 ## Licensing
 
-PyMuPDF is deliberately not used (AGPL); see [docs/adr/0001-no-pymupdf.md](docs/adr/0001-no-pymupdf.md).
+PyMuPDF is deliberately not used (AGPL); see [docs/adr/0001-no-pymupdf.md](adr/0001-no-pymupdf.md).
 Dependencies and their licenses: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Check the license
 before adding a dependency.
 
