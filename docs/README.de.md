@@ -19,6 +19,12 @@ ein einzelner Punkt. Das hier ist mein Beitrag.
 
 ![Eine dunkle Vorlesungsfolie vorher und nachher, Stufe „Mittel“](before-after.png)
 
+## Was im Inneren passiert
+
+Kein KI-Modell, kein Internet: ein paar lesbare Regeln, Schritt für Schritt.
+
+<p align="center"><img src="inside.de.svg" width="960" alt="Läuft auf Ihrem Rechner. Nichts wird hochgeladen, und es steckt kein KI-Modell darin. 1 · Lesen: pikepdf öffnet die Zeichenbefehle der Seite, einen nach dem anderen. 2 · Messen: Größe, Helligkeit und was sich auf jeder Seite wiederholt. 3 · Entscheiden: Die Stufe setzt die Regeln, Ihr Klick hat immer Vorrang. 4 · Neu schreiben: dieselben Befehle, ohne das Entfernte. Text bleibt Text. 5 · Prüfen: pypdfium2 zeichnet jede Seite vorher und nachher und zählt die Tinte. Gebaut für Studierende wie mich: weniger Tinte kaufen, weniger leere Patronen. Open Source, lesbare Regeln, 90 Tests. Mit KI-Assistenz gebaut, ohne KI darin."></p>
+
 ## Wie ich es gebaut habe
 
 1. **Das Problem messen.** Die App rendert jede Seite vorher und nachher und schätzt die Tinte. Beim

@@ -18,6 +18,12 @@ Basacaksanız, yalnız ihtiyacınız olanı basın. Her birimiz tek bir noktayı
 
 ![Koyu bir ders slaytı, Orta kademeyle önce ve sonra](before-after.png)
 
+## İçeride neler oluyor
+
+Yapay zekâ modeli yok, internet yok: adım adım, okunabilir birkaç kural.
+
+<p align="center"><img src="inside.tr.svg" width="960" alt="Kendi bilgisayarınızda çalışır. Hiçbir şey yüklenmez, içinde yapay zekâ modeli yok. 1 · Oku: pikepdf sayfanın kendi çizim komutlarını tek tek açar. 2 · Ölç: boyut, koyuluk ve her sayfada tekrar eden ne varsa. 3 · Karar ver: kademe kuralları koyar, son söz her zaman sizin tıklamanızın. 4 · Yeniden yaz: aynı komutlar, çıkardıklarınız hariç. Metin metin olarak kalır. 5 · Kontrol et: pypdfium2 her sayfayı önce ve sonra çizer, mürekkebi sayar. Benim gibi öğrenciler için yaptım: daha az mürekkep, daha az boş kartuş. Açık kaynak, okunabilir kurallar, 90 test. Yapay zekâ yardımıyla yazıldı, içinde yok."></p>
+
 ## Nasıl yaptım
 
 1. **Önce sorunu ölç.** Uygulama her sayfayı önce ve sonra çizip mürekkebi tahmin ediyor. Koyu örnek

@@ -18,6 +18,12 @@ screens. If you print, print only what you need. Each of us is a single dot. Thi
 
 ![A dark lecture slide before and after, Medium level](docs/before-after.png)
 
+## What happens inside
+
+No AI model and no internet: a handful of readable rules, step by step.
+
+<p align="center"><img src="docs/inside.en.svg" width="960" alt="It runs on your computer. Nothing is uploaded, and there is no AI model inside. 1 · Read: pikepdf opens the page's own drawing instructions, one by one. 2 · Measure: size, darkness, and what repeats on every page. 3 · Decide: the level sets the rules, and your click always wins. 4 · Rewrite: the same instructions, minus what you removed. Text stays text. 5 · Check: pypdfium2 draws every page before and after, and counts the ink. I built it for students like me: less ink to buy, fewer empty cartridges. Open source, readable rules, 90 tests. Built with an AI assistant, no AI inside."></p>
+
 ## How I built it
 
 1. **Measure the problem.** The app renders every page before and after and estimates the ink. On the
