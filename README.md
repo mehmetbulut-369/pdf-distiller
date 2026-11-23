@@ -6,7 +6,7 @@
 and big photos from a PDF and keeps the text sharp. It runs on your own computer; your files are never
 uploaded.
 
-<p align="center"><img src="docs/story.en.svg" width="960" alt="A lecture slide that is mostly background. Printed as it is, most of the ink goes into the background. So first the app asks what the page is made of. Background, repeated logos and big photos are lifted off. Only what you need gets printed."></p>
+<p align="center"><img src="docs/story.en.svg" width="960" alt="Exam week. I print my slides, like always. Most of the ink goes into backgrounds I never read. So now I ask first: what is this page made of? Backgrounds, repeated logos, big photos: gone. Only what I need, and room for my own thoughts. PDF Distiller. Print the slides, not the ink."></p>
 
 ## Why I built it
 

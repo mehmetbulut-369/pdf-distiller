@@ -6,7 +6,7 @@
 logoları ve büyük fotoğrafları ayıklar, metni keskin bırakır. Kendi bilgisayarınızda çalışır; dosyalarınız
 internete yüklenmez.
 
-<p align="center"><img src="story.tr.svg" width="960" alt="Çoğu arka plandan oluşan bir ders slaytı. Olduğu gibi basılınca mürekkebin çoğu arka plana gider. Bu yüzden uygulama önce sayfanın nelerden oluştuğunu sorar. Arka plan, tekrar eden logolar ve büyük fotoğraflar ayıklanır. Yalnız ihtiyacınız olan basılır."></p>
+<p align="center"><img src="story.tr.svg" width="960" alt="Sınav haftası. Slaytlarımı her zamanki gibi basıyorum. Mürekkebin çoğu hiç okumadığım arka planlara gidiyor. Artık önce soruyorum: Bu sayfa nelerden oluşuyor? Arka planlar, tekrar eden logolar, büyük fotoğraflar: gitti. Yalnız ihtiyacım olan, bir de kendi düşüncelerime yer. PDF Distiller. Slaytları yazdırın, mürekkebi değil."></p>
 
 ## Neden yaptım
 

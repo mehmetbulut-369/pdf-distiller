@@ -6,7 +6,7 @@
 Logos und große Fotos aus einem PDF und lässt den Text scharf. Es läuft auf Ihrem eigenen Rechner; Ihre
 Dateien werden nirgendwohin hochgeladen.
 
-<p align="center"><img src="story.de.svg" width="960" alt="Eine Vorlesungsfolie, vor allem Hintergrund. So gedruckt, landet die meiste Tinte im Hintergrund. Deshalb fragt die App zuerst, woraus die Seite besteht. Hintergrund, wiederholte Logos und große Fotos werden entfernt. Gedruckt wird nur, was Sie brauchen."></p>
+<p align="center"><img src="story.de.svg" width="960" alt="Prüfungsphase. Ich drucke meine Folien, wie immer. Die meiste Tinte landet in Hintergründen, die ich nie lese. Also frage ich jetzt zuerst: Woraus besteht diese Seite? Hintergründe, wiederholte Logos, große Fotos: weg. Nur, was ich brauche, und Platz für meine Gedanken. PDF Distiller. Folien drucken. Tinte sparen.."></p>
 
 ## Warum ich es gebaut habe
 
