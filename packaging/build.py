@@ -70,6 +70,13 @@ def main() -> None:
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(f.locate(), dest)
 
+    if sys.platform == "darwin":
+        # PyInstaller signed the bundle before the files above were added; sign again or macOS reports
+        # the app as damaged once it is downloaded ("a sealed resource is missing or invalid")
+        app = str(ROOT / "dist" / f"{NAME}.app")
+        subprocess.run(["codesign", "--force", "--deep", "--sign", "-", app], check=True)
+        subprocess.run(["codesign", "--verify", "--deep", "--strict", app], check=True)
+
     if sys.platform == "darwin" and shutil.which("hdiutil"):
         dmg = ROOT / "dist" / "PDF-Distiller-macOS.dmg"
         dmg.unlink(missing_ok=True)
