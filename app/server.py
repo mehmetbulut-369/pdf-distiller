@@ -5,7 +5,6 @@ not here. A new front end (desktop, mobile, cloud) can use the same endpoints.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import logging
 import re
@@ -29,7 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from distill_core import TIERS, DistillDocument, Overrides, PageOp, Settings, __version__, tier_settings  # noqa: E402
-from distill_core.engine import EmptyPdf  # noqa: E402
+from distill_core.engine import EmptyPdf, settings_key  # noqa: E402
 
 STATIC = Path(__file__).resolve().parent / "static"
 BUILTIN_PROFILES = ROOT / "app" / "profiles"
@@ -47,10 +46,15 @@ _png_cache: OrderedDict[str, bytes] = OrderedDict()
 _lock = threading.Lock()
 
 
+class Op(BaseModel):
+    src: int
+    rotate: int = 0
+
+
 class Job(BaseModel):
     settings: dict = {}
     overrides: dict = {}
-    ops: list[dict] | None = None
+    ops: list[Op] | None = None
     page: int = 0
     width: int = 900
 
@@ -72,22 +76,36 @@ def _parse(job: Job):
 
 
 def _cache_get(key):
-    v = _png_cache.get(key)
-    if v is not None:
-        _png_cache.move_to_end(key)
-    return v
+    with _lock:  # the UI sends several requests at once; get + move must not interleave with an eviction
+        v = _png_cache.get(key)
+        if v is not None:
+            _png_cache.move_to_end(key)
+        return v
 
 
 def _cache_put(key, v):
-    _png_cache[key] = v
-    while len(_png_cache) > 300:
-        _png_cache.popitem(last=False)
+    with _lock:
+        _png_cache[key] = v
+        while len(_png_cache) > 300:
+            _png_cache.popitem(last=False)
 
 
 # ----------------------------------------------------------------------------- pages
 @app.get("/")
 def index():
     return FileResponse(STATIC / "index.html", headers={"Cache-Control": "no-cache"})
+
+
+@app.middleware("http")
+async def same_origin_writes(request, call_next):
+    """Any web page open in the browser can send a form POST to 127.0.0.1. Browsers name the sending page in
+    Origin on such requests, so a write from another origin is refused. Requests without Origin come from
+    programs on this computer, not from web pages."""
+    origin = request.headers.get("origin")
+    if request.method not in ("GET", "HEAD", "OPTIONS") and origin is not None \
+            and origin != f"{request.url.scheme}://{request.headers.get('host', '')}":
+        return Response("error.foreign_origin", status_code=403)
+    return await call_next(request)
 
 
 @app.middleware("http")
@@ -173,8 +191,10 @@ def open_document(data: bytes, name: str) -> dict:
     with _lock:
         _docs[doc_id] = doc
         while len(_docs) > MAX_DOCS:
-            _, old = _docs.popitem(last=False)
+            old_id, old = _docs.popitem(last=False)
             old.close()
+            for k in [k for k in _png_cache if k.startswith(old_id + ":")]:
+                del _png_cache[k]
     return _meta(doc_id, doc)
 
 
@@ -195,8 +215,7 @@ def processed(doc_id: str, job: Job):
     d = _doc(doc_id)
     _check_page(d, job.page)
     s, ov = _parse(job)
-    h =hashlib.md5(json.dumps([s.to_dict(), ov.to_dict()], sort_keys=True).encode()).hexdigest()
-    key = f"{doc_id}:p:{job.page}:{job.width}:{h}"
+    key = f"{doc_id}:p:{job.page}:{job.width}:{settings_key(s, ov)}"
     png = _cache_get(key)
     if png is None:
         png = d.render_processed(job.page, s, ov, min(max(job.width, 60), 2400))
@@ -238,8 +257,7 @@ def export(doc_id: str, job: Job):
     s, ov = _parse(job)
     ops = None
     if job.ops is not None:
-        ops = [PageOp(int(o["src"]), int(o.get("rotate", 0))) for o in job.ops]
-        ops = [o for o in ops if 0 <= o.src < d.n_pages]
+        ops = [PageOp(o.src, o.rotate) for o in job.ops if 0 <= o.src < d.n_pages]
         if not ops:
             raise HTTPException(400, "error.no_pages")
     data = d.export(s, ov, ops)
@@ -267,8 +285,8 @@ def list_profiles():
                 try:
                     out.append({"name": f.stem, "builtin": builtin,
                                 "settings": Settings.from_dict(json.loads(f.read_text("utf-8"))).to_dict()})
-                except Exception:
-                    pass
+                except Exception as e:  # one broken file must not hide the others
+                    log.warning("profile %s could not be read: %s", f.name, e)
     return out
 
 

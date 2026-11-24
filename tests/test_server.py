@@ -67,6 +67,40 @@ def test_foreign_host_rejected(client):
     assert client.get("/api/tiers", headers={"Host": "localhost:8765"}).status_code == 200
 
 
+def test_other_websites_cannot_send_files(client):
+    pdf = (ROOT / "tests" / "samples" / "light_slides.pdf").read_bytes()
+    files = {"file": ("x.pdf", pdf, "application/pdf")}
+    assert client.post("/api/open", files=files, headers={"Origin": "https://evil.example"}).status_code == 403
+    assert client.post("/api/open", files=files, headers={"Origin": "null"}).status_code == 403
+    assert client.post("/api/open", files=files, headers={"Origin": BASE}).status_code == 200  # our own page
+    assert client.get("/api/tiers", headers={"Origin": "https://evil.example"}).status_code == 200  # reads stay open
+
+
+def test_malformed_page_ops_are_rejected_not_crashing(client):
+    doc = _open(client)
+    assert client.post(f"/api/doc/{doc}/export", json={"ops": [{"rotate": 90}]}).status_code == 422
+
+
+def test_closed_document_leaves_no_cached_images(client):
+    from app import server
+    first = _open(client)
+    assert client.get(f"/api/doc/{first}/original/0.png?w=200").status_code == 200
+    for _ in range(server.MAX_DOCS):
+        _open(client)
+    assert first not in server._docs
+    assert not [k for k in server._png_cache if k.startswith(first + ":")]
+
+
+def test_broken_profile_does_not_hide_the_others(client, tmp_path, monkeypatch, caplog):
+    from app import server
+    monkeypatch.setattr(server, "USER_PROFILES", tmp_path)
+    (tmp_path / "good.json").write_text("{}", "utf-8")
+    (tmp_path / "bad.json").write_text("{not json", "utf-8")
+    names = [p["name"] for p in client.get("/api/profiles").json() if not p["builtin"]]
+    assert names == ["good"]
+    assert "bad.json" in caplog.text
+
+
 def test_not_a_pdf_is_400(client):
     r = client.post("/api/open", files={"file": ("x.pdf", b"hello", "application/pdf")})
     assert r.status_code == 400

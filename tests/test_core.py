@@ -386,3 +386,15 @@ def test_page_elements_carry_drawing_order(dark):
     zs = [e["z"] for e in els]
     assert zs == sorted(zs) and len(set(zs)) == len(zs)  # layer list sorts by this: higher = on top
     assert any(e["kind"] == "text" for e in els)
+
+
+def test_ink_summary_does_not_hold_the_document_lock(dark):
+    """The page preview needs dark.lock; the ink summary runs for seconds on long decks and must not take it."""
+    import threading
+
+    out = {}
+    with dark.lock:  # held by "the preview"
+        th = threading.Thread(target=lambda: out.update(r=dark.ink_estimate(tier_settings(1), Overrides())))
+        th.start()
+        th.join(timeout=60)
+    assert "r" in out and out["r"]["saving"] > 0

@@ -83,6 +83,11 @@ def _analyze_page(pdf, i, caches) -> PageInfo:
     return PageInfo(i, w, h, rot, walker.elements, box)
 
 
+def settings_key(s: Settings, ov: Overrides) -> str:
+    """One short id per (settings, overrides) pair: the key of every cache that depends on them."""
+    return hashlib.md5(json.dumps([s.to_dict(), ov.to_dict()], sort_keys=True).encode()).hexdigest()
+
+
 def _needs_rewrite(drops, s: Settings) -> bool:
     return bool(drops) or s.text_mode != "keep" or s.grayscale
 
@@ -230,7 +235,7 @@ class DistillDocument:
     def decide_full(self, s: Settings, ov: Overrides):
         """(drops, labels, clips). clips: {page: {image_id: {"keep": [polygon], "erase": [polygon]}}}
         Polygons are in the image's unit square (PDF image space, bottom-left origin)."""
-        key = hashlib.md5(json.dumps([s.to_dict(), ov.to_dict()], sort_keys=True).encode()).hexdigest()
+        key = settings_key(s, ov)
         r = self._decisions.get(key)
         if r is None:
             clips, forced = self._manual_clips(ov)
@@ -424,16 +429,21 @@ class DistillDocument:
             img = self._render(self._pdfium_doc(), i, width)
         return _png(img)
 
-    def processed_page_pdf(self, i: int, s: Settings, ov: Overrides) -> bytes:
+    def _distilled(self, pdf: pikepdf.Pdf, idx: list[int], s: Settings, ov: Overrides) -> bytes:
+        """Copies pages idx of pdf into a new PDF, cleans them and returns its bytes."""
         drops, _, clips = self.decide_full(s, ov)
-        with self.lock:
-            new = pikepdf.new()
-            new.pages.append(self.pdf.pages[i])
-            kept = distill_pages(new, [(new.pages[0].obj, i)], drops, s, clips)
-            process_images(new, kept, s.grayscale, s.image_fade)
-            buf = io.BytesIO()
-            new.save(buf, fix_metadata_version=False)
+        new = pikepdf.new()
+        for i in idx:
+            new.pages.append(pdf.pages[i])
+        kept = distill_pages(new, [(new.pages[j].obj, i) for j, i in enumerate(idx)], drops, s, clips)
+        process_images(new, kept, s.grayscale, s.image_fade)
+        buf = io.BytesIO()
+        new.save(buf, fix_metadata_version=False)
         return buf.getvalue()
+
+    def processed_page_pdf(self, i: int, s: Settings, ov: Overrides) -> bytes:
+        with self.lock:
+            return self._distilled(self.pdf, [i], s, ov)
 
     def render_processed(self, i: int, s: Settings, ov: Overrides, width: int = 900) -> bytes:
         data = self.processed_page_pdf(i, s, ov)
@@ -451,25 +461,27 @@ class DistillDocument:
             return {"original": 0, "processed": 0, "saving": 0, "pages": 0}
         k = n if samples is None else min(samples, n)
         idx = sorted({round(j * (n - 1) / max(k - 1, 1)) for j in range(k)})
-        drops, _, clips = self.decide_full(s, ov)
-        with self.lock:
-            new = pikepdf.new()
-            for i in idx:
-                new.pages.append(self.pdf.pages[i])
-            kept = distill_pages(new, [(new.pages[j].obj, i) for j, i in enumerate(idx)], drops, s, clips)
-            process_images(new, kept, s.grayscale, s.image_fade)
-            buf = io.BytesIO()
-            new.save(buf, fix_metadata_version=False)
+        # Works on its own copy and takes the pdfium lock page by page: on a long deck this runs for seconds,
+        # and the page preview must not wait for it (measured: 0.02 s alone, 2 s behind one big lock).
+        with pikepdf.open(io.BytesIO(self.data)) as src:
+            data = self._distilled(src, idx, s, ov)
         o_sum = p_sum = 0.0
         with PDFIUM_LOCK:
-            od = self._pdfium_doc()
-            pd = pdfium.PdfDocument(buf.getvalue())
+            pd = pdfium.PdfDocument(data)
+        try:
             for j, i in enumerate(idx):
-                if (i, width) not in self._ink_orig:  # the original never changes: render it once
-                    self._ink_orig[i, width] = ink_coverage(self._render(od, i, width))
+                orig = None
+                with PDFIUM_LOCK:
+                    if (i, width) not in self._ink_orig:  # the original never changes: render it once
+                        orig = self._render(self._pdfium_doc(), i, width)
+                    img = self._render(pd, j, width)
+                if orig is not None:
+                    self._ink_orig[i, width] = ink_coverage(orig)
                 o_sum += self._ink_orig[i, width]
-                p_sum += ink_coverage(self._render(pd, j, width))
-            pd.close()
+                p_sum += ink_coverage(img)
+        finally:
+            with PDFIUM_LOCK:
+                pd.close()
         o, p = o_sum / len(idx), p_sum / len(idx)
         return {"original": round(o, 4), "processed": round(p, 4),
                 "saving": round(1 - p / o, 4) if o > 0 else 0.0, "pages": len(idx)}
@@ -558,7 +570,7 @@ class DistillDocument:
         return data
 
     def close(self):
-        with PDFIUM_LOCK:
+        with self.lock, PDFIUM_LOCK:  # self.lock: a render still using self.pdf finishes first
             if self._pdfium is not None:
                 self._pdfium.close()
                 self._pdfium = None
