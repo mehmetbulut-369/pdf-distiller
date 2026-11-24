@@ -10,11 +10,15 @@ uploaded.
 
 ## Why I built it
 
-I grew up in a family of teachers. Nobody ever handed me a blank sheet of paper without asking first:
-*what are you going to do with it?* At university I still print my slides, because I think better with a
-pen in my hand, and every dark slide spent most of the cartridge on backgrounds nobody reads.
-PDF Distiller asks a PDF that same question before it prints. I use tablets too; this is not paper versus
-screens. If you print, print only what you need. Each of us is a single dot. This is me doing my part.
+Owning things may be one of our oldest instincts. What we can hold in our hands and write on feels like ours; maybe that is why we can't let go of printing, even in a digital age. Have you ever tried to print something from a screen and had to strip out the parts you don't need? A bit like life. 😃
+
+I grew up in a family of teachers, and their care for paper rubbed off on me. As a child I was never simply handed a clean, empty sheet. First came the question: *what are you going to do with it?* Usually I drew on the back of used paper. At that age, it was a simple, hands-on example of what we now call sustainability.
+
+University life has moved from the rustle of pages in the library to tapping on tablet glass like a woodpecker. I have owned several tablets from the big brands; this is not paper versus screens. But printing something is different. The pen you pick changes what you can write, a drop of coffee lands on the page, and depending on how you use it, it wears and becomes yours. When I think about how our hands connect to our minds, I remember the [sensory homunculus](https://www.google.com/search?q=sensory+homunculus&tbm=isch), a model I first saw in a high school textbook. In the 1930s, the neurosurgeon Wilder Penfield operated on epilepsy patients who were awake. He touched the surface of their brain with a weak current and asked where in their body they felt it. With their answers he showed how much space each part of the body takes up in the brain for the sense of touch. To make it easy to remember, Penfield drew it as a figure: each body part as large as the brain area it takes up. The result is a little person with enormous hands. It reminds me to see our hands as the part of us through which our creativity reaches the world. Every mark we leave on paper feels like it leaves a fold in the mind, too. That is why I still print my slides.
+
+But lecture slides are made for the projector in the lecture hall, not for paper. Most of the ink goes into dark backgrounds, repeated logos and big photos. I know they have a purpose in class: they help students understand the topic better. On paper, though, they lose that purpose, and all that is left is the ink they used. Let PDF Distiller show you these parts one by one before you print, and you decide what stays: cut the waste, use less ink, and protect both the environment and your wallet.
+
+In short, with this project I wanted to take a problem I faced as an individual and carry it to the scale of society.
 
 ![A dark lecture slide before and after, Medium level](docs/before-after.png)
 

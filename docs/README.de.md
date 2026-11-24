@@ -10,12 +10,15 @@ Dateien werden nirgendwohin hochgeladen.
 
 ## Warum ich es gebaut habe
 
-Ich komme aus einer Lehrerfamilie. Ein leeres Blatt Papier bekam ich nie, ohne dass man mich vorher fragte:
-*Was willst du damit machen?* Im Studium drucke ich meine Folien immer noch aus, weil ich mit einem Stift
-in der Hand besser denke, und jede dunkle Folie hat den Großteil der Patrone für Hintergründe verbraucht,
-die niemand liest. PDF Distiller stellt einem PDF vor dem Druck dieselbe Frage. Ich nutze auch Tablets;
-es geht nicht um Papier gegen Bildschirm. Wenn Sie drucken, dann nur, was Sie brauchen. Jeder von uns ist
-ein einzelner Punkt. Das hier ist mein Beitrag.
+Etwas besitzen zu wollen ist vielleicht eines der ursprünglichsten Gefühle des Menschen. Was wir in der Hand halten und beschreiben können, gehört uns; vielleicht kommen wir deshalb selbst im digitalen Zeitalter nicht vom Ausdrucken los. Wollten Sie schon einmal etwas vom Bildschirm ausdrucken und mussten erst das Überflüssige aussortieren? Wie im echten Leben. 😃
+
+Ich komme aus einer Lehrerfamilie, und der achtsame Umgang meiner Eltern mit Papier hat auf mich abgefärbt. Als Kind bekam ich nie einfach ein leeres, weißes Blatt. Zuerst kam die Frage: *Was willst du damit machen?* Meistens malte ich auf Schmierpapier. In diesem Alter war das ein einfaches, gelebtes Beispiel für das, was wir heute Nachhaltigkeit nennen.
+
+Wie schnell sind wir vom Rascheln der Seiten in Hochschulfluren dort angekommen, wo wir wie ein Specht auf Tablet-Bildschirme tippen. Ich habe selbst mehrere Tablets großer Marken benutzt; es geht nicht um Papier gegen Bildschirm. Aber etwas auszudrucken ist etwas anderes: Die Art des Stifts verändert, was Sie schreiben können, ein Tropfen Kaffee landet auf der Seite, und je nachdem, wie Sie es nutzen, wird das Blatt abgegriffen und ein Stück von Ihnen. Wenn ich an die Verbindung zwischen unseren Händen und unserem Geist denke, fällt mir der [sensorische Homunculus](https://www.google.com/search?q=sensorischer+Homunculus&tbm=isch) ein, ein Modell, das ich in der Schulzeit in einem Lehrbuch gesehen habe. In den 1930er-Jahren operierte der Neurochirurg Wilder Penfield Epilepsiepatienten, die dabei wach waren. Er reizte die Oberfläche ihres Gehirns mit einem schwachen Strom und fragte, wo im Körper sie etwas spürten. Mit ihren Antworten zeigte er, wie viel Fläche jeder Körperteil beim Tastsinn im Gehirn einnimmt. Damit man es sich leicht merken kann, zeichnete Penfield daraus eine Figur: jeder Körperteil so groß wie seine Fläche im Gehirn. Heraus kam ein kleiner Mensch mit riesigen Händen. Diese Figur erinnert mich daran, unsere Hände als das Organ zu sehen, durch das unsere Kreativität die Welt erreicht. Jede Spur, die wir auf Papier hinterlassen, fühlt sich an, als füge sie unserem Gehirn eine Windung hinzu. Deshalb drucke ich meine Folien bis heute aus.
+
+Aber Vorlesungsfolien sind für die Leinwand im Hörsaal gemacht, nicht für Papier. Der Großteil der Tinte fließt in dunkle Hintergründe, wiederkehrende Logos und große Fotos. Ich weiß, dass sie in der Vorlesung einen Zweck haben: Sie helfen Studierenden, den Stoff besser zu verstehen. Auf Papier verlieren sie diese Aufgabe jedoch; übrig bleibt nur die verbrauchte Tinte. Lassen Sie sich diese Elemente vor dem Druck von PDF Distiller einzeln zeigen, und entscheiden Sie selbst, was bleibt: Vermeiden Sie Verschwendung, verbrauchen Sie weniger Tinte und schonen Sie so Umwelt und Geldbeutel.
+
+Kurz gesagt: Mit diesem Projekt wollte ich ein Problem, auf das ich als Einzelperson gestoßen bin, auf eine gesellschaftliche Ebene bringen.
 
 ![Eine dunkle Vorlesungsfolie vorher und nachher, Stufe „Mittel“](before-after.png)
 

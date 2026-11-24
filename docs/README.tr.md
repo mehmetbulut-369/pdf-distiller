@@ -10,11 +10,15 @@ internete yüklenmez.
 
 ## Neden yaptım
 
-Öğretmen bir ailede büyüdüm. Bana hiçbir zaman önce sorulmadan boş bir kâğıt verilmezdi:
-*Bununla ne yapacaksın?* Üniversitede slaytlarımı hâlâ basıyorum, çünkü elimde kalemle daha iyi
-düşünüyorum. Her koyu slayt da kartuşun çoğunu kimsenin okumadığı arka planlara harcıyordu. PDF Distiller
-basmadan önce bir PDF'e aynı soruyu soruyor. Ben de tablet kullanıyorum; mesele kâğıt mı ekran mı değil.
-Basacaksanız, yalnız ihtiyacınız olanı basın. Her birimiz tek bir noktayız. Bu da benim üstüme düşen.
+Sahip olmak, belki de insanoğlunun en ilkel duygularından biri. Elimizde tutabildiğimiz, üstüne yazabildiğimiz şey bizimdir; belki de bu yüzden dijital çağda bile çıktı almaktan vazgeçemiyoruz. Ekranda gördüğünüz bir şeyin çıktısını almaya niyetlendiğinizde, gereksiz kısımları ayıklamak zorunda kaldığınız oldu mu? Tıpkı hayat gibi. 😃
+
+Öğretmen bir aileden geliyorum; annemle babamın kâğıda olan hassasiyeti bana da geçti. Çocukken bana hiçbir zaman doğrudan bomboş, bembeyaz bir kâğıt verilmezdi. Önce sorarlardı: *Bununla ne yapacaksın?* Genelde müsvedde kâğıtlara çizerdim. Bu alışkanlık, bugün sürdürülebilirlik dediğimiz şeyin o yaşlardaki basit, uygulamalı bir örneğiydi.
+
+Üniversite koridorlarındaki sayfa seslerinden, tablet ekranlarına bir ağaçkakan gibi vurduğumuz bu günlere ne çabuk geldik. Ben de büyük markaların birkaç tabletini kullandım; bu bir kâğıt-ekran kavgası değil. Ama bir şeyin çıktısını almak başka: tuttuğunuz kalemin türü yazabileceğinizi değiştirir, sayfaya bir damla kahve düşer, kullanım senaryonuza göre yıpranır ve sizleşir. Ellerimizin zihnimizle bağını düşününce aklıma lisede ders çalıştığım bir kaynakta gördüğüm [duyusal homunculus](https://www.google.com/search?q=duyusal+homunculus&tbm=isch) modeli gelir. 1930'larda beyin cerrahı Wilder Penfield, epilepsi ameliyatlarında uyanık hastaların beyin yüzeyine zayıf bir akım verdi ve onlara bedenlerinin neresinde bir şey hissettiklerini sordu. Bu cevaplarla, dokunma duyusunda bedenin her bölgesinin beyinde ne kadar alan kapladığını gösterdi. Penfield bunu akılda kalsın diye bir figürle resmetti: her organ, beyinde kapladığı alan kadar büyük çizildi ve ortaya elleri kocaman bir insan çıktı. Bu figür bana ellerimizi, yaratıcılığımızın dünyaya açılan uzvu olarak görmeyi hatırlatır. Kâğıtta bıraktığımız her iz, zihnimize de bir kıvrım ekliyormuş gibi gelir. Bu yüzden slaytlarımı hâlâ basıyorum.
+
+Ama ders slaytları kâğıt için değil, amfideki perde için hazırlanır. Mürekkebin büyük kısmı koyu arka planlara, tekrar eden logolara ve büyük fotoğraflara gider. Bunların derste bir amacı olduğunu biliyorum: öğrencinin konuyu daha iyi kavramasına yardım ederler. Ancak kâğıtta bu işlevlerini yitirirler; geriye yalnızca harcanan mürekkep kalır. PDF Distiller, basmadan önce bu öğeleri size tek tek göstersin; neyin kalacağına siz karar verin; israfı azaltarak, daha az mürekkep sarfiyatıyla hem çevreyi hem cebinizi koruyun.
+
+Kısacası, birey olarak karşılaştığım bir sorunu bu projeyle toplumsal ölçeğe taşımak istedim.
 
 ![Koyu bir ders slaytı, Orta kademeyle önce ve sonra](before-after.png)
 
