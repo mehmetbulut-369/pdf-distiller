@@ -106,6 +106,15 @@ def test_not_a_pdf_is_400(client):
     assert r.status_code == 400
 
 
+def test_oversized_upload_is_refused(client, monkeypatch):
+    from app import server
+    monkeypatch.setattr(server, "MAX_PDF_BYTES", 1024)  # keep the test cheap; real default is 300 MB
+    big = b"%PDF-1.4\n" + b"0" * 4096
+    r = client.post("/api/open", files={"file": ("big.pdf", big, "application/pdf")})
+    assert r.status_code == 413
+    assert r.json()["detail"] == "error.too_large"
+
+
 def test_version_names_the_running_code(client):
     from distill_core import __version__
     v = client.get("/api/version").json()

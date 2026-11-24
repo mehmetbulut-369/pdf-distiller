@@ -229,6 +229,7 @@
   "error.page_not_found": "Page not found.",
   "error.not_pdf": "This file is not a PDF.",
   "error.pdf_open_failed": "The PDF could not be opened. It may be encrypted or damaged.",
+  "error.too_large": "This file is too large. Try a PDF under 300 MB.",
   "error.no_pages": "No pages are left in the output.",
   "error.invalid_profile_name": "Invalid profile name.",
   "error.only_own_profiles": "Only profiles you saved yourself can be deleted.",

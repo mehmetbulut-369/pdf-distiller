@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import subprocess
 import sys
@@ -34,6 +35,10 @@ STATIC = Path(__file__).resolve().parent / "static"
 BUILTIN_PROFILES = ROOT / "app" / "profiles"
 USER_PROFILES = Path.home() / ".pdf-distiller" / "profiles"
 MAX_DOCS = 8  # one per open window; the oldest is dropped beyond that
+# A lecture deck is a few MB; a hostile or runaway upload can be arbitrarily large and is read into
+# memory (then copied into each analysis worker). Refuse anything past this before it is read.
+MAX_PDF_MB = int(os.environ.get("PDF_DISTILLER_MAX_MB", "300"))
+MAX_PDF_BYTES = MAX_PDF_MB * 1024 * 1024
 log = logging.getLogger("pdf_distiller")
 
 app = FastAPI(title="PDF Distiller", docs_url=None, redoc_url=None)
@@ -145,7 +150,10 @@ def tiers():
 
 @app.post("/api/open")
 def open_pdf(file: UploadFile = File(...)):  # sync: analysis runs in the threadpool, not on the event loop
-    return open_document(file.file.read(), file.filename or "document.pdf")
+    data = file.file.read(MAX_PDF_BYTES + 1)  # bounded read: a huge upload never fully materialises
+    if len(data) > MAX_PDF_BYTES:
+        raise HTTPException(413, "error.too_large")
+    return open_document(data, file.filename or "document.pdf")
 
 
 @app.get("/api/doc/{doc_id}")
@@ -167,6 +175,8 @@ def _meta(doc_id: str, doc: DistillDocument) -> dict:
 
 def open_document(data: bytes, name: str) -> dict:
     """Analyse a PDF given as bytes and keep it in memory. The source file is only read, never written."""
+    if len(data) > MAX_PDF_BYTES:  # also guards the desktop drag-drop / reopen paths that call this directly
+        raise HTTPException(413, "error.too_large")
     if not data.startswith(b"%PDF") and b"%PDF" not in data[:1024]:
         raise HTTPException(400, "error.not_pdf")
     try:
