@@ -137,9 +137,9 @@ Requires Python 3.10 or newer.
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+pip install .
 python run.py              # opens http://127.0.0.1:8765 in your browser
-python run.py --window     # in its own window (first: pip install pywebview)
+python run.py --window     # in its own window (first: pip install ".[window]")
 ```
 
 The first run sets up a local environment (1–2 minutes).
@@ -192,11 +192,11 @@ FastAPI, and a plain JavaScript front end with no build step.
 <summary><b>Development</b></summary>
 
 ```bash
-pip install -r requirements-dev.txt
+pip install ".[dev]"
 python -m pytest -q            # engine, server and translation tests
 ruff check .                   # lint (config in pyproject.toml)
 python tools/corpus_check.py --weird   # damaged/unusual PDFs end to end (see docs/robustness.md)
-python tests/make_samples.py   # regenerate the sample decks in samples/
+python tests/make_samples.py   # regenerate the sample decks in tests/samples/
 python tools/bench.py [file.pdf]     # speed benchmark (synthetic 500-page deck by default)
 python docs/readme_assets.py   # regenerate the README image and ink table
 python packaging/build.py      # build the .app/.dmg (macOS) or .exe (Windows); needs pyinstaller pywebview

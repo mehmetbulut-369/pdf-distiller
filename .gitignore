@@ -2,7 +2,7 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-samples/bench_*.pdf
+tests/samples/bench_*.pdf
 .DS_Store
 .claude/settings.local.json
 .claude/.cc-writes/
@@ -10,3 +10,4 @@ samples/bench_*.pdf
 build/
 dist/
 corpus_report.json
+*.egg-info/

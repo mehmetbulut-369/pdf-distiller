@@ -32,7 +32,7 @@ from distill_core import TIERS, DistillDocument, Overrides, PageOp, Settings, __
 from distill_core.engine import EmptyPdf  # noqa: E402
 
 STATIC = Path(__file__).resolve().parent / "static"
-BUILTIN_PROFILES = ROOT / "profiles"
+BUILTIN_PROFILES = ROOT / "app" / "profiles"
 USER_PROFILES = Path.home() / ".pdf-distiller" / "profiles"
 MAX_DOCS = 8  # one per open window; the oldest is dropped beyond that
 log = logging.getLogger("pdf_distiller")

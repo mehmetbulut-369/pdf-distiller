@@ -36,7 +36,7 @@ def main() -> None:
     print("| Sample | " + " | ".join(name for _, name in TIERS) + " |")
     print("|---|" + "---:|" * len(TIERS))
     for name in SAMPLES:
-        doc = DistillDocument((ROOT / "samples" / name).read_bytes())
+        doc = DistillDocument((ROOT / "tests" / "samples" / name).read_bytes())
         doc.analyze()
         cells = [f"{doc.ink_estimate(tier_settings(t), Overrides())['saving'] * 100:.0f}%" for t, _ in TIERS]
         print(f"| `{name}` | " + " | ".join(cells) + " |")

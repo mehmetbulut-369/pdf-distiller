@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - run: pip install -r requirements-dev.txt pyinstaller pywebview
+      - run: pip install ".[dev,window]" pyinstaller
       - run: python -m pytest -q
       - run: python packaging/build.py
       - name: Zip Windows build

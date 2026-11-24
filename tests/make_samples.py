@@ -1,7 +1,7 @@
 """Generates synthetic lecture-slide PDFs for tests (mimicking the typical structure of real slides).
 
-    python tests/make_samples.py            -> samples into samples/
-    python tests/make_samples.py --pages 500 -> samples/bench_500.pdf (benchmark)
+    python tests/make_samples.py            -> samples into tests/samples/
+    python tests/make_samples.py --pages 500 -> tests/samples/bench_500.pdf (benchmark)
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw
 
 W, H = 720.0, 405.0  # 16:9 slide
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "samples"
+OUT = ROOT / "tests" / "samples"
 
 
 def jpeg_image(pdf, img: Image.Image):

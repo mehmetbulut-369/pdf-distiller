@@ -1,6 +1,6 @@
 """Builds the no-install package with PyInstaller.
 
-    pip install -r requirements-dev.txt pyinstaller pywebview
+    pip install ".[dev,window]" pyinstaller
     python packaging/build.py
 
 macOS: dist/PDF Distiller.app (onedir) and dist/PDF-Distiller-macOS.dmg
@@ -47,7 +47,7 @@ def main() -> None:
         "--workpath", str(ROOT / "build"),
         "--specpath", str(ROOT / "build"),
         "--add-data", f"{ROOT / 'app' / 'static'}{SEP}app/static",
-        "--add-data", f"{ROOT / 'profiles'}{SEP}profiles",
+        "--add-data", f"{ROOT / 'app' / 'profiles'}{SEP}app/profiles",
         "--add-data", f"{stamp()}{SEP}.",
         "--collect-submodules", "uvicorn",
         "--collect-all", "pypdfium2_raw",

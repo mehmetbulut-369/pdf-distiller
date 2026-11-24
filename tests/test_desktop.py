@@ -22,7 +22,7 @@ def api(tmp_path, monkeypatch):
 
 def test_open_by_path_adds_to_recent_and_leaves_file_untouched(api, tmp_path):
     src = tmp_path / "slides.pdf"
-    src.write_bytes((ROOT / "samples" / "dark_slides.pdf").read_bytes())
+    src.write_bytes((ROOT / "tests" / "samples" / "dark_slides.pdf").read_bytes())
     before = src.read_bytes()
     meta = api.open(str(src))
     assert meta["n_pages"] > 0 and "error" not in meta
@@ -36,7 +36,7 @@ def test_open_by_path_adds_to_recent_and_leaves_file_untouched(api, tmp_path):
 
 def test_moved_file_is_reported_not_crashing(api, tmp_path):
     src = tmp_path / "a.pdf"
-    src.write_bytes((ROOT / "samples" / "light_slides.pdf").read_bytes())
+    src.write_bytes((ROOT / "tests" / "samples" / "light_slides.pdf").read_bytes())
     api.open(str(src))
     src.rename(tmp_path / "b.pdf")
     assert api.recent()[0]["missing"] is True

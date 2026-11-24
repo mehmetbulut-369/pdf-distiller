@@ -132,9 +132,9 @@ Gerekli: Python 3.10 veya üstü.
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+pip install .
 python run.py              # tarayıcıda http://127.0.0.1:8765 açar
-python run.py --window     # ayrı pencerede (önce: pip install pywebview)
+python run.py --window     # ayrı pencerede (önce: pip install ".[window]")
 ```
 
 İlk çalıştırmada yerel bir ortam kurulur (1–2 dakika).

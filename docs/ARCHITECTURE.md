@@ -20,7 +20,7 @@ app/
 run.py               Starts the server; --window opens a pywebview window (always in packaged builds)
 packaging/build.py   PyInstaller build: macOS .app/.dmg, Windows .exe
 tests/               make_samples.py (synthetic slides), test_core.py, test_server.py, test_i18n.py
-profiles/            Built-in profiles (JSON). User profiles: ~/.pdf-distiller/profiles
+app/profiles/        Built-in profiles (JSON). User profiles: ~/.pdf-distiller/profiles
 docs/                README assets, ADRs
 ```
 

@@ -5,6 +5,31 @@ description = "Strip backgrounds, themes and images from lecture slides before p
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
+dependencies = [
+  "pikepdf>=9.0",          # PDF read/write (MPL-2.0)
+  "pypdfium2>=4.30",       # page rendering (Apache-2.0 / BSD-3)
+  "Pillow>=10.0",
+  "numpy>=1.26",
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+  "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+window = ["pywebview>=5.0"]   # desktop window: python run.py --window
+dev = [
+  "pytest>=8.0",
+  "httpx>=0.27",   # FastAPI TestClient
+  "ruff>=0.6",
+]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+# The app runs from this folder (python run.py); installing only pulls in the dependencies.
+[tool.setuptools]
+packages = []
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -12,7 +37,7 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 130
 target-version = "py310"
-extend-exclude = ["samples"]
+extend-exclude = ["tests/samples"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]

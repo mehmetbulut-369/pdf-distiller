@@ -134,9 +134,9 @@ Voraussetzung: Python 3.10 oder neuer.
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+pip install .
 python run.py              # öffnet http://127.0.0.1:8765 im Browser
-python run.py --window     # in einem eigenen Fenster (vorher: pip install pywebview)
+python run.py --window     # in einem eigenen Fenster (vorher: pip install ".[window]")
 ```
 
 Beim ersten Start wird eine lokale Umgebung eingerichtet (1–2 Minuten).
