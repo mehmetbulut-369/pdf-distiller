@@ -6,7 +6,7 @@
 Logos und große Fotos aus einem PDF und lässt den Text scharf. Es läuft auf Ihrem eigenen Rechner; Ihre
 Dateien werden nirgendwohin hochgeladen.
 
-<p align="center"><img src="story.de.svg" width="960" alt="Prüfungsphase. Ich drucke meine Folien, wie immer. Die meiste Tinte landet in Hintergründen, die ich nie lese. Also frage ich jetzt zuerst: Woraus besteht diese Seite? Hintergründe, wiederholte Logos, große Fotos: weg. Nur, was ich brauche, und Platz für meine Gedanken. PDF Distiller. Folien drucken. Tinte sparen.."></p>
+<p align="center"><img src="story.de.svg" width="960" alt="Die Geschichte von PDF Distiller: Neue Vorlesungsfolien kommen an, voller Kopfzeilen, Logos und großer Fotos, gemacht für die Leinwand im Hörsaal, nicht für Papier. Vor dem Drucken öffnen Sie PDF Distiller auf Ihrem eigenen Rechner und ziehen die Folien hinein. Sie entfernen das Foto, dann die wiederkehrenden Banner auf allen Seiten, und behalten das Diagramm. Die gesparte Tinte geht zurück an Patrone, Geldbeutel und Natur. Klares Papier, klarer Kopf, weniger Abfall. Folien drucken. Tinte sparen."></p>
 
 ## Warum ich es gebaut habe
 

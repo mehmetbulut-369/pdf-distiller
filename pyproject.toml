@@ -23,5 +23,5 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "distill_core/interpreter.py" = ["E701"]  # one-line min/max updates in the hot bbox loop
-"docs/make_story.py" = ["E501"]
+"docs/make_story_i18n.py" = ["E501"]
 "docs/make_inside_i18n.py" = ["E501"]  # translation table lines read better unbroken
