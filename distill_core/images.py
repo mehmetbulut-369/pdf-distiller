@@ -8,6 +8,8 @@ import pikepdf
 from pikepdf import Name
 from PIL import Image
 
+from .imgfeat import too_big_to_decode
+
 
 def process_images(pdf: pikepdf.Pdf, objgens, grayscale: bool, fade: float) -> int:
     """Converts the given image objects in place. Returns the number of converted images."""
@@ -17,7 +19,7 @@ def process_images(pdf: pikepdf.Pdf, objgens, grayscale: bool, fade: float) -> i
     for og in objgens:
         try:
             obj = pdf.get_object(og)
-            if bool(obj.get("/ImageMask", False)):
+            if bool(obj.get("/ImageMask", False)) or too_big_to_decode(obj):  # oversized: left as it is
                 continue
             pim = pikepdf.PdfImage(obj)
             img = pim.as_pil_image()

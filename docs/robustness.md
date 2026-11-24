@@ -52,12 +52,27 @@ Of the 20 refusals, 13 are password-protected, 6 are damaged beyond what qpdf an
 - **Guards:** zero-size and 2³¹-pt page boxes (render size is capped at 6000 px), inf/NaN
   coordinates, fuzzed XMP metadata, N-up of pages that can't be tiled (falls back to one per sheet).
 
-## Remaining failures
+## Hostile files (2026-11-25)
 
-All three are inside pdfium, the renderer, at its latest version (pypdfium2 5.15.2):
+A small file can describe enormous work. Measured before the guards, through the same HTTP API:
 
-- `jpx_numcomps.pdf`: a malformed JPEG 2000 image aborts the process while rendering.
-- `tiling-pattern-tiny-steps*.pdf`: a tiling pattern with microscopic steps takes minutes to render.
+| file | size | before | after |
+|---|---:|---|---|
+| one 30000 x 30000 image | 875 KB | 2.6 GB memory | 0.1 GB; image not decoded |
+| 3 million drawing commands on one page | 131 KB | 4 GB memory, ~50 s per action | 0.3 GB; page kept unchanged |
+| 200 000 repeats of one form | 2.5 KB | 0.65 GB | 0.3 GB; page kept unchanged |
+| 20 000 pages | 4.7 MB | ink gauge 44 s | 1.8 s (even sample of 400 pages) |
 
-Fixing these for good means rendering in a separate, killable process. That is planned; until then
-such a file can stop the local app, which then has to be restarted.
+Guards: 16 MB of decoded drawing commands per page or form, 600 000 commands per page (forms
+included), 80 million pixels per image decoded for analysis, grayscale or fading. A page over a limit
+is kept as it is, like any page that cannot be analysed. Real lecture decks stay far below all of them.
+
+## Rendering in a separate process
+
+Pages are drawn by pdfium in a child process (`distill_core/render.py`). If a file crashes it
+(`jpx_numcomps.pdf`: malformed JPEG 2000) or keeps it busy past 20 s (`tiling-pattern-tiny-steps*.pdf`),
+the child is killed and restarted, that page shows as a plain grey sheet, and the app keeps running.
+Both files used to stop the whole app. Text extraction still runs in the app's own process.
+
+The packaged app writes warnings to `~/.pdf-distiller/log.txt` and native crash stacks to
+`~/.pdf-distiller/crash.txt`; file names appear there, document content does not.

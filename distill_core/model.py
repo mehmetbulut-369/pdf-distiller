@@ -5,10 +5,26 @@ exchange the same models as JSON.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import asdict, dataclass, field, fields
 from typing import Literal
 
 TextMode = Literal["keep", "auto", "black"]
+
+
+def _num(v) -> float:
+    """A finite number; bools and strings are refused (ValueError -> HTTP 400), so is NaN/inf."""
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
+        raise ValueError(f"not a finite number: {v!r}")
+    return float(v)
+
+
+def _choice(d, key: str) -> dict:
+    """Manual choices {id: "remove" | "keep"}; anything else is dropped."""
+    v = d.get(key) or {}
+    if not isinstance(v, dict):
+        raise ValueError(f"{key} must be an object")
+    return {str(k): a for k, a in v.items() if a in ("remove", "keep")}
 
 # Element kinds
 IMAGE = "image"      # raster image (XObject or inline)
@@ -45,15 +61,16 @@ class Settings:
         d = d or {}
         names = {f.name for f in fields(cls)}
         s = cls(**{k: v for k, v in d.items() if k in names})
-        s.large_threshold = min(max(float(s.large_threshold), 0.005), 1.0)
-        s.repeat_ratio = min(max(float(s.repeat_ratio), 0.05), 1.0)
-        s.background_coverage = min(max(float(s.background_coverage), 0.2), 1.0)
-        s.image_fade = min(max(float(s.image_fade), 0.0), 0.9)
+        for f in fields(cls):
+            if f.type == "bool" and not isinstance(getattr(s, f.name), bool):  # "false" would read as True
+                raise ValueError(f"{f.name} must be true or false")
+        s.large_threshold = min(max(_num(s.large_threshold), 0.005), 1.0)
+        s.repeat_ratio = min(max(_num(s.repeat_ratio), 0.05), 1.0)
+        s.background_coverage = min(max(_num(s.background_coverage), 0.2), 1.0)
+        s.image_fade = min(max(_num(s.image_fade), 0.0), 0.9)
         if s.text_mode not in ("keep", "auto", "black"):
             s.text_mode = "auto"
-        if int(s.nup) not in (1, 2, 4, 6):
-            s.nup = 1
-        s.nup = int(s.nup)
+        s.nup = int(_num(s.nup)) if _num(s.nup) in (1, 2, 4, 6) else 1
         return s
 
     def to_dict(self) -> dict:
@@ -124,7 +141,7 @@ class Overrides:
                 crops.append({"id": str(c["id"]), "all": bool(c.get("all")), "mode": mode, "points": pts})
             except (KeyError, TypeError, ValueError):
                 continue
-        return cls(elements=dict(d.get("elements") or {}), signatures=dict(d.get("signatures") or {}),
+        return cls(elements=_choice(d, "elements"), signatures=_choice(d, "signatures"),
                    regions=regions, crops=crops)
 
     def to_dict(self) -> dict:

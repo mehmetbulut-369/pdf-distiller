@@ -77,8 +77,18 @@ const state = {
 };
 
 // ------------------------------------------------------------------ helpers
+// A request that never answers must not leave the app looking frozen: give up after a time limit and say so.
+// The longest real job measured (export of 20 000 pages) takes ~15 s; 3 minutes only catches what is stuck.
+const API_TIMEOUT_MS = 180_000;
 async function api(path, opts = {}) {
-  const r = await fetch(path, opts);
+  const signal = typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(API_TIMEOUT_MS) : undefined;
+  let r;
+  try {
+    r = await fetch(path, { ...opts, signal });
+  } catch (e) {
+    if (e.name === "TimeoutError") throw new Error(t("error.timeout"));
+    throw new Error(t("error.no_connection"));  // the local server is not answering (stopped or crashed)
+  }
   if (!r.ok) {
     let msg = t("error.request_failed", { status: r.status });
     try { const d = (await r.json()).detail; if (typeof d === "string") msg = has(d) ? t(d) : d; } catch (_) {}
@@ -256,7 +266,9 @@ function uploadPdf(file, onProgress) {
       const d = x.response?.detail;
       reject(new Error(typeof d === "string" ? (has(d) ? t(d) : d) : t("error.request_failed", { status: x.status })));
     };
-    x.onerror = () => reject(new Error(t("error.request_failed", { status: 0 })));
+    x.onerror = () => reject(new Error(t("error.no_connection")));
+    x.timeout = 10 * API_TIMEOUT_MS;  // upload + analysis of a very large file
+    x.ontimeout = () => reject(new Error(t("error.timeout")));
     x.send(fd);
   });
 }

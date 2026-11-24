@@ -18,6 +18,9 @@ jobs:
           - os: windows-latest
             asset: dist/PDF-Distiller-Windows.zip
     runs-on: ${{ matrix.os }}
+    env:  # a step's `if` cannot read secrets directly
+      HAS_MAC_CERT: ${{ secrets.MACOS_CERT_P12 != '' }}
+      HAS_WIN_CERT: ${{ secrets.WINDOWS_CERT_PFX != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,7 +28,39 @@ jobs:
           python-version: "3.13"
       - run: pip install ".[dev,window]" pyinstaller
       - run: python -m pytest -q
+      # Signing runs only when the repository has these secrets (docs/signing.md); otherwise the build
+      # is unsigned, as before.
+      - name: Import macOS signing certificate
+        if: runner.os == 'macOS' && env.HAS_MAC_CERT == 'true'
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          KC="$RUNNER_TEMP/sign.keychain-db"; KCPW="$(uuidgen)"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KCPW" "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p "$KCPW" "$KC"
+          security import "$RUNNER_TEMP/cert.p12" -P "$MACOS_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KC"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KCPW" "$KC"
+          security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/cert.p12"
+      - name: Decode Windows signing certificate
+        if: runner.os == 'Windows' && env.HAS_WIN_CERT == 'true'
+        shell: pwsh
+        env:
+          WINDOWS_CERT_PFX: ${{ secrets.WINDOWS_CERT_PFX }}
+        run: |
+          $pfx = Join-Path $env:RUNNER_TEMP "sign.pfx"
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_CERT_PFX))
+          "WINDOWS_SIGN_PFX=$pfx" | Out-File -FilePath $env:GITHUB_ENV -Append
       - run: python packaging/build.py
+        env:
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          WINDOWS_SIGN_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
       - name: Zip Windows build
         if: runner.os == 'Windows'
         shell: pwsh

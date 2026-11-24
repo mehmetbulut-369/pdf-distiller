@@ -77,7 +77,9 @@ Do not make the engine depend on a UI.
 - **Selection in the UI** is by the smallest element at the clicked point (`hitsAt`), not DOM order.
 - **Word counter** gets its text from pdfium (which decodes font encodings); text in removed boxes is
   subtracted from the count.
-- **pdfium is not thread-safe:** every render runs under `PDFIUM_LOCK`.
+- **pdfium is not thread-safe and can crash on hostile files:** page images are drawn in one child process
+  (`distill_core/render.py`, killed and restarted on a crash or a 20 s timeout); text extraction stays in-process
+  under `PDFIUM_LOCK`.
 
 ## Licensing
 

@@ -35,6 +35,21 @@ from .model import FILL, IMAGE, SHADING, STROKE, TEXT, Element
 
 IDENT = (1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 MAX_DEPTH = 16
+# Hostile-file guards. A 131 KB file can hold 54 MB of drawing commands (3 M operators): parsing that took
+# 4 GB of memory and ~50 s per action. Real lecture slides stay far below both limits (a dense vector
+# chart is some 10^4-10^5 operators). A page over a limit is not analysed and is kept unchanged.
+MAX_CONTENT_BYTES = 16 * 1024 * 1024  # decoded content of one page or form XObject
+MAX_OPS = 600_000                     # operators executed for one page, forms included
+
+
+class PageTooComplex(ValueError):
+    """The page is over MAX_CONTENT_BYTES / MAX_OPS; it is kept as it is."""
+
+
+def _content_bytes(page_obj) -> int:
+    c = page_obj.get("/Contents")
+    streams = c if isinstance(c, pikepdf.Array) else [c]
+    return sum(len(st.read_bytes()) for st in streams if isinstance(st, pikepdf.Stream))
 BACKDROP_MIN_AREA = 0.003  # smallest backdrop considered for the text colour decision
 
 
@@ -309,10 +324,17 @@ class PageWalker:
         self.tcounter = 0                 # text box counter (separate from the graphics counter)
         self.tgroup = None                # the text box currently being extended
         self.tgroups: list = []           # text boxes found during analysis
+        self.n_ops = 0                    # operators executed so far (MAX_OPS)
 
     # ------------------------------------------------------------ main entry point
     def run(self) -> bool:
         """Walk the page. In rewrite mode, replaces the page content. Returns whether anything changed."""
+        try:
+            size = _content_bytes(self.page_obj)
+        except Exception:
+            size = 0  # undecodable stream: parse_content_stream below fails the same way
+        if size > MAX_CONTENT_BYTES:
+            raise PageTooComplex(f"page content is {size} bytes")
         try:
             instrs = pikepdf.parse_content_stream(self.page_obj)
         except Exception:
@@ -449,6 +471,9 @@ class PageWalker:
         pending_clip = False
         tm = tlm = IDENT
 
+        self.n_ops += len(instrs)
+        if self.n_ops > MAX_OPS:
+            raise PageTooComplex(f"over {MAX_OPS} operators")
         for ins in instrs:
             if isinstance(ins, ContentStreamInlineImage):
                 bbox = rect_bbox(gs.ctm, 0, 0, 1, 1)
@@ -804,6 +829,12 @@ class PageWalker:
         key = xo.objgen
         cached = self.caches.streams.get(key) if key != (0, 0) else None
         if cached is None:
+            try:
+                too_big = len(xo.read_bytes()) > MAX_CONTENT_BYTES
+            except Exception:
+                too_big = False
+            if too_big:
+                raise PageTooComplex("form content too large")
             try:
                 cached = pikepdf.parse_content_stream(xo)
             except Exception:

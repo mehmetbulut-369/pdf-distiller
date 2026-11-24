@@ -77,7 +77,10 @@ def _check_page(d: DistillDocument, page: int):
 
 
 def _parse(job: Job):
-    return Settings.from_dict(job.settings), Overrides.from_dict(job.overrides)
+    try:
+        return Settings.from_dict(job.settings), Overrides.from_dict(job.overrides)
+    except (TypeError, ValueError) as e:  # wrong types from a script or an old saved state: not a server error
+        raise HTTPException(400, "error.bad_settings") from e
 
 
 def _cache_get(key):
@@ -279,9 +282,13 @@ def export(doc_id: str, job: Job):
 
 
 # ----------------------------------------------------------------------------- profiles
+# Windows refuses these as file names, with any extension ("CON.json" opens the console)
+_WIN_RESERVED = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}
+
+
 def _safe(name: str) -> str:
     n = re.sub(r"[^\w\- ]", "", name, flags=re.UNICODE).strip()[:60]
-    if not n:
+    if not n or n.upper() in _WIN_RESERVED:
         raise HTTPException(400, "error.invalid_profile_name")
     return n
 
@@ -303,9 +310,12 @@ def list_profiles():
 @app.put("/api/profiles/{name}")
 def save_profile(name: str, settings: dict):
     n = _safe(name)
+    try:
+        clean = Settings.from_dict(settings).to_dict()
+    except (TypeError, ValueError) as e:
+        raise HTTPException(400, "error.bad_settings") from e
     USER_PROFILES.mkdir(parents=True, exist_ok=True)
-    (USER_PROFILES / f"{n}.json").write_text(
-        json.dumps(Settings.from_dict(settings).to_dict(), indent=2, ensure_ascii=False), "utf-8")
+    (USER_PROFILES / f"{n}.json").write_text(json.dumps(clean, indent=2, ensure_ascii=False), "utf-8")
     return {"name": n}
 
 

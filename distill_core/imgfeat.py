@@ -24,6 +24,16 @@ TILE = 16
 TEXT_IMAGE = 0.6       # a text score above this means "image containing text"
 MIN_PHOTO = 0.015      # photo fragments smaller than this share of the image are ignored
 PHOTO_INK = 0.30       # an image this dark on average is a photo even if its tiles look "texty"
+# Decoding a raster image needs width x height x channels bytes, whatever its size in the file: an 875 KB
+# PDF held a 30000 x 30000 image (900 MB decoded, 2.6 GB as RGB). A 600 dpi A4 scan is 35 M pixels.
+MAX_DECODE_PIXELS = 80_000_000
+
+
+def too_big_to_decode(obj) -> bool:
+    try:
+        return int(obj.get("/Width", 0)) * int(obj.get("/Height", 0)) > MAX_DECODE_PIXELS
+    except (TypeError, ValueError):
+        return True
 
 
 def load_small(pdf: pikepdf.Pdf, objgen) -> Image.Image | None:
@@ -32,7 +42,10 @@ def load_small(pdf: pikepdf.Pdf, objgen) -> Image.Image | None:
         if bool(obj.get("/ImageMask", False)):
             return None
         filt = obj.get("/Filter")
-        if isinstance(filt, pikepdf.Name) and str(filt) == "/DCTDecode":
+        is_jpeg = isinstance(filt, pikepdf.Name) and str(filt) == "/DCTDecode"
+        if not is_jpeg and too_big_to_decode(obj):  # JPEG is decoded at a reduced size (draft) below
+            return None
+        if is_jpeg:
             im = Image.open(io.BytesIO(obj.read_raw_bytes()))
             im.draft("RGB", (MAX_SIDE, MAX_SIDE))  # decode JPEG directly at a small size (very fast)
         else:

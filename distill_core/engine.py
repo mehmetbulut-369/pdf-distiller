@@ -15,19 +15,21 @@ import os
 import re
 import threading
 import time
+import uuid
 from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor
 
-import numpy as np
 import pikepdf
 import pypdfium2 as pdfium
 
+from . import render
 from .classify import classify, in_region, signature_pages
 from .images import process_images
 from .imgfeat import image_features
 from .interpreter import Caches, PageWalker, apply, invert, page_box, page_rotation, user_to_view, view_mapper, view_to_user
 from .model import FILL, IMAGE, SHADING, TEXT, Overrides, PageInfo, PageOp, Settings
 from .pageops import apply_page_ops, nup
+from .render import MAX_RENDER_SIDE, ink_coverage, to_png  # noqa: F401  (ink_coverage: public helper)
 
 log = logging.getLogger("distill")
 
@@ -44,7 +46,7 @@ def _close(*objs):
 
 FEATURE_MIN_AREA = 0.02  # content analysis only for images larger than this (logos/icons are skipped)
 INK_HEAVY_PAGE = 0.15    # a printed page above this ink coverage gets a warning (a text page is ~3-6 %)
-MAX_RENDER_SIDE = 6000   # px; longest side of any rendered page image
+INK_MAX_PAGES = 400      # pages the ink gauge renders at most (evenly spread beyond that)
 INK_HOTSPOT = 0.04       # a kept element costing at least this share of its page in ink is a hotspot
 
 
@@ -103,7 +105,11 @@ def distill_pages(pdf: pikepdf.Pdf, items, drops: dict, s: Settings, clips: dict
         if not _needs_rewrite(d, s) and not c:
             if s.image_fade > 0:
                 w = PageWalker(pdf, idx, page_obj, rewrite=True, drops=set(), caches=caches)
-                w.run()
+                try:
+                    w.run()
+                except Exception as e:  # e.g. PageTooComplex: the page's images just aren't faded
+                    log.warning("page %d could not be walked: %s", idx + 1, e)
+                    continue
                 kept |= w.kept_images
             continue
         w = PageWalker(pdf, idx, page_obj, rewrite=True, drops=d, text_mode=s.text_mode,
@@ -148,11 +154,6 @@ def _pdfium_rewrite(data: bytes, timeout: float = 60) -> bytes | None:
         return None
 
 
-def ink_coverage(img) -> float:
-    a = np.asarray(img.convert("RGB"), dtype=np.float32)
-    return float((765.0 - a.sum(axis=2)).mean() / 765.0)
-
-
 class EmptyPdf(ValueError):
     """The PDF has no pages."""
 
@@ -162,6 +163,7 @@ class DistillDocument:
         self.data = data
         self.name = name
         self.lock = threading.RLock()
+        self.uid = uuid.uuid4().hex  # this document's name in the render process
         try:
             self.pdf = pikepdf.open(io.BytesIO(data))
         except pikepdf.PdfError as e:  # PasswordError included
@@ -407,27 +409,17 @@ class DistillDocument:
             self._pdfium = pdfium.PdfDocument(self.data)
         return self._pdfium
 
-    @staticmethod
-    def _render(doc, i: int, width: int):
-        page = doc[i]
-        w, h = page.get_size()
-        # cap the long side: a page of 595 x 2^31 pt (seen in the wild) would otherwise exhaust memory
-        scale = max(min(width / max(w, 1.0), MAX_RENDER_SIDE / max(h, 1.0)), 0.0001)
-        try:
-            bitmap = page.render(scale=scale)
-            img = bitmap.to_pil().copy()  # own the pixels so the bitmap can be freed now, under the lock
-            _close(bitmap, page)
-            return img
-        except ValueError:  # invalid page box (pdfium: "Crop exceeds page dimensions"): show a blank sheet
-            page.close()
-            from PIL import Image
-            tall = min(int(width * abs(h) / max(abs(w), 1.0)), MAX_RENDER_SIDE)
-            return Image.new("RGB", (max(int(width), 1), max(tall, 1)), "white")
+    def _placeholder(self, i: int, width: int) -> bytes:
+        """A plain grey sheet in the page's proportions: shown when pdfium could not draw the page."""
+        from PIL import Image
+        p = self.pages[i] if i < len(self.pages) else None
+        ratio = (p.height / p.width) if p and p.width > 0 else 1.414
+        h = max(min(int(width * ratio), MAX_RENDER_SIDE), 1)
+        return to_png(Image.new("RGB", (max(int(width), 1), h), (236, 237, 239)))
 
     def render_original(self, i: int, width: int = 900) -> bytes:
-        with PDFIUM_LOCK:
-            img = self._render(self._pdfium_doc(), i, width)
-        return _png(img)
+        png = render.service().png(self.uid, self.data, i, width)
+        return png if png is not None else self._placeholder(i, width)
 
     def _distilled(self, pdf: pikepdf.Pdf, idx: list[int], s: Settings, ov: Overrides) -> bytes:
         """Copies pages idx of pdf into a new PDF, cleans them and returns its bytes."""
@@ -446,45 +438,49 @@ class DistillDocument:
             return self._distilled(self.pdf, [i], s, ov)
 
     def render_processed(self, i: int, s: Settings, ov: Overrides, width: int = 900) -> bytes:
+        svc = render.service()
+        if svc.failed(self.uid, i):  # the original already crashed or hung pdfium: don't wait for it again
+            return self._placeholder(i, width)
         data = self.processed_page_pdf(i, s, ov)
-        with PDFIUM_LOCK:
-            doc = pdfium.PdfDocument(data)
-            img = self._render(doc, 0, width)
-            doc.close()
-        return _png(img)
+        key = f"{self.uid}:p:{uuid.uuid4().hex[:8]}"
+        try:
+            png = svc.png(key, data, 0, width)
+        finally:
+            svc.drop(key)
+        return png if png is not None else self._placeholder(i, width)
 
     # -------------------------------------------------------------- ink estimate
     def ink_estimate(self, s: Settings, ov: Overrides, samples: int | None = None, width: int = 160) -> dict:
-        """Measured on every page by default: a 24-page sample read 49 % where all 160 pages give 28 %."""
+        """Measured on every page by default (a 24-page sample read 49 % where all 160 pages give 28 %);
+        past INK_MAX_PAGES pages an even sample keeps a 20 000-page file from taking a minute."""
         n = self.n_pages
         if n == 0:
             return {"original": 0, "processed": 0, "saving": 0, "pages": 0}
-        k = n if samples is None else min(samples, n)
+        k = min(n if samples is None else samples, n, INK_MAX_PAGES)
         idx = sorted({round(j * (n - 1) / max(k - 1, 1)) for j in range(k)})
-        # Works on its own copy and takes the pdfium lock page by page: on a long deck this runs for seconds,
-        # and the page preview must not wait for it (measured: 0.02 s alone, 2 s behind one big lock).
+        # Works on its own copy, so the page preview does not wait for it (0.02 s alone, 2 s behind one lock).
         with pikepdf.open(io.BytesIO(self.data)) as src:
             data = self._distilled(src, idx, s, ov)
+        svc = render.service()
+        key = f"{self.uid}:ink:{uuid.uuid4().hex[:8]}"
         o_sum = p_sum = 0.0
-        with PDFIUM_LOCK:
-            pd = pdfium.PdfDocument(data)
+        used = 0
         try:
             for j, i in enumerate(idx):
-                orig = None
-                with PDFIUM_LOCK:
-                    if (i, width) not in self._ink_orig:  # the original never changes: render it once
-                        orig = self._render(self._pdfium_doc(), i, width)
-                    img = self._render(pd, j, width)
-                if orig is not None:
-                    self._ink_orig[i, width] = ink_coverage(orig)
-                o_sum += self._ink_orig[i, width]
-                p_sum += ink_coverage(img)
+                if (i, width) not in self._ink_orig:  # the original never changes: measure it once
+                    self._ink_orig[i, width] = svc.ink(self.uid, self.data, i, width)
+                o = self._ink_orig[i, width]
+                p = svc.ink(key, data, j, width) if o is not None else None
+                if o is None or p is None:  # a page pdfium cannot draw is left out of the average
+                    continue
+                o_sum, p_sum, used = o_sum + o, p_sum + p, used + 1
         finally:
-            with PDFIUM_LOCK:
-                pd.close()
-        o, p = o_sum / len(idx), p_sum / len(idx)
+            svc.drop(key)
+        if used == 0:
+            return {"original": 0, "processed": 0, "saving": 0, "pages": 0}
+        o, p = o_sum / used, p_sum / used
         return {"original": round(o, 4), "processed": round(p, 4),
-                "saving": round(1 - p / o, 4) if o > 0 else 0.0, "pages": len(idx)}
+                "saving": round(1 - p / o, 4) if o > 0 else 0.0, "pages": used}
 
     def _ink_cost(self, e, s: Settings) -> float:
         """Estimated ink of one element as a share of its page (area x darkness). No rendering."""
@@ -570,6 +566,7 @@ class DistillDocument:
         return data
 
     def close(self):
+        render.service().drop(self.uid)
         with self.lock, PDFIUM_LOCK:  # self.lock: a render still using self.pdf finishes first
             if self._pdfium is not None:
                 self._pdfium.close()
@@ -593,8 +590,3 @@ def region_for(view):
     h = y1 - y0
     return (max(0.0, x0 - 0.02), max(0.0, y0 - 0.3 * h), min(1.0, x1 + 0.02), min(1.0, y1 + 0.3 * h))
 
-
-def _png(img) -> bytes:
-    buf = io.BytesIO()
-    img.save(buf, format="PNG", optimize=False)
-    return buf.getvalue()

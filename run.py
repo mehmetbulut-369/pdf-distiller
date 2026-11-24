@@ -8,6 +8,9 @@ Packaged builds (PyInstaller) always open a desktop window; closing it stops the
 from __future__ import annotations
 
 import argparse
+import faulthandler
+import logging
+import logging.handlers
 import multiprocessing
 import os
 import socket
@@ -19,6 +22,30 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
+LOG_DIR = Path.home() / ".pdf-distiller"
+
+
+def setup_logging() -> Path | None:
+    """Warnings and errors go to ~/.pdf-distiller/log.txt (two files of 1 MB at most), so a user who reports a
+    problem has something to send. Only what went wrong is written: file names, never document content.
+    A native crash (pdfium, qpdf) writes its stack to crash.txt via faulthandler."""
+    try:
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        h = logging.handlers.RotatingFileHandler(LOG_DIR / "log.txt", maxBytes=1_000_000, backupCount=1,
+                                                 encoding="utf-8")
+    except OSError:
+        return None  # read-only home: run without a log rather than not at all
+    h.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    root = logging.getLogger()
+    root.addHandler(h)
+    root.setLevel(logging.WARNING)
+    logging.getLogger("pdf_distiller").setLevel(logging.INFO)  # plus one start line per run
+    try:
+        faulthandler.enable(open(LOG_DIR / "crash.txt", "a", encoding="utf-8"))  # noqa: SIM115 (open for the process)
+    except OSError:
+        pass
+    sys.excepthook = lambda *exc: logging.getLogger("pdf_distiller").critical("unhandled error", exc_info=exc)
+    return LOG_DIR / "log.txt"
 
 
 def free_port(preferred: int) -> int:
@@ -38,6 +65,8 @@ def main():
     ap.add_argument("--window", action="store_true", help="desktop window instead of the browser")
     ap.add_argument("--no-browser", action="store_true")
     a = ap.parse_args()
+    setup_logging()
+    logging.getLogger("pdf_distiller").info("start (frozen=%s, %s)", getattr(sys, "frozen", False), sys.platform)
     if getattr(sys, "frozen", False):
         # windowed builds have no console; uvicorn's log formatter fails on a None stream
         sys.stdout = sys.stdout or open(os.devnull, "w")  # noqa: SIM115
