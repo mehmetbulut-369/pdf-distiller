@@ -22,7 +22,7 @@ jobs:
       HAS_MAC_CERT: ${{ secrets.MACOS_CERT_P12 != '' }}
       HAS_WIN_CERT: ${{ secrets.WINDOWS_CERT_PFX != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
