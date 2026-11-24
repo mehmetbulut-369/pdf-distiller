@@ -65,6 +65,6 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: Compress-Archive -Path "dist/PDF Distiller.exe", dist/LICENSE, dist/THIRD_PARTY_NOTICES.md, dist/licenses -DestinationPath dist/PDF-Distiller-Windows.zip
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: ${{ matrix.asset }}
