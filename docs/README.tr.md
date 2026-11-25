@@ -110,6 +110,7 @@ Ayrıntılar: [README.md](../README.md).
 Python gerektirmeyen hazır paketler her [sürümde](../../../releases) bulunur:
 
 - **macOS (Apple Silicon):** `PDF-Distiller-macOS.dmg` dosyasını açın, *PDF Distiller*'ı *Uygulamalar*'a sürükleyin.
+- **macOS (Intel):** `PDF-Distiller-macOS-Intel.dmg`, aynı şekilde.
 - **Windows:** `PDF-Distiller-Windows.zip` dosyasını açın, `PDF Distiller.exe`'yi çalıştırın.
 
 Paketler imzalı değil, bu yüzden sistem ilk açılışta uyarır. Bu yalnızca bir kez gerekir:

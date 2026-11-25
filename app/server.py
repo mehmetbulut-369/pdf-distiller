@@ -20,7 +20,7 @@ from urllib.parse import quote
 
 import pikepdf
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -34,9 +34,15 @@ from distill_core.engine import EmptyPdf, settings_key  # noqa: E402
 STATIC = Path(__file__).resolve().parent / "static"
 BUILTIN_PROFILES = ROOT / "app" / "profiles"
 USER_PROFILES = Path.home() / ".pdf-distiller" / "profiles"
+PREFS = Path.home() / ".pdf-distiller" / "prefs.json"
+# UI preferences kept in a file as well as in the page's localStorage: localStorage belongs to one port, and
+# the app moves to another port when 8765 is taken, which would otherwise look like lost settings.
+PREF_KEYS = {"lang", "theme", "layout", "savedDots", "creditedDots"}
+MAX_PREF_CHARS = 64_000
 MAX_DOCS = 8  # one per open window; the oldest is dropped beyond that
 # A lecture deck is a few MB; a hostile or runaway upload can be arbitrarily large and is read into
-# memory (then copied into each analysis worker). Refuse anything past this before it is read.
+# memory (then copied into each analysis worker). Refused by its announced size before the body is read
+# (the multipart parser would otherwise spool all of it to a temporary file first), and again by its real size.
 MAX_PDF_MB = int(os.environ.get("PDF_DISTILLER_MAX_MB", "300"))
 MAX_PDF_BYTES = MAX_PDF_MB * 1024 * 1024
 log = logging.getLogger("pdf_distiller")
@@ -112,7 +118,19 @@ async def same_origin_writes(request, call_next):
     origin = request.headers.get("origin")
     if request.method not in ("GET", "HEAD", "OPTIONS") and origin is not None \
             and origin != f"{request.url.scheme}://{request.headers.get('host', '')}":
-        return Response("error.foreign_origin", status_code=403)
+        return JSONResponse({"detail": "error.foreign_origin"}, status_code=403)
+    return await call_next(request)
+
+
+@app.middleware("http")
+async def announced_size(request, call_next):
+    """An upload whose Content-Length is past the limit is refused before a byte of it is read."""
+    try:
+        n = int(request.headers.get("content-length") or 0)
+    except ValueError:
+        n = 0
+    if request.method == "POST" and request.url.path == "/api/open" and n > MAX_PDF_BYTES + 64 * 1024:
+        return JSONResponse({"detail": "error.too_large"}, status_code=413)
     return await call_next(request)
 
 
@@ -143,7 +161,7 @@ BUILD = _build()
 
 @app.get("/api/version")
 def version():
-    return {"version": __version__, "build": BUILD}
+    return {"version": __version__, "build": BUILD, "max_mb": MAX_PDF_MB}
 
 
 @app.get("/api/tiers")
@@ -153,7 +171,7 @@ def tiers():
 
 @app.post("/api/open")
 def open_pdf(file: UploadFile = File(...)):  # sync: analysis runs in the threadpool, not on the event loop
-    data = file.file.read(MAX_PDF_BYTES + 1)  # bounded read: a huge upload never fully materialises
+    data = file.file.read(MAX_PDF_BYTES + 1)  # bounded read: never more than the limit in memory
     if len(data) > MAX_PDF_BYTES:
         raise HTTPException(413, "error.too_large")
     return open_document(data, file.filename or "document.pdf")
@@ -203,12 +221,28 @@ def open_document(data: bytes, name: str) -> dict:
     doc_id = uuid.uuid4().hex[:12]
     with _lock:
         _docs[doc_id] = doc
-        while len(_docs) > MAX_DOCS:
-            old_id, old = _docs.popitem(last=False)
-            old.close()
-            for k in [k for k in _png_cache if k.startswith(old_id + ":")]:
-                del _png_cache[k]
+        evict = list(_docs)[:-MAX_DOCS] if len(_docs) > MAX_DOCS else []
+    for old_id in evict:  # closed outside the lock: closing waits for that document's running render
+        close_document(old_id)
     return _meta(doc_id, doc)
+
+
+def close_document(doc_id: str) -> bool:
+    """Frees a document and its cached page images. False: it was not open (already closed or dropped)."""
+    with _lock:
+        doc = _docs.pop(doc_id, None)
+        for k in [k for k in _png_cache if k.startswith(doc_id + ":")]:
+            del _png_cache[k]
+    if doc is None:
+        return False
+    doc.close()
+    return True
+
+
+@app.delete("/api/doc/{doc_id}")
+def close_doc(doc_id: str):
+    """The page is done with this document (another one replaced it): give its memory back now."""
+    return {"closed": close_document(doc_id)}
 
 
 @app.get("/api/doc/{doc_id}/original/{page}.png")
@@ -244,11 +278,18 @@ def elements(doc_id: str, job: Job):
     return {"page": job.page, "elements": d.page_elements(job.page, s, ov)}
 
 
+def _ops(d: DistillDocument, job: Job) -> list[PageOp] | None:
+    """The pages to print, in order; None = all pages unchanged."""
+    if job.ops is None:
+        return None
+    return [PageOp(o.src, o.rotate) for o in job.ops if 0 <= o.src < d.n_pages]
+
+
 @app.post("/api/doc/{doc_id}/summary")
 def summary(doc_id: str, job: Job):
     d = _doc(doc_id)
     s, ov = _parse(job)
-    return {**d.summary(s, ov), "ink": d.ink_estimate(s, ov), "ink_report": d.ink_report(s, ov)}
+    return {**d.summary(s, ov), "ink": d.ink_estimate(s, ov, ops=_ops(d, job)), "ink_report": d.ink_report(s, ov)}
 
 
 class WordJob(Job):
@@ -268,11 +309,9 @@ def words(doc_id: str, job: WordJob):
 def export(doc_id: str, job: Job):
     d = _doc(doc_id)
     s, ov = _parse(job)
-    ops = None
-    if job.ops is not None:
-        ops = [PageOp(o.src, o.rotate) for o in job.ops if 0 <= o.src < d.n_pages]
-        if not ops:
-            raise HTTPException(400, "error.no_pages")
+    ops = _ops(d, job)
+    if ops is not None and not ops:
+        raise HTTPException(400, "error.no_pages")
     data = d.export(s, ov, ops)
     name = (re.sub(r"[^\w\-. ]", "_", Path(d.name).stem)[:80] or "document") + "_print.pdf"
     # HTTP headers must be ASCII: ASCII fallback + UTF-8 real name (RFC 6266 / 5987)
@@ -315,7 +354,7 @@ def save_profile(name: str, settings: dict):
     except (TypeError, ValueError) as e:
         raise HTTPException(400, "error.bad_settings") from e
     USER_PROFILES.mkdir(parents=True, exist_ok=True)
-    (USER_PROFILES / f"{n}.json").write_text(json.dumps(clean, indent=2, ensure_ascii=False), "utf-8")
+    write_atomic(USER_PROFILES / f"{n}.json", json.dumps(clean, indent=2, ensure_ascii=False))
     return {"name": n}
 
 
@@ -326,3 +365,43 @@ def delete_profile(name: str):
         raise HTTPException(404, "error.only_own_profiles")
     f.unlink()
     return {"ok": True}
+
+
+# ----------------------------------------------------------------------------- preferences
+def _read_prefs() -> dict:
+    try:
+        v = json.loads(PREFS.read_text("utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return {k: x for k, x in v.items() if k in PREF_KEYS and isinstance(x, str)} if isinstance(v, dict) else {}
+
+
+@app.get("/api/prefs")
+def get_prefs():
+    return _read_prefs()
+
+
+@app.put("/api/prefs")
+def put_prefs(changes: dict):
+    """Merges {key: string | null}; null removes the key. Only the UI's own keys, never more than 64 KB."""
+    prefs = _read_prefs()
+    for k, v in changes.items():
+        if k not in PREF_KEYS or not (v is None or isinstance(v, str)):
+            raise HTTPException(400, "error.bad_settings")
+        if v is None:
+            prefs.pop(k, None)
+        else:
+            prefs[k] = v
+    text = json.dumps(prefs, ensure_ascii=False)
+    if len(text) > MAX_PREF_CHARS:
+        raise HTTPException(400, "error.bad_settings")
+    write_atomic(PREFS, text)
+    return {"ok": True}
+
+
+def write_atomic(path: Path, text: str) -> None:
+    """Write via a temporary file and a rename: a crash or a second window never leaves half a file."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.name}.{uuid.uuid4().hex[:8]}.tmp")
+    tmp.write_text(text, "utf-8")
+    os.replace(tmp, path)

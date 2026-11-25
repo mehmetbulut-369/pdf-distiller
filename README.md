@@ -115,6 +115,7 @@ Apple Silicon, 10 cores, Python 3.13):
 Ready-to-run builds (no Python needed) are attached to each [release](../../releases):
 
 - **macOS (Apple Silicon):** `PDF-Distiller-macOS.dmg`. Open it and drag *PDF Distiller* to *Applications*.
+- **macOS (Intel):** `PDF-Distiller-macOS-Intel.dmg`, the same way.
 - **Windows:** `PDF-Distiller-Windows.zip`. Unzip it and run `PDF Distiller.exe`.
 
 The builds are not code-signed, so the system warns on the first launch. This happens once:

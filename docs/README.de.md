@@ -110,6 +110,7 @@ Tintenschätzung über alle Seiten 3,7 s (bei 60 Seiten 0,4 s), Vorschau einer S
 Fertige Pakete (ohne Python) liegen jedem [Release](../../../releases) bei:
 
 - **macOS (Apple Silicon):** `PDF-Distiller-macOS.dmg` öffnen und *PDF Distiller* in *Programme* ziehen.
+- **macOS (Intel):** `PDF-Distiller-macOS-Intel.dmg`, genauso.
 - **Windows:** `PDF-Distiller-Windows.zip` entpacken und `PDF Distiller.exe` starten.
 
 Die Pakete sind nicht signiert, daher warnt das System beim ersten Start. Das ist nur einmal nötig:

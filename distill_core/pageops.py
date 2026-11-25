@@ -5,9 +5,9 @@ import pikepdf
 from pikepdf import Rectangle
 
 from .interpreter import page_box, page_rotation
-from .model import PageOp
+from .model import PAPER, PageOp
 
-A4 = (595.28, 841.89)
+A4 = PAPER["a4"]
 MARGIN = 24.0
 GUTTER = 12.0
 
@@ -34,14 +34,14 @@ def _display_size(page) -> tuple[float, float]:
     return (h, w) if page_rotation(page.obj) in (90, 270) else (w, h)
 
 
-def best_grid(n: int, pw: float, ph: float):
-    """Pick the grid that gives the largest scale on A4 for the slide aspect ratio."""
+def best_grid(n: int, pw: float, ph: float, sheet: tuple = A4):
+    """Pick the grid that gives the largest scale on the sheet for the slide aspect ratio."""
     best = None
     for cols in range(1, n + 1):
         if n % cols:
             continue
         rows = n // cols
-        for sw, sh in (A4, (A4[1], A4[0])):
+        for sw, sh in (sheet, (sheet[1], sheet[0])):
             cw = (sw - 2 * MARGIN - (cols - 1) * GUTTER) / cols
             ch = (sh - 2 * MARGIN - (rows - 1) * GUTTER) / rows
             scale = min(cw / pw, ch / ph)
@@ -50,11 +50,11 @@ def best_grid(n: int, pw: float, ph: float):
     return best
 
 
-def nup(pdf: pikepdf.Pdf, n: int) -> pikepdf.Pdf:
+def nup(pdf: pikepdf.Pdf, n: int, paper: str = "a4") -> pikepdf.Pdf:
     if n <= 1 or len(pdf.pages) == 0:
         return pdf
     pw, ph = (max(v, 1.0) for v in _display_size(pdf.pages[0]))
-    _, cols, rows, sw, sh, cw, ch = best_grid(n, pw, ph)
+    _, cols, rows, sw, sh, cw, ch = best_grid(n, pw, ph, PAPER.get(paper, A4))
     out = pikepdf.new()
     pages = list(pdf.pages)
     for start in range(0, len(pages), n):

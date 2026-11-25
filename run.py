@@ -2,6 +2,7 @@
 
     python run.py            -> opens in the browser
     python run.py --window   -> opens in a desktop window (needs: pip install pywebview)
+    python run.py --window a.pdf b.pdf  -> and opens these files, one window each
 
 Packaged builds (PyInstaller) always open a desktop window; closing it stops the server.
 """
@@ -59,12 +60,24 @@ def free_port(preferred: int) -> int:
     raise RuntimeError("No free port found")
 
 
+# Shown when the local server cannot start. Written for people, in the three UI languages.
+START_ERROR = """<body style="font:15px/1.5 -apple-system,Segoe UI,sans-serif;padding:24px;color:#222">
+<p><b>PDF Distiller could not start.</b> Another program may be blocking it. Please restart your computer
+and try again. If it happens again, send us the file <code>~/.pdf-distiller/log.txt</code>.</p>
+<p lang="de"><b>PDF Distiller konnte nicht starten.</b> Ein anderes Programm blockiert es vielleicht. Starten Sie
+den Computer neu und versuchen Sie es noch einmal. Wenn es wieder passiert, schicken Sie uns die Datei
+<code>~/.pdf-distiller/log.txt</code>.</p>
+<p lang="tr"><b>PDF Distiller açılamadı.</b> Başka bir program engelliyor olabilir. Bilgisayarınızı yeniden
+başlatıp tekrar deneyin. Yine olursa <code>~/.pdf-distiller/log.txt</code> dosyasını bize gönderin.</p></body>"""
+
+
 def main():
     ap = argparse.ArgumentParser(description="PDF Distiller")
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--window", action="store_true", help="desktop window instead of the browser")
     ap.add_argument("--no-browser", action="store_true")
-    a = ap.parse_args()
+    ap.add_argument("files", nargs="*", help="PDFs to open (desktop window only)")
+    a, _ = ap.parse_known_args()  # macOS may add its own arguments (-psn_...) to a launched app
     setup_logging()
     logging.getLogger("pdf_distiller").info("start (frozen=%s, %s)", getattr(sys, "frozen", False), sys.platform)
     if getattr(sys, "frozen", False):
@@ -90,11 +103,18 @@ def main():
             a.window = False
 
     if a.window:
-        threading.Thread(target=server.run, daemon=True).start()
-        while not server.started:
+        th = threading.Thread(target=server.run, daemon=True)
+        th.start()
+        deadline = time.monotonic() + 30
+        while not server.started and th.is_alive() and time.monotonic() < deadline:
             time.sleep(0.05)
+        if not server.started:  # port taken in the meantime, blocked by security software, ...
+            logging.getLogger("pdf_distiller").critical("local server did not start on port %d", port)
+            from app.desktop import show_start_error
+            show_start_error(START_ERROR)
+            sys.exit(1)
         from app.desktop import start
-        start(url)  # one window per document; blocks until the last one is closed
+        start(url, a.files)  # one window per document; blocks until the last one is closed
         server.should_exit = True
         return
 

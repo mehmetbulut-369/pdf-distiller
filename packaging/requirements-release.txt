@@ -1,0 +1,40 @@
+# Exact versions for release builds: pip install -c packaging/requirements-release.txt ".[dev,window]" pyinstaller
+# Tested together on macOS (python -m pytest, packaging/build.py). Dependabot proposes updates weekly;
+# a package missing here (e.g. Windows-only pywebview dependencies) installs at its newest version.
+altgraph==0.17.5
+annotated-doc==0.0.7
+annotated-types==0.8.0
+anyio==4.16.0
+bottle==0.13.4
+certifi==2026.10.23
+click==8.5.1
+fastapi==0.163.2
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.20
+lxml==6.1.3
+macholib==1.16.4
+numpy==2.5.5
+packaging==26.3
+pikepdf==10.18.2
+pillow==13.0.0
+proxy_tools==0.1.0
+pydantic==2.14.3
+pydantic_core==2.50.4
+pyinstaller==6.22.3
+pyinstaller-hooks-contrib==2026.10
+pyobjc-core==13.0
+pyobjc-framework-Cocoa==13.0
+pyobjc-framework-Quartz==13.0
+pyobjc-framework-Security==13.0
+pyobjc-framework-UniformTypeIdentifiers==13.0
+pyobjc-framework-WebKit==13.0
+pypdfium2==5.15.2
+python-multipart==0.0.34
+pywebview==6.2.1
+setuptools==84.2.1
+starlette==1.10.0
+typing-inspection==0.4.5
+typing_extensions==4.16.0
+uvicorn==0.54.0

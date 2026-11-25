@@ -294,12 +294,16 @@ class Caches:
         self.fonts: dict = {}       # font objgen -> FontInfo
 
 
+IMAGE_BACKDROP_LUM = 0.35  # assumed brightness of a kept image under text (photos are mostly mid to dark)
+
+
 class PageWalker:
     """Analyses or rewrites a single page."""
 
     def __init__(self, pdf: pikepdf.Pdf, page_index: int, page_obj, *, rewrite: bool,
                  drops: set | None = None, text_mode: str = "keep", grayscale: bool = False,
-                 to_view: Callable | None = None, caches: Caches | None = None, clips: dict | None = None):
+                 to_view: Callable | None = None, caches: Caches | None = None, clips: dict | None = None,
+                 image_fade: float = 0.0):
         self.pdf = pdf
         self.page_index = page_index
         self.page_obj = page_obj
@@ -309,6 +313,9 @@ class PageWalker:
         self.last_id = None
         self.text_mode = text_mode
         self.grayscale = grayscale
+        # a kept image counts as a dark backdrop (white text on a photo stays white), unless fading lightens it:
+        # at 0.8 a dark photo prints as a pale grey and white text on it disappears, so that text turns black
+        self.image_lum = 1.0 - (1.0 - IMAGE_BACKDROP_LUM) * (1.0 - image_fade)
         self.to_view = to_view or (lambda b: b)
         self.caches = caches or Caches()
 
@@ -454,7 +461,7 @@ class PageWalker:
             return False
         drop = eid in self.drops
         if not drop and kind != STROKE and a >= BACKDROP_MIN_AREA:
-            self.backdrops.append((clipped, 0.35 if kind == IMAGE else lum))
+            self.backdrops.append((clipped, self.image_lum if kind == IMAGE else lum))
         return drop
 
     # ------------------------------------------------------------ walk

@@ -10,6 +10,7 @@ from dataclasses import asdict, dataclass, field, fields
 from typing import Literal
 
 TextMode = Literal["keep", "auto", "black"]
+PAPER = {"a4": (595.28, 841.89), "letter": (612.0, 792.0)}  # sheet sizes in pt
 
 
 def _num(v) -> float:
@@ -55,6 +56,7 @@ class Settings:
     grayscale: bool = False            # convert vector colours and images to gray
     image_fade: float = 0.0            # fade remaining images towards white (0 = off, 0.8 = very faint)
     nup: int = 1                       # pages per sheet: 1, 2, 4, 6
+    paper: str = "a4"                  # sheet for N-up: "a4" or "letter" (US, Canada, Mexico, ...)
 
     @classmethod
     def from_dict(cls, d: dict | None) -> Settings:
@@ -71,6 +73,8 @@ class Settings:
         if s.text_mode not in ("keep", "auto", "black"):
             s.text_mode = "auto"
         s.nup = int(_num(s.nup)) if _num(s.nup) in (1, 2, 4, 6) else 1
+        if s.paper not in PAPER:
+            s.paper = "a4"
         return s
 
     def to_dict(self) -> dict:

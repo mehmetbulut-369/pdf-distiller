@@ -4,6 +4,30 @@
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 
+// ------------------------------------------------------------------ saved preferences
+// Kept in localStorage and, through the local server, in ~/.pdf-distiller/prefs.json: localStorage belongs to
+// one port, and the app moves to another port when 8765 is taken. Without the file that looks like lost settings.
+const PREF_KEYS = ["lang", "theme", "layout", "savedDots", "creditedDots"];
+const putPrefs = (changes) => fetch("/api/prefs", {
+  method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) }).catch(() => {});
+function setPref(key, value) {
+  try { localStorage.setItem(key, value); } catch (_) {}
+  putPrefs({ [key]: value });
+}
+async function syncPrefs() {
+  let saved;
+  try { saved = await (await fetch("/api/prefs")).json(); } catch (_) { return; }
+  const older = {};
+  for (const k of PREF_KEYS) {
+    let local = null;
+    try { local = localStorage.getItem(k); } catch (_) {}
+    if (typeof saved[k] === "string") { if (local !== saved[k]) try { localStorage.setItem(k, saved[k]); } catch (_) {} }
+    else if (local !== null) older[k] = local;  // set before the file existed: keep it there too
+  }
+  if (Object.keys(older).length) putPrefs(older);
+  if (saved.theme === "light" || saved.theme === "dark") document.documentElement.dataset.theme = saved.theme;
+}
+
 // ------------------------------------------------------------------ language (i18n)
 // Strings live in static/i18n/<lang>.json. A missing key falls back to English, then to the key itself.
 // Plurals: if vars.n is a number, "<key>_<one|other…>" is tried first (Intl.PluralRules).
@@ -46,7 +70,7 @@ function applyDom() {
 }
 async function setLang(lang) {
   await loadLang(lang);
-  try { localStorage.setItem("lang", lang); } catch (_) {}
+  setPref("lang", lang);
   applyDom();
   // redraw everything that renders dynamic text
   buildTiers(); syncControls(); setTool(state.tool); renderThumbs(); renderWords(); renderSummary(); renderRecent(); introText();
@@ -61,6 +85,7 @@ const clsText = (c) => t(`cls.${c}`);
 const emptyOverrides = () => ({ elements: {}, signatures: {}, regions: [], crops: [] });
 
 const state = {
+  maxMb: 300,       // largest PDF the server accepts (/api/version)
   doc: null,        // {id, name, n_pages, pages:[{w,h,rot}]}
   tiers: {},
   settings: null,
@@ -280,6 +305,7 @@ const desk = () => window.pywebview?.api;
 async function openFile(file) {
   if (!file) return;
   if (!isPdf(file)) return toast(t("error.choose_pdf"), true);
+  if (file.size > state.maxMb * 1024 * 1024) return toast(t("error.too_large"), true); // no long upload to learn it
   await opening(file, () => uploadPdf(file, (f) => (f < 1 ? showLoader("upload", null, f) : showLoader("analyze"))));
 }
 async function openPath(path) {
@@ -312,7 +338,12 @@ async function opening(file, load) {
   }
 }
 async function loadDoc(d) {
+  const prev = state.doc;
   state.doc = d;
+  // browser: the new file replaced the old one, whose memory the server can free now. Desktop: the window
+  // frees its documents when it closes.
+  if (prev && prev.id !== d.id && !desk()) api(`/api/doc/${prev.id}`, { method: "DELETE" }).catch(() => {});
+  if (desk()) desk().show(d.id);
   state.ops = d.pages.map((_, i) => ({ src: i, rotate: 0 }));
   state.pos = 0;
   state.overrides = emptyOverrides();
@@ -427,7 +458,7 @@ function bindGutters() {
   let layout = {};
   try { layout = JSON.parse(localStorage.getItem(LAYOUT_KEY)) || {}; } catch (_) {}
   apply(layout);
-  const save = () => { try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout)); } catch (_) {} };
+  const save = () => setPref(LAYOUT_KEY, JSON.stringify(layout));
   const size = {
     lw: (x) => clamp(x - app.getBoundingClientRect().left, 220, 520),
     rw: (x) => clamp(app.getBoundingClientRect().right - x, 180, 460),
@@ -817,7 +848,7 @@ const refreshSummary = debounce(async () => {
   const seq = ++summarySeq, gauge = $(".gauge");
   gauge.classList.add("busy"); gauge.setAttribute("aria-busy", "true");
   try {
-    const r = await (await post(`/api/doc/${state.doc.id}/summary`, job())).json();
+    const r = await (await post(`/api/doc/${state.doc.id}/summary`, job({ ops: state.ops }))).json();
     if (seq !== summarySeq) return; // a newer request is on its way
     state.summary = r;
     renderSummary();
@@ -837,22 +868,40 @@ function renderSummary() {
   renderInk(); drawOverlay();
 }
 
-// Saved ink as printer dots, with the formula shown: an A4 page at 600 dpi has 4961 x 7016 dot positions.
-const A4_DOTS = 4961 * 7016;
+// Saved ink as printer dots, with the formula shown: an A4 sheet at 600 dpi has 4961 x 7016 dot positions,
+// a US Letter sheet 5100 x 6600.
+const SHEETS = { a4: { name: "A4", w: 4961, h: 7016 }, letter: { name: "Letter", w: 5100, h: 6600 } };
+const sheet = () => SHEETS[state.settings?.paper] || SHEETS.a4;
+// Letter paper is the norm in these regions; everywhere else A4. Taken from the system language setting.
+const LETTER_REGIONS = new Set(["US", "CA", "MX", "PH", "CL", "CO", "VE", "GT", "CR", "PA", "DO", "PR", "SV", "NI", "HN"]);
+function defaultPaper() {
+  for (const l of navigator.languages || [navigator.language || ""]) {
+    const region = String(l).split("-")[1];
+    if (region) return LETTER_REGIONS.has(region.toUpperCase()) ? "letter" : "a4";
+  }
+  return "a4";
+}
 function bigNum(v) {
   const f = (x) => x.toLocaleString(i18n.lang, { maximumFractionDigits: x < 100 ? 1 : 0 });
   if (v >= 1e9) return `${f(v / 1e9)} ${t("dots.billion")}`;
   if (v >= 1e6) return `${f(v / 1e6)} ${t("dots.million")}`;
   return Math.round(v).toLocaleString(i18n.lang);
 }
-const savedDots = () => (state.summary ? A4_DOTS * Math.max(0, state.summary.ink.original - state.summary.ink.processed) * state.ops.length : 0);
+// original ink x source pages - printed ink x printed pages / pages per sheet (server: ink_estimate)
+const savedDots = () => {
+  const ink = state.summary?.ink, s = sheet();
+  return ink ? s.w * s.h * Math.max(0, ink.saved_pages || 0) : 0;
+};
 function renderDots(o, p) {
-  const pages = state.ops.length, saved = savedDots();
+  const ink = state.summary.ink, saved = savedDots(), s = sheet();
   $("#dots").hidden = saved < 1;
   if (saved < 1) return;
   const p1 = (v) => new Intl.NumberFormat(i18n.lang, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v);
   $("#dotsLine").textContent = t("dots.line", { n: bigNum(saved) });
-  $("#dotsHow").textContent = t("dots.how", { a4: bigNum(A4_DOTS), before: p1(o), after: p1(p), pages, n: bigNum(saved) });
+  $("#dotsHow").textContent = t("dots.how", {
+    sheet: s.name, w: s.w, h: s.h, a4: bigNum(s.w * s.h), before: p1(o), after: p1(p),
+    src: ink.src_pages, out: ink.out_pages, per_sheet: ink.nup > 1 ? t("dots.per_sheet", { k: ink.nup }) : "",
+    n: bigNum(saved) });
 }
 
 function refreshAll() { refreshPage(); refreshSummary(); refreshWords(); }
@@ -924,6 +973,7 @@ function pageAction(i, a) {
   if (a === "up" && i > 0) { [ops[i - 1], ops[i]] = [ops[i], ops[i - 1]]; if (state.pos === i) state.pos--; }
   if (a === "down" && i < ops.length - 1) { [ops[i + 1], ops[i]] = [ops[i], ops[i + 1]]; if (state.pos === i) state.pos++; }
   renderThumbs(); renderInk(); refreshPage(); refreshWords();
+  if (a === "del") refreshSummary(); // deleted pages are not printed: the saved dots change
   if (a === "del") undoToast(t("toast.page_removed", { n: i + 1 }));
 }
 function goTo(i) {
@@ -1079,7 +1129,8 @@ function highlight(e) {
 async function doExport() {
   const b = $("#export");
   b.disabled = true; b.textContent = t("export.busy");
-  const gain = savedDots(), before = worldTotal();
+  const saved = savedDots(), key = creditKey(), done = credits()[key] || 0;
+  const gain = Math.max(0, saved - done), before = worldTotal(); // only what this file had not earned yet
   const show = gain >= 1 ? playWorld(before, before + gain) : null;
   let ok = false;
   try {
@@ -1091,10 +1142,11 @@ async function doExport() {
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     toast(t("export.done", { name }));
     ok = true;
+    if (saved > done) setCredit(key, saved);
   } catch (e) { toast(e.message, true); }
   finally {
     b.disabled = false; b.textContent = t("export");
-    if (show) await show.finish(ok, gain);
+    if (show) await show.finish(ok, gain, saved);
   }
 }
 
@@ -1106,6 +1158,18 @@ const LAND = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf4P+AAAAAAAAAAAAAAAD+
 const WORLD_GOAL = 1e9; // dots that light the whole globe; beyond it the globe stays full and the total keeps counting
 const WORLD_KEY = "savedDots";
 const worldTotal = () => { try { return Number(localStorage.getItem(WORLD_KEY)) || 0; } catch (_) { return 0; } };
+// The globe must stay true: exporting the same file again does not light its dots twice. Per file (name +
+// page count) the largest saving already counted is kept; a later export adds only what goes beyond it.
+const CREDIT_KEY = "creditedDots", MAX_CREDITS = 300;
+const creditKey = () => `${state.doc.name}|${state.doc.n_pages}`;
+function credits() { try { return JSON.parse(localStorage.getItem(CREDIT_KEY)) || {}; } catch (_) { return {}; } }
+function setCredit(key, v) {
+  const c = credits();
+  delete c[key]; c[key] = v; // newest last
+  const keys = Object.keys(c);
+  for (const k of keys.slice(0, Math.max(0, keys.length - MAX_CREDITS))) delete c[k];
+  setPref(CREDIT_KEY, JSON.stringify(c));
+}
 let globe = null;
 function globeDots() {
   if (globe) return globe;
@@ -1171,12 +1235,12 @@ function playWorld(from, to) {
   const close = () => { box.hidden = true; document.removeEventListener("keydown", esc_); $("#export").focus(); };
   const esc_ = (e) => { if (e.key === "Escape") close(); };
   return {
-    async finish(ok, gain) {
+    async finish(ok, gain, saved) {
       if (!ok) { box.hidden = true; return; }
       await ran;
-      try { localStorage.setItem(WORLD_KEY, String(to)); } catch (_) {}
+      setPref(WORLD_KEY, String(to));
       $("#worldHead").textContent = t("world.saved", { pct: pct(Math.max(0, state.summary.ink.saving)) });
-      $("#worldDots").textContent = t("world.dots", { n: bigNum(gain) });
+      $("#worldDots").textContent = t("world.dots", { n: bigNum(saved) });
       $("#worldLit").textContent = t("world.lit", { n: bigNum(gain) });
       $("#worldTotal").textContent = t("world.total", { n: bigNum(to) });
       $("#worldClose").hidden = false; $("#worldClose").focus();
@@ -1231,16 +1295,20 @@ const syncTheme = () => $("#theme").setAttribute("aria-pressed", String(isDark()
 function toggleTheme() {
   const next = isDark() ? "light" : "dark";
   document.documentElement.dataset.theme = next;
-  try { localStorage.setItem("theme", next); } catch (_) {}
+  setPref("theme", next);
   syncTheme();
 }
 async function init() {
+  await syncPrefs();
   await loadLang(pickLang());
   applyDom();
   state.tiers = await (await api("/api/tiers")).json();
-  state.settings = { ...state.tiers[1].settings };
+  state.settings = { ...state.tiers[1].settings, paper: defaultPaper() };
   // which code is running (compare with `git log -1`): hover the name, "v0.5.0 · 5a487a5 · date"
-  api("/api/version").then((r) => r.json()).then((v) => { $("#brand").title = `v${v.version} · ${v.build}`; }).catch(() => {});
+  api("/api/version").then((r) => r.json()).then((v) => {
+    $("#brand").title = `v${v.version} · ${v.build}`;
+    if (v.max_mb) state.maxMb = v.max_mb;
+  }).catch(() => {});
   fetch("/static/logo.svg").then((r) => r.text()).then((svg) => { $("#logo").innerHTML = svg; }).catch(() => {});
   buildTiers(); bindControls(); bindProfiles(); syncControls(); setTool("graphics");
   loadProfiles().catch(() => {});
@@ -1263,7 +1331,7 @@ async function init() {
   $("#undo").onclick = undo; $("#redo").onclick = redo;
   $("#prev").onclick = () => goTo(state.pos - 1);
   $("#next").onclick = () => goTo(state.pos + 1);
-  $("#resetPages").onclick = () => { if (!state.doc) return; snapshot(); state.ops = state.doc.pages.map((_, i) => ({ src: i, rotate: 0 })); state.pos = 0; renderThumbs(); refreshPage(); refreshWords(); };
+  $("#resetPages").onclick = () => { if (!state.doc) return; snapshot(); state.ops = state.doc.pages.map((_, i) => ({ src: i, rotate: 0 })); state.pos = 0; renderThumbs(); refreshPage(); refreshSummary(); refreshWords(); };
   $$("#tool button").forEach((b) => (b.onclick = () => setTool(b.dataset.t)));
   bindOverlay();
   $$("#cropShape button").forEach((b) => (b.onclick = () => { state.crop.shape = b.dataset.v; syncCropBar(); }));
@@ -1342,6 +1410,9 @@ async function init() {
   // arrives (e.g. a file dragged from a browser), fall back to uploading the file itself.
   let pendingDrop = null;
   window.__dropPath = (path) => { pendingDrop = null; openPath(path); };
+  // files the system handed over (Finder "Open With", Dock, command line) before this page was ready
+  const flush = () => { for (const p of window.__pendingPaths || []) window.__dropPath(p); window.__pendingPaths = []; };
+  if (desk()) flush(); else window.addEventListener("pywebviewready", flush, { once: true });
   window.addEventListener("dragenter", (e) => { if (!hasFiles(e)) return; e.preventDefault(); if (depth++ === 0) setVeil(true, e); });
   window.addEventListener("dragover", (e) => { if (!hasFiles(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = veil.classList.contains("bad") ? "none" : "copy"; });
   window.addEventListener("dragleave", (e) => { if (!hasFiles(e)) return; if (--depth <= 0) { depth = 0; setVeil(false); } });

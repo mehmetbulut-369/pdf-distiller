@@ -10,6 +10,16 @@ updates:
         patterns: ["*"]   # one grouped PR per week instead of a flood
     labels: ["dependencies"]
 
+  # Exact versions used for release builds (packaging/requirements-release.txt)
+  - package-ecosystem: "pip"
+    directory: "/packaging"
+    schedule:
+      interval: "weekly"
+    groups:
+      release-pins:
+        patterns: ["*"]
+    labels: ["dependencies"]
+
   # Pinned GitHub Actions in .github/workflows
   - package-ecosystem: "github-actions"
     directory: "/"

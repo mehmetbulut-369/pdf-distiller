@@ -3,7 +3,7 @@
     pip install ".[dev,window]" pyinstaller
     python packaging/build.py
 
-macOS: dist/PDF Distiller.app (onedir) and dist/PDF-Distiller-macOS.dmg
+macOS: dist/PDF Distiller.app (onedir) and dist/PDF-Distiller-macOS.dmg (-Intel.dmg on an Intel Mac)
 Windows: dist/PDF Distiller.exe (onefile)
 
 Signing (optional; without it the build is unsigned and systems warn before the first start, see
@@ -16,6 +16,8 @@ docs/signing.md). Set in the environment:
 from __future__ import annotations
 
 import os
+import platform
+import plistlib
 import shutil
 import subprocess
 import sys
@@ -50,6 +52,16 @@ def sign_mac(path: Path) -> bool:
         run("codesign", "--force", "--deep", "--sign", "-", str(path))
     run("codesign", "--verify", "--deep", "--strict", str(path))
     return bool(ident)
+
+
+def accept_pdfs(app: Path) -> None:
+    """Finder offers the app under "Open With" for PDFs and lets a PDF be dropped on its Dock icon.
+    "Alternate": it never takes over as the default PDF app."""
+    plist = app / "Contents" / "Info.plist"
+    info = plistlib.loads(plist.read_bytes())
+    info["CFBundleDocumentTypes"] = [{"CFBundleTypeName": "PDF document", "CFBundleTypeRole": "Viewer",
+                                      "LSHandlerRank": "Alternate", "LSItemContentTypes": ["com.adobe.pdf"]}]
+    plist.write_bytes(plistlib.dumps(info))
 
 
 def notarize_mac(dmg: Path) -> None:
@@ -139,11 +151,13 @@ def main() -> None:
 
     if sys.platform == "darwin":
         app = ROOT / "dist" / f"{NAME}.app"
+        accept_pdfs(app)
         signed = sign_mac(app)  # after the license files: changing the bundle later breaks the signature
         if not signed:
             print("note: ad-hoc signed only; macOS warns before the first start (docs/signing.md)", file=sys.stderr)
         if shutil.which("hdiutil"):
-            dmg = ROOT / "dist" / "PDF-Distiller-macOS.dmg"
+            intel = platform.machine() == "x86_64"
+            dmg = ROOT / "dist" / ("PDF-Distiller-macOS-Intel.dmg" if intel else "PDF-Distiller-macOS.dmg")
             dmg.unlink(missing_ok=True)
             run("hdiutil", "create", "-volname", NAME, "-srcfolder", str(app), "-ov", "-format", "UDZO", str(dmg))
             if signed:

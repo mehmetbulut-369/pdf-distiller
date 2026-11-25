@@ -40,8 +40,9 @@ def process_images(pdf: pikepdf.Pdf, objgens, grayscale: bool, fade: float) -> i
         except Exception:
             continue
 
-        big = img.width * img.height > 40_000
-        if was_jpeg or big:
+        # A JPEG stays a JPEG. Anything else stays lossless: re-encoding a screenshot of a table or formula as
+        # JPEG blurs its letters, and text that stays sharp is the point of this tool.
+        if was_jpeg:
             buf = io.BytesIO()
             img.save(buf, format="JPEG", quality=85)
             obj.write(buf.getvalue(), filter=Name.DCTDecode)

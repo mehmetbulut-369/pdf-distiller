@@ -72,7 +72,8 @@ is kept as it is, like any page that cannot be analysed. Real lecture decks stay
 Pages are drawn by pdfium in a child process (`distill_core/render.py`). If a file crashes it
 (`jpx_numcomps.pdf`: malformed JPEG 2000) or keeps it busy past 20 s (`tiling-pattern-tiny-steps*.pdf`),
 the child is killed and restarted, that page shows as a plain grey sheet, and the app keeps running.
-Both files used to stop the whole app. Text extraction still runs in the app's own process.
+Both files used to stop the whole app. Text extraction and the open check run in the same child (since the
+third audit, 2026-11-25), so no pdfium call is left in the app's own process.
 
 The packaged app writes warnings to `~/.pdf-distiller/log.txt` and native crash stacks to
 `~/.pdf-distiller/crash.txt`; file names appear there, document content does not.
