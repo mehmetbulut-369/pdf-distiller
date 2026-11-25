@@ -306,6 +306,7 @@ class DistillDocument:
         drops, labels, clips = self.decide_full(s, ov)
         d = drops.get(i, set())
         pclips = clips.get(i, {})
+        self._load_texts(i, self.pages[i].elements)
         out = []
         for z, e in enumerate(self.pages[i].elements):
             is_text = e.kind == TEXT
@@ -331,14 +332,23 @@ class DistillDocument:
         return out
 
     def element_text(self, e) -> str:
-        t = self._el_text.get(e.id)
-        if t is None:
+        if e.id not in self._el_text:
+            self._load_texts(e.page, [e])
+        return self._el_text[e.id]
+
+    def _load_texts(self, i: int, els) -> None:
+        """Reads the text of every not yet known text box in els (all on page i) in one call."""
+        todo = [e for e in els if e.kind == TEXT and e.id not in self._el_text]
+        if not todo:
+            return
+        boxes = []
+        for e in todo:
             x0, y0, x1, y1 = e.bbox
             h = y1 - y0  # query slightly inside the edges so letters from neighbouring lines don't leak in
-            t = render.service().text(self.uid, self.data, e.page, (x0, y0 + h * 0.2, x1, y1 - h * 0.2)) or ""
-            t = " ".join(t.split())
-            self._el_text[e.id] = t
-        return t
+            boxes.append((x0, y0 + h * 0.2, x1, y1 - h * 0.2))
+        texts = render.service().texts(self.uid, self.data, i, boxes) or [""] * len(todo)
+        for e, t in zip(todo, texts, strict=True):
+            self._el_text[e.id] = " ".join(t.split())
 
     def region_pages(self, box) -> int:
         """Pages with a text box inside `box` (the rule of classify.in_region). Every text box of the page in
@@ -378,6 +388,7 @@ class DistillDocument:
             c = Counter(tokenize(self.page_text(i)))
             d = drops.get(i)
             if d:
+                self._load_texts(i, [e for e in self.pages[i].elements if e.id in d])
                 for e in self.pages[i].elements:
                     if e.kind == TEXT and e.id in d:
                         c.subtract(tokenize(self.element_text(e)))

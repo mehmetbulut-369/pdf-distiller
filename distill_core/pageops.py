@@ -20,6 +20,8 @@ def apply_page_ops(pdf: pikepdf.Pdf, ops: list[PageOp]) -> pikepdf.Pdf:
         return pdf
     out = pikepdf.new()
     for o in ops:
+        if o.rotate % 90:
+            raise ValueError(f"rotation must be a multiple of 90, not {o.rotate}")  # PDF /Rotate allows nothing else
         if 0 <= o.src < n:
             out.pages.append(pdf.pages[o.src])
             if o.rotate % 360:

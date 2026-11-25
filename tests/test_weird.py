@@ -2,6 +2,7 @@
 or is refused with a known error code. Never a 500, never an unreadable export."""
 from __future__ import annotations
 
+import importlib.util
 import io
 import sys
 from pathlib import Path
@@ -12,7 +13,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-pytest.importorskip("httpx")
+pytest.importorskip("httpx2" if importlib.util.find_spec("httpx2") else "httpx")  # TestClient needs one of them
 import weird_pdfs  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 

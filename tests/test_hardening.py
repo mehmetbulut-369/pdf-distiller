@@ -1,6 +1,7 @@
 """Guards against hostile files and malformed requests (pre-release QA, 2026-11-25)."""
 from __future__ import annotations
 
+import importlib.util
 import io
 import os
 import signal
@@ -16,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-pytest.importorskip("httpx")
+pytest.importorskip("httpx2" if importlib.util.find_spec("httpx2") else "httpx")  # TestClient needs one of them
 import make_samples  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 

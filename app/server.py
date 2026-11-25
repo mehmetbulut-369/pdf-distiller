@@ -16,6 +16,7 @@ import unicodedata
 import uuid
 from collections import OrderedDict
 from pathlib import Path
+from typing import Literal
 from urllib.parse import quote
 
 import pikepdf
@@ -59,7 +60,7 @@ _lock = threading.Lock()
 
 class Op(BaseModel):
     src: int
-    rotate: int = 0
+    rotate: Literal[0, 90, 180, 270] = 0  # PDF /Rotate must be a multiple of 90; the UI sends 0-270
 
 
 class Job(BaseModel):
@@ -249,10 +250,11 @@ def close_doc(doc_id: str):
 def original(doc_id: str, page: int, w: int = 900):
     d = _doc(doc_id)
     _check_page(d, page)
+    w = min(max(w, 60), 2400)  # clamp before the cache key: w=2400 and w=9999 are the same image
     key = f"{doc_id}:o:{page}:{w}"
     png = _cache_get(key)
     if png is None:
-        png = d.render_original(page, min(max(w, 60), 2400))
+        png = d.render_original(page, w)
         _cache_put(key, png)
     return Response(png, media_type="image/png", headers={"Cache-Control": "max-age=3600"})
 
@@ -262,10 +264,11 @@ def processed(doc_id: str, job: Job):
     d = _doc(doc_id)
     _check_page(d, job.page)
     s, ov = _parse(job)
-    key = f"{doc_id}:p:{job.page}:{job.width}:{settings_key(s, ov)}"
+    w = min(max(job.width, 60), 2400)
+    key = f"{doc_id}:p:{job.page}:{w}:{settings_key(s, ov)}"
     png = _cache_get(key)
     if png is None:
-        png = d.render_processed(job.page, s, ov, min(max(job.width, 60), 2400))
+        png = d.render_processed(job.page, s, ov, w)
         _cache_put(key, png)
     return Response(png, media_type="image/png")
 
@@ -326,10 +329,23 @@ _WIN_RESERVED = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)),
 
 
 def _safe(name: str) -> str:
-    n = re.sub(r"[^\w\- ]", "", name, flags=re.UNICODE).strip()[:60]
+    # NFC first: a decomposed "Ö" (O + combining mark) would otherwise lose its mark and become "O"
+    n = re.sub(r"[^\w\- ]", "", unicodedata.normalize("NFC", name), flags=re.UNICODE).strip()[:60]
     if not n or n.upper() in _WIN_RESERVED:
         raise HTTPException(400, "error.invalid_profile_name")
     return n
+
+
+def _profile_file(name: str) -> Path:
+    """The user profile file for name. macOS and Windows treat "Exam" and "exam" as one file: an existing
+    profile that differs only in case is that profile, so the list never shows a name whose file holds
+    another name's settings."""
+    n = _safe(name)
+    if USER_PROFILES.exists():
+        for f in USER_PROFILES.glob("*.json"):
+            if unicodedata.normalize("NFC", f.stem).casefold() == n.casefold():
+                return f
+    return USER_PROFILES / f"{n}.json"
 
 
 @app.get("/api/profiles")
@@ -348,19 +364,19 @@ def list_profiles():
 
 @app.put("/api/profiles/{name}")
 def save_profile(name: str, settings: dict):
-    n = _safe(name)
+    f = _profile_file(name)
     try:
         clean = Settings.from_dict(settings).to_dict()
     except (TypeError, ValueError) as e:
         raise HTTPException(400, "error.bad_settings") from e
     USER_PROFILES.mkdir(parents=True, exist_ok=True)
-    write_atomic(USER_PROFILES / f"{n}.json", json.dumps(clean, indent=2, ensure_ascii=False))
-    return {"name": n}
+    write_atomic(f, json.dumps(clean, indent=2, ensure_ascii=False))
+    return {"name": f.stem}
 
 
 @app.delete("/api/profiles/{name}")
 def delete_profile(name: str):
-    f = USER_PROFILES / f"{_safe(name)}.json"
+    f = _profile_file(name)
     if not f.exists():
         raise HTTPException(404, "error.only_own_profiles")
     f.unlink()

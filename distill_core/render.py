@@ -57,11 +57,15 @@ def render_page(doc, i: int, width: int):
         page.close()
 
 
-def page_text(doc, i: int, box=None) -> str:
-    """Text of page i; with box (x0, y0, x1, y1 in PDF user space) only the text inside it."""
+def page_text(doc, i: int, box=None, boxes=None):
+    """Text of page i; with box (x0, y0, x1, y1 in PDF user space) only the text inside it.
+    With boxes (a list of such boxes) a list of texts, one per box: the page's text layer is built once for
+    all of them (built once per box, a page of 825 OCR words took 1.5 s)."""
     page = doc[i]
     tp = page.get_textpage()
     try:
+        if boxes is not None:
+            return [tp.get_text_bounded(*b) for b in boxes]
         return tp.get_text_bounded(*box) if box else tp.get_text_range()
     finally:
         tp.close()
@@ -228,6 +232,10 @@ class RenderService:
 
     def text(self, key: str, data: bytes, page: int, box=None) -> str | None:
         return self._run("text", key, data, page, tuple(box) if box else None)
+
+    def texts(self, key: str, data: bytes, page: int, boxes) -> list[str] | None:
+        """Text inside each of several boxes on one page, in one call."""
+        return self._run("text", key, data, page, None, [tuple(b) for b in boxes])
 
     def pages(self, data: bytes, keep: str | None = None) -> int | None:
         """Page count as pdfium reads the file; None if it cannot (or crashes on it).
