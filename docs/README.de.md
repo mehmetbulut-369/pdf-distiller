@@ -18,7 +18,7 @@ Wie schnell sind wir vom Rascheln der Seiten in Hochschulfluren dort angekommen,
 
 Aber Vorlesungsfolien sind für die Leinwand im Hörsaal gemacht, nicht für Papier. Der Großteil der Tinte fließt in dunkle Hintergründe, wiederkehrende Logos und große Fotos. Ich weiß, dass sie in der Vorlesung einen Zweck haben: Sie helfen Studierenden, den Stoff besser zu verstehen. Auf Papier verlieren sie diese Aufgabe jedoch; übrig bleibt nur die verbrauchte Tinte. Lassen Sie sich diese Elemente vor dem Druck von PDF Distiller einzeln zeigen, und entscheiden Sie selbst, was bleibt: Vermeiden Sie Verschwendung, verbrauchen Sie weniger Tinte und schonen Sie so Umwelt und Geldbeutel.
 
-Kurz gesagt: Mit diesem Projekt wollte ich ein Problem, auf das ich als Einzelperson gestoßen bin, auf eine gesellschaftliche Ebene bringen.
+**Kurz gesagt: Mit diesem Projekt wollte ich ein Problem, auf das ich als Einzelperson gestoßen bin, auf eine gesellschaftliche Ebene bringen.**
 
 ![Eine dunkle Vorlesungsfolie vorher und nachher, Stufe „Mittel“](before-after.png)
 

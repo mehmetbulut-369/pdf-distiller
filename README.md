@@ -18,7 +18,7 @@ University life has moved from the rustle of pages in the library to tapping on 
 
 But lecture slides are made for the projector in the lecture hall, not for paper. Most of the ink goes into dark backgrounds, repeated logos and big photos. I know they have a purpose in class: they help students understand the topic better. On paper, though, they lose that purpose, and all that is left is the ink they used. Let PDF Distiller show you these parts one by one before you print, and you decide what stays: cut the waste, use less ink, and protect both the environment and your wallet.
 
-In short, with this project I wanted to take a problem I faced as an individual and carry it to the scale of society.
+**In short, with this project I wanted to take a problem I faced as an individual and carry it to the scale of society.**
 
 ![A dark lecture slide before and after, Medium level](docs/before-after.png)
 

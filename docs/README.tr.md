@@ -18,7 +18,7 @@ Sahip olmak, belki de insanoğlunun en ilkel duygularından biri. Elimizde tutab
 
 Ama ders slaytları kâğıt için değil, amfideki perde için hazırlanır. Mürekkebin büyük kısmı koyu arka planlara, tekrar eden logolara ve büyük fotoğraflara gider. Bunların derste bir amacı olduğunu biliyorum: öğrencinin konuyu daha iyi kavramasına yardım ederler. Ancak kâğıtta bu işlevlerini yitirirler; geriye yalnızca harcanan mürekkep kalır. PDF Distiller, basmadan önce bu öğeleri size tek tek göstersin; neyin kalacağına siz karar verin; israfı azaltarak, daha az mürekkep sarfiyatıyla hem çevreyi hem cebinizi koruyun.
 
-Kısacası, birey olarak karşılaştığım bir sorunu bu projeyle toplumsal ölçeğe taşımak istedim.
+**Kısacası, birey olarak karşılaştığım bir sorunu bu projeyle toplumsal ölçeğe taşımak istedim.**
 
 ![Koyu bir ders slaytı, Orta kademeyle önce ve sonra](before-after.png)
 
