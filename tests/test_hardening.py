@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import io
+import os
+import signal
 import sys
 import zlib
 from pathlib import Path
@@ -121,12 +123,15 @@ def test_renderer_restarts_after_crash_and_marks_hung_pages():
         svc._proc.kill()  # what a native crash looks like from the parent
         svc._proc.join()
         assert svc.png("k", data, 1, 200)[:4] == b"\x89PNG"  # restarted, document re-sent
-        svc.timeout = 0.0001  # every render now "hangs"
+        if not hasattr(signal, "SIGSTOP"):
+            return  # Windows: no way to freeze the child from here; the crash path above is covered
+        os.kill(svc._proc.pid, signal.SIGSTOP)  # a page that keeps pdfium busy, deterministically
+        svc.timeout = 1.0
         assert svc.png("k", data, 0, 200) is None
         assert svc.failed("k", 0)
         svc.timeout = render.RENDER_TIMEOUT
         assert svc.png("k", data, 0, 200) is None  # not tried again
-        assert svc.png("k", data, 1, 200)[:4] == b"\x89PNG"
+        assert svc.png("k", data, 1, 200)[:4] == b"\x89PNG"  # a fresh child serves the other pages
     finally:
         svc.close()
 
